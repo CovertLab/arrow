@@ -16,7 +16,10 @@ def johns_system():
 	system = StochasticSystem(reactions, weights)
 	history, steps = system.evolve(state, 1)
 
-	print(zip(steps, history))
+	outcome = history[-1]
+	assert outcome.sum() < state[0]
+
+	return (history, steps)
 
 
 def test_dimers():
@@ -32,4 +35,8 @@ def test_dimers():
 	system = StochasticSystem(reactions, weights)
 	history, steps = system.evolve(state, 1)
 
-	print(zip(steps, history))
+	return (history, steps)
+
+
+johns_system()
+test_dimers()
