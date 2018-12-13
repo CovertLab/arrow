@@ -12,35 +12,35 @@ This library implements a generalized version of the [Gillespie Algorithm](https
 The `arrow` library presents a single class as an interface, `StochasticSystem`, which operates on a set of reactions (encoded as a `numpy` matrix) and associated reaction weights:
 
 ```python
-    from arrow import StochasticSystem
-    import numpy as np
+from arrow import StochasticSystem
+import numpy as np
 
-    # Each row is a reaction and each column is a molecular species (or other entity).
-    # The top reaction here means that the first and second elements combine to create the third,
-    # while the fourth is unaffected.
-    reactions = np.array([
-        [-1, -1, 1, 0],
-        [-2, 0, 0, 1],
-        [1, 1, -1, 0]])
+# Each row is a reaction and each column is a molecular species (or other entity).
+# The top reaction here means that the first and second elements combine to create the third,
+# while the fourth is unaffected.
+reactions = np.array([
+    [-1, -1, 1, 0],
+    [-2, 0, 0, 1],
+    [1, 1, -1, 0]])
 
-    # Each reaction has an associated weight for how probable that reaction is.
-    weights = np.array([3, 1, 1])
+# Each reaction has an associated weight for how probable that reaction is.
+weights = np.array([3, 1, 1])
 
-    # Once we have a matrix of reactions and their associated weights, we can construct the system.
-    system = StochasticSystem(reactions, weights)
+# Once we have a matrix of reactions and their associated weights, we can construct the system.
+system = StochasticSystem(reactions, weights)
 ```
 
 Now that the system has been instantiated, we can invoke it with any initial state vector and then run it for a given time interval:
 
 ```python
-    # This gives the initial state of the system (counts of each molecular species, for instance)
-    state = np.array([1000, 1000, 0, 0])
+# This gives the initial state of the system (counts of each molecular species, for instance)
+state = np.array([1000, 1000, 0, 0])
 
-    # We also specify how long we want the simulation to run. Here we set it to one second
-    duration = 1
+# We also specify how long we want the simulation to run. Here we set it to one second
+duration = 1
 
-    # Once we have an initial state and duration, we can run the simulation for the given duration.
-    # `evolve` returns the history of the state vector for each time step, and the history of time
-    # steps as they will be in uneven increments throughout the simulation.
-    history, steps = system.evolve(state, duration)
+# Once we have an initial state and duration, we can run the simulation for the given duration.
+# `evolve` returns the history of the state vector for each time step, and the history of time
+# steps as they will be in uneven increments throughout the simulation.
+history, steps = system.evolve(state, duration)
 ```
