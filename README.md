@@ -5,11 +5,11 @@
 
 ## concept
 
-This library implements a generalized version of the [Gillespie Algorithm](https://en.wikipedia.org/wiki/Gillespie_algorithm), a stochastic approach to numerically solving discrete systems. Each iteration, the algorithm will calculate the propensities for each reaction given a weight and the counts of the reactants present in the current state of the system, then selects one reaction to occur and the interval of time between the previous reaction and the current reaction. Iterating this produces a trajectory (or `history`) of the state vector over the course of the simulation.
+This library implements a generalized version of the [Gillespie Algorithm](https://en.wikipedia.org/wiki/Gillespie_algorithm), a stochastic approach to numerically solving discrete systems. Each iteration, the algorithm will calculate the propensities for each reaction given a rate and the counts of the reactants present in the current state of the system, then selects one reaction to occur and the interval of time between the previous reaction and the current reaction. Iterating this produces a trajectory (or `history`) of the state vector over the course of the simulation.
 
 ## usage
 
-The `arrow` library presents a single class as an interface, `StochasticSystem`, which operates on a set of reactions (encoded as a `numpy` matrix) and associated reaction weights:
+The `arrow` library presents a single class as an interface, `StochasticSystem`, which operates on a set of reactions (encoded as a `numpy` matrix) and associated reaction rates:
 
 ```python
 from arrow import StochasticSystem
@@ -23,11 +23,11 @@ reactions = np.array([
     [-2, 0, 0, 1],
     [1, 1, -1, 0]])
 
-# Each reaction has an associated weight for how probable that reaction is.
-weights = np.array([3, 1, 1])
+# Each reaction has an associated rate for how probable that reaction is.
+rates = np.array([3, 1, 1])
 
-# Once we have a matrix of reactions and their associated weights, we can construct the system.
-system = StochasticSystem(reactions, weights)
+# Once we have a matrix of reactions and their associated rates, we can construct the system.
+system = StochasticSystem(reactions, rates)
 ```
 
 Now that the system has been instantiated, we can invoke it with any initial state vector and then run it for a given time interval:

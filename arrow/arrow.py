@@ -5,9 +5,9 @@ from numba import jit
 
 @jit
 def choose(pair):
-	reaction = pair[0] * -1
+	reaction = pair[0]
 	molecules = pair[1]
-	return comb(molecules, reaction)
+	return comb(molecules, -reaction)
 
 @jit
 def propensity(reaction, state):
@@ -16,7 +16,7 @@ def propensity(reaction, state):
 	return np.array(terms).prod()
 
 @jit
-def step(reactions, weights, state, propensities=[], update_reactions=np.array([])):
+def step(reactions, rates, state, propensities=[], update_reactions=()):
 	if len(update_reactions):
 		for update in update_reactions:
 			reaction = reactions[update]
@@ -26,10 +26,10 @@ def step(reactions, weights, state, propensities=[], update_reactions=np.array([
 			propensity(reaction, state)
 			for reaction in reactions]
 
-	distribution = (weights * propensities)
+	distribution = (rates * propensities)
 	total = distribution.sum()
 	if total == 0:
-		return (state, 0)
+		return (state, 0, -1, propensities)
 
 	dt = np.random.exponential(1 / total)
 	random = np.random.uniform(0, 1) * total
@@ -46,21 +46,25 @@ def step(reactions, weights, state, propensities=[], update_reactions=np.array([
 	return outcome, dt, choice, propensities
 
 @jit
-def evolve(reactions, weights, state, duration):
+def evolve(reactions, rates, state, duration):
 	time = 0
 	history = [state]
 	steps = [0]
 	propensities = []
 	update_reactions = []
 
-	while time < duration:
+	while True:
 		state, dt, choice, propensities = step(
 			reactions,
-			weights,
+			rates,
 			state,
 			propensities,
 			update_reactions)
+
 		time += dt
+		if time > duration:
+			break
+
 		history.append(state)
 		steps.append(time)
 
@@ -72,12 +76,12 @@ def evolve(reactions, weights, state, duration):
 
 
 class StochasticSystem(object):
-	def __init__(self, reactions, weights):
+	def __init__(self, reactions, rates):
 		self.reactions = reactions
-		self.weights = weights
+		self.rates = rates
 
 	def step(self, state):
-		return step(self.reactions, self.weights, state)
+		return step(self.reactions, self.rates, state)
 
 	def evolve(self, state, duration):
-		return evolve(self.reactions, self.weights, state, duration)
+		return evolve(self.reactions, self.rates, state, duration)
