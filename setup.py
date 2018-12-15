@@ -1,3 +1,4 @@
+import setuptools
 from distutils.core import setup
 
 with open("README.md", 'r') as readme:
@@ -9,6 +10,7 @@ setup(
 	packages=['arrow'],
 	author='Ryan Spangler',
 	author_email='spanglry@stanford.edu',
-	url='https://github.com/CovertLab/arrow'
+	url='https://github.com/CovertLab/arrow',
+	license='MIT',
 	long_description=long_description,
 	long_description_content_type='text/markdown')

@@ -2,3 +2,8 @@
 __pycache__
 .python-version
 .pytest_cache
+MANIFEST
+build/
+dist/
+
+arrow.egg-info/
