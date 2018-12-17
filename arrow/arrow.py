@@ -3,19 +3,19 @@ from scipy.special import comb
 from numba import jit
 
 
-@jit
+#jit
 def choose(pair):
 	reaction = pair[0]
 	molecules = pair[1]
 	return comb(molecules, reaction)
 
-@jit
+#jit
 def propensity(reaction, state, form):
 	reactants = np.where(reaction < 0)
 	terms = map(form, zip(reaction[reactants] * -1, state[reactants]))
 	return np.array(terms).prod()
 
-@jit
+#jit
 def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 	if len(update_reactions):
 		for update in update_reactions:
@@ -46,7 +46,7 @@ def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 
 	return outcome, dt, choice, propensities
 
-@jit
+#jit
 def evolve(reactions, rates, state, duration, forms=choose):
 	time = 0
 	history = [state]

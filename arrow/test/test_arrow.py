@@ -1,6 +1,6 @@
 import numpy as np
 
-from arrow import StochasticSystem
+from arrow import evolve, StochasticSystem
 
 
 def johns_system():
@@ -9,11 +9,12 @@ def johns_system():
 		[1, -1],
 		[0, -1]])
 
-	weights = np.array([10, 10, 0.1])
-	system = StochasticSystem(reactions, weights)
+	rates = np.array([10, 10, 0.1])
+	system = StochasticSystem(reactions, rates)
 
 	state = np.array([1000, 0])
-	duration = 1
+	duration = 10
+
 	history, steps = system.evolve(state, duration)
 
 	assert history[-1].sum() < state.sum()
@@ -28,11 +29,12 @@ def test_dimers():
 		[-2, 0, 0, 1],
 		[1, 1, -1, 0]])
 
-	weights = np.array([3, 1, 1])
-	system = StochasticSystem(reactions, weights)
+	rates = np.array([3, 1, 1])
+	system = StochasticSystem(reactions, rates)
 
 	state = np.array([1000, 1000, 0, 0])
-	duration = 1
+	duration = 10
+
 	history, steps = system.evolve(state, duration)
 
 	assert steps[-1] <= duration
