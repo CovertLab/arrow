@@ -5,7 +5,7 @@ with open("README.md", 'r') as readme:
 	long_description = readme.read()
 
 setup(
-	name='arrow',
+	name='stochastic-arrow',
 	version='0.0.1',
 	packages=['arrow'],
 	author='Ryan Spangler',

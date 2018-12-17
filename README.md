@@ -7,6 +7,12 @@
 
 This library implements a generalized version of the [Gillespie Algorithm](https://en.wikipedia.org/wiki/Gillespie_algorithm), a stochastic approach to numerically solving discrete systems. Each iteration, the algorithm will calculate the propensities for each reaction given a rate and the counts of the reactants present in the current state of the system, then selects one reaction to occur and the interval of time between the previous reaction and the current reaction. Iterating this produces a trajectory (or `history`) of the state vector over the course of the simulation.
 
+## installation
+
+Add the following to your `requirements.txt`, or `pip install stochastic-arrow`:
+
+    stochastic-arrow=0.0.1
+
 ## usage
 
 The `arrow` library presents a single class as an interface, `StochasticSystem`, which operates on a set of reactions (encoded as a `numpy` matrix) and associated reaction rates:
