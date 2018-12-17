@@ -11,7 +11,7 @@ This library implements a generalized version of the [Gillespie Algorithm](https
 
 Add the following to your `requirements.txt`, or `pip install stochastic-arrow`:
 
-    stochastic-arrow=0.0.1
+    stochastic-arrow==0.0.1
 
 ## usage
 
