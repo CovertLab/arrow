@@ -7,24 +7,25 @@ from numba import jit
 def choose(pair):
 	reaction = pair[0]
 	molecules = pair[1]
-	return comb(molecules, -reaction)
+	return comb(molecules, reaction)
 
 @jit
-def propensity(reaction, state):
+def propensity(reaction, state, form):
 	reactants = np.where(reaction < 0)
-	terms = map(choose, zip(reaction[reactants], state[reactants]))
+	terms = map(form, zip(reaction[reactants] * -1, state[reactants]))
 	return np.array(terms).prod()
 
 @jit
-def step(reactions, rates, state, propensities=[], update_reactions=()):
+def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 	if len(update_reactions):
 		for update in update_reactions:
 			reaction = reactions[update]
-			propensities[update] = propensity(reaction, state)
+			form = forms if callable(forms) else forms[update]
+			propensities[update] = propensity(reaction, state, form)
 	else:
 		propensities = [
-			propensity(reaction, state)
-			for reaction in reactions]
+			propensity(reaction, state, forms if callable(forms) else forms[index])
+			for index, reaction in enumerate(reactions)]
 
 	distribution = (rates * propensities)
 	total = distribution.sum()
@@ -46,7 +47,7 @@ def step(reactions, rates, state, propensities=[], update_reactions=()):
 	return outcome, dt, choice, propensities
 
 @jit
-def evolve(reactions, rates, state, duration):
+def evolve(reactions, rates, state, duration, forms=choose):
 	time = 0
 	history = [state]
 	steps = [0]
@@ -54,10 +55,12 @@ def evolve(reactions, rates, state, duration):
 	update_reactions = []
 
 	while True:
+		print(time)
 		state, dt, choice, propensities = step(
 			reactions,
 			rates,
 			state,
+			forms,
 			propensities,
 			update_reactions)
 
@@ -76,12 +79,13 @@ def evolve(reactions, rates, state, duration):
 
 
 class StochasticSystem(object):
-	def __init__(self, reactions, rates):
+	def __init__(self, reactions, rates, forms=None):
 		self.reactions = reactions
 		self.rates = rates
+		self.forms = forms or choose
 
 	def step(self, state):
-		return step(self.reactions, self.rates, state)
+		return step(self.reactions, self.rates, state, forms=self.forms)
 
 	def evolve(self, state, duration):
-		return evolve(self.reactions, self.rates, state, duration)
+		return evolve(self.reactions, self.rates, state, duration, forms=self.forms)
