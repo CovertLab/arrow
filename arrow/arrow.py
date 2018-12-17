@@ -55,7 +55,6 @@ def evolve(reactions, rates, state, duration, forms=choose):
 	update_reactions = []
 
 	while True:
-		print(time)
 		state, dt, choice, propensities = step(
 			reactions,
 			rates,
