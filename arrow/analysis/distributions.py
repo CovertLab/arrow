@@ -94,25 +94,33 @@ def _last_where(bool_array):
 if __name__ == '__main__':
 	import matplotlib.pyplot as plt
 
-	N = 300
-	Np = 3000
+	from arrow.analysis.plotting import plot_full_history
 
+	(fig, axes) = plt.subplots(constrained_layout = True)
+
+	N = 300
+	Np = 3000 # oversample to emphasize smoothness
+
+	# Make some fake dynamics data
 	t = np.random.exponential(size = N).cumsum()
 	c = (2*(np.random.random(size = N) > 0.5)-1).cumsum()+1000
 
 	tp = np.linspace(t[0], t[-1], Np)
 
-	for scale in (1.0, 5.0, 25.0, 125.0):
-		cp = moving_average(t, c, tp, scale)
-		plt.plot(tp, cp, lw = 2.0, label = '{:0.2f}'.format(scale))
+	# roughly half order-of-magnitude steps
+	scales = (3.0, 10.0, 30.0, 100.0)
 
-	plt.step(
+	for scale in scales:
+		cp = moving_average(t, c, tp, scale)
+		axes.plot(tp, cp, lw = 2.0, label = 'scale = {:0.2f}'.format(scale))
+
+	plot_full_history(
+		axes,
 		t, c,
-		where = 'post',
-		c = 'k', lw = 1.0, #alpha = 0.5,
+		c = 'k', lw = 1.0,
 		label = 'exact'
 		)
 
-	plt.legend(loc = 'best')
+	axes.legend(loc = 'best')
 
-	plt.show()
+	fig.savefig('moving_average.png')
