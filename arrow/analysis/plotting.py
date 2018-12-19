@@ -1,3 +1,9 @@
+'''
+
+This submodule is for plotting functions; i.e., anything dependent upon
+matplotlib.
+
+'''
 
 from __future__ import absolute_import, division, print_function
 
