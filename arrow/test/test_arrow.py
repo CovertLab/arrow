@@ -74,4 +74,4 @@ if __name__ == '__main__':
 		axes.set_title(system.func_name)
 		plot_full_history(axes, *system()[::-1])
 
-	plt.savefig('test_systems.pdf')
+	plt.savefig('test_systems.png')

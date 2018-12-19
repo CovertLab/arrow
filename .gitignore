@@ -9,4 +9,4 @@ dist/
 arrow.egg-info/
 stochastic_arrow.egg-info/
 
-*.pdf
+*.png
