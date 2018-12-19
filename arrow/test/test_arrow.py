@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 	import matplotlib.pyplot as plt
 
-	from arrow.plotting import plot_full_history
+	from arrow.analysis.plotting import plot_full_history
 
 	systems = (johns_system, test_dimers)
 
