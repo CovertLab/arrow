@@ -6,7 +6,9 @@ import numpy as np
 def moving_average(time, counts, sampling_time, scale):
 	# TODO: vectorize
 
-	n_sampling= sampling_time.size
+	counts = np.asarray(counts)
+
+	n_sampling = sampling_time.size
 
 	if counts.ndim == 1:
 		shape = (n_sampling,)
