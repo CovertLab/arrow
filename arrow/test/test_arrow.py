@@ -13,7 +13,7 @@ def johns_system():
 	system = StochasticSystem(reactions, rates)
 
 	state = np.array([1000, 0])
-	duration = 10
+	duration = 1
 
 	history, steps = system.evolve(state, duration)
 
@@ -33,7 +33,7 @@ def test_dimers():
 	system = StochasticSystem(reactions, rates)
 
 	state = np.array([1000, 1000, 0, 0])
-	duration = 10
+	duration = 1
 
 	history, steps = system.evolve(state, duration)
 

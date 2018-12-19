@@ -1,21 +1,23 @@
 import numpy as np
-from scipy.special import comb
-from numba import jit
 
 
-#jit
-def choose(pair):
-	reaction = pair[0]
-	molecules = pair[1]
-	return comb(molecules, reaction)
+def choose(n, k):
+	terms = [
+		(n + 1.0 - i) / i
+		for i in xrange(1, k + 1)]
+	product = np.array(terms).prod()
+	return np.rint(product)
 
-#jit
+
 def propensity(reaction, state, form):
 	reactants = np.where(reaction < 0)
-	terms = map(form, zip(reaction[reactants] * -1, state[reactants]))
+	terms = [
+		form(state[reactant], -reaction[reactant])
+		for reactant in reactants[0]]
+
 	return np.array(terms).prod()
 
-#jit
+
 def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 	if len(update_reactions):
 		for update in update_reactions:
@@ -46,7 +48,7 @@ def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 
 	return outcome, dt, choice, propensities
 
-#jit
+
 def evolve(reactions, rates, state, duration, forms=choose):
 	time = 0
 	history = [state]
