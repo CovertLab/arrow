@@ -42,5 +42,36 @@ def test_dimers():
 	return (history, steps)
 
 
-johns_system()
-test_dimers()
+if __name__ == '__main__':
+	from itertools import izip
+
+	import matplotlib.pyplot as plt
+
+	from arrow.plotting import plot_full_history
+
+	systems = (johns_system, test_dimers)
+
+	n_systems = len(systems)
+
+	ncols = int(np.ceil(np.sqrt(n_systems)))
+	nrows = int(np.ceil(n_systems / ncols))
+
+	margins = 1
+	axes_size = 3
+
+	figsize = (
+		margins + axes_size*ncols,
+		margins + axes_size*nrows
+		)
+
+	(fix, all_axes) = plt.subplots(
+		figsize = figsize,
+		nrows = nrows, ncols = ncols,
+		constrained_layout = True
+		)
+
+	for (axes, system) in izip(all_axes, systems):
+		axes.set_title(system.func_name)
+		plot_full_history(axes, *system()[::-1])
+
+	plt.savefig('test_systems.png')
