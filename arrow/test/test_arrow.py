@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import, division, print_function
+
 import os
 
 import numpy as np
@@ -99,9 +101,9 @@ if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
 
-    from arrow.plotting import plot_full_history
+    from arrow.analysis.plotting import plot_full_history
 
-    systems = (johns_system, test_dimers, test_complexation, test_complexation)
+    systems = (johns_system, test_dimers, test_complexation,)
 
     n_systems = len(systems)
 
@@ -116,7 +118,7 @@ if __name__ == '__main__':
         margins + axes_size*nrows
         )
 
-    (fix, all_axes) = plt.subplots(
+    (fig, all_axes) = plt.subplots(
         figsize = figsize,
         nrows = nrows, ncols = ncols,
         constrained_layout = True
@@ -126,4 +128,4 @@ if __name__ == '__main__':
         axes.set_title(system.func_name)
         plot_full_history(axes, *system()[::-1])
 
-    plt.savefig('test_systems.png')
+    fig.savefig('test_systems.png')
