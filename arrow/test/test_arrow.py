@@ -1,3 +1,6 @@
+
+import os
+
 import numpy as np
 import json
 
@@ -43,28 +46,45 @@ def test_dimers():
 
 
 def test_complexation():
-    with open('data/complexation/complexation-state.json', 'r') as file:
-        data = json.load(file)
+    fixtures_root = os.path.join('data', 'complexation')
 
-    assert len(data) == 3
+    def load_state(filename):
+        with open(os.path.join(fixtures_root, filename)) as f:
+            state = np.array(json.load(f))
 
-    stoichiometry = np.array(data['stoichiometry']).transpose()
-    state = np.array(data['before'])
-    expected = np.array(data['after'])
+        return state
+
+    initial_state = load_state('initial_state.json')
+    final_state = load_state('final_state.json')
+
+    assert initial_state.size == final_state.size
+
+    n_metabolites = initial_state.size
+
+    with open(os.path.join(fixtures_root, 'stoichiometry.json')) as f:
+        stoichiometry_sparse = json.load(f)
+
+    n_reactions = len(stoichiometry_sparse)
+
+    stoichiometry = np.zeros((n_metabolites, n_reactions), np.int64)
+
+    for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
+        for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
+            # JSON doesn't allow for integer keys...
+            metabolite_index = int(str_metabolite_index)
+            stoichiometry[metabolite_index, reaction_index] = stoich
+
     duration = 1
 
-    assert len(state) == len(expected)
-    assert stoichiometry.shape[1] == len(state)
-
     # semi-quantitative rate constants
-    rates = np.full(stoichiometry.shape[0], 10)
+    rates = np.full(stoichiometry.shape[1], 10)
 
-    system = StochasticSystem(stoichiometry, rates)
+    system = StochasticSystem(stoichiometry.T, rates)
 
-    history, steps = system.evolve(state, duration)
+    history, steps = system.evolve(initial_state, duration)
 
     outcome = history[-1]
-    difference = (expected - outcome)
+    difference = (final_state - outcome)
     total = np.abs(difference).sum()
 
     print('differences: {}'.format(total))
@@ -72,7 +92,7 @@ def test_complexation():
     print(steps)
 
     return (history, steps)
-    
+
 
 if __name__ == '__main__':
     from itertools import izip
