@@ -17,17 +17,16 @@ def propensity(stoichiometry, state, form):
 
     return np.array(terms).prod()
 
-
 def step(stoichiometry, rates, state, forms, propensities=[], update_reactions=()):
     if len(update_reactions):
         for update in update_reactions:
-            reaction_stoichoiometry = stoichiometry[update]
+            reaction_stoichoiometry = stoichiometry[:, update]
             form = forms if callable(forms) else forms[update]
             propensities[update] = propensity(reaction_stoichoiometry, state, form)
     else:
         propensities = np.array([
             propensity(reaction_stoichoiometry, state, forms if callable(forms) else forms[index])
-            for index, reaction_stoichoiometry in enumerate(stoichiometry)])
+            for index, reaction_stoichoiometry in enumerate(stoichiometry.T)])
 
     distribution = (rates * propensities)
     total = distribution.sum()
@@ -47,7 +46,7 @@ def step(stoichiometry, rates, state, forms, propensities=[], update_reactions=(
             if random <= progress:
                 break
 
-        reaction_stoichoiometry = stoichiometry[choice]
+        reaction_stoichoiometry = stoichiometry[:, choice]
         outcome = state + reaction_stoichoiometry
 
     return dt, outcome, choice, propensities
@@ -76,9 +75,9 @@ def evolve(stoichiometry, rates, state, duration, forms=choose):
         counts.append(state)
         time.append(t)
 
-        reaction_stoichoiometry = stoichiometry[choice]
-        involved = np.where(reaction_stoichoiometry != 0)
-        update_reactions = np.where(stoichiometry[:, involved] != 0)[0]
+        reaction_stoichoiometry = stoichiometry[:, choice]
+        involved = np.where(reaction_stoichoiometry != 0)[0]
+        update_reactions = np.where(np.any(stoichiometry[involved] < 0, 0))[0]
 
     time = np.array(time)
     counts = np.array(counts)
