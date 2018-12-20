@@ -120,6 +120,6 @@ if __name__ == '__main__':
 
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
-        plot_full_history(axes, system()[::-1])
+        plot_full_history(axes, *system())
 
     fig.savefig('test_systems.png')
