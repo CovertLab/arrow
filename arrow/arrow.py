@@ -76,8 +76,8 @@ def evolve(stoichiometry, rates, state, duration, forms=choose):
         counts.append(state)
         time.append(t)
 
-        reaction = stoichiometry[choice]
-        involved = np.where(reaction != 0)
+        reaction_stoichoiometry = stoichiometry[choice]
+        involved = np.where(reaction_stoichoiometry != 0)
         update_reactions = np.where(stoichiometry[:, involved] != 0)[0]
 
     time = np.array(time)
