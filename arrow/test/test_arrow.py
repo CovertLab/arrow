@@ -6,7 +6,7 @@ import json
 
 from arrow import evolve, StochasticSystem
 
-def johns_system():
+def test_equilibration():
     reactions = np.array([
         [-1, 1],
         [1, -1],
@@ -26,7 +26,7 @@ def johns_system():
     return (time, counts)
 
 
-def test_dimers():
+def test_dimerization():
     reactions = np.array([
         [-1, -1, 1, 0],
         [-2, 0, 0, 1],
@@ -84,7 +84,11 @@ if __name__ == '__main__':
 
     from arrow.analysis.plotting import plot_full_history
 
-    systems = (johns_system, test_dimers, test_complexation,)
+    systems = (
+        test_equilibration,
+        test_dimerization,
+        test_complexation,
+        )
 
     n_systems = len(systems)
 
