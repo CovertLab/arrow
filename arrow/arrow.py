@@ -9,25 +9,25 @@ def choose(n, k):
     return np.rint(product)
 
 
-def propensity(reaction, state, form):
-    reactants = np.where(reaction < 0)
+def propensity(stoichiometry, state, form):
+    reactants = np.where(stoichiometry < 0)
     terms = [
-        form(state[reactant], -reaction[reactant])
+        form(state[reactant], -stoichiometry[reactant])
         for reactant in reactants[0]]
 
     return np.array(terms).prod()
 
 
-def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
+def step(stoichiometry, rates, state, forms, propensities=[], update_reactions=()):
     if len(update_reactions):
         for update in update_reactions:
-            reaction = reactions[update]
+            reaction_stoichoiometry = stoichiometry[update]
             form = forms if callable(forms) else forms[update]
-            propensities[update] = propensity(reaction, state, form)
+            propensities[update] = propensity(reaction_stoichoiometry, state, form)
     else:
         propensities = np.array([
-            propensity(reaction, state, forms if callable(forms) else forms[index])
-            for index, reaction in enumerate(reactions)])
+            propensity(reaction_stoichoiometry, state, forms if callable(forms) else forms[index])
+            for index, reaction_stoichoiometry in enumerate(stoichiometry)])
 
     distribution = (rates * propensities)
     total = distribution.sum()
@@ -47,13 +47,13 @@ def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
             if random <= progress:
                 break
 
-        reaction = reactions[choice]
-        outcome = state + reaction
+        reaction_stoichoiometry = stoichiometry[choice]
+        outcome = state + reaction_stoichoiometry
 
     return dt, outcome, choice, propensities
 
 
-def evolve(reactions, rates, state, duration, forms=choose):
+def evolve(stoichiometry, rates, state, duration, forms=choose):
     t = 0
     time = [0]
     counts = [state]
@@ -62,7 +62,7 @@ def evolve(reactions, rates, state, duration, forms=choose):
 
     while True:
         dt, state, choice, propensities = step(
-            reactions,
+            stoichiometry,
             rates,
             state,
             forms,
@@ -76,9 +76,9 @@ def evolve(reactions, rates, state, duration, forms=choose):
         counts.append(state)
         time.append(t)
 
-        reaction = reactions[choice]
+        reaction = stoichiometry[choice]
         involved = np.where(reaction != 0)
-        update_reactions = np.where(reactions[:, involved] != 0)[0]
+        update_reactions = np.where(stoichiometry[:, involved] != 0)[0]
 
     time = np.array(time)
     counts = np.array(counts)
@@ -87,13 +87,13 @@ def evolve(reactions, rates, state, duration, forms=choose):
 
 
 class StochasticSystem(object):
-    def __init__(self, reactions, rates, forms=None):
-        self.reactions = reactions
+    def __init__(self, stoichiometry, rates, forms=None):
+        self.stoichiometry = stoichiometry
         self.rates = rates
         self.forms = forms or choose
 
     def step(self, state):
-        return step(self.reactions, self.rates, state, forms=self.forms)
+        return step(self.stoichiometry, self.rates, state, forms=self.forms)
 
     def evolve(self, state, duration):
-        return evolve(self.reactions, self.rates, state, duration, forms=self.forms)
+        return evolve(self.stoichiometry, self.rates, state, duration, forms=self.forms)

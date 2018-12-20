@@ -16,14 +16,14 @@ import json
 from arrow import evolve, StochasticSystem
 
 def test_equilibration():
-    reactions = np.array([
+    stoichiometry = np.array([
         [-1, +1,  0],
         [+1, -1,  0],
         [ 0,  0, -1]
         ])
 
     rates = np.array([10, 10, 0.1])
-    system = StochasticSystem(reactions, rates)
+    system = StochasticSystem(stoichiometry, rates)
 
     state = np.array([1000, 0])
     duration = 1
@@ -37,7 +37,7 @@ def test_equilibration():
 
 
 def test_dimerization():
-    reactions = np.array([
+    stoichiometry = np.array([
         [-1, -2, +1],
         [-1,  0, +1],
         [+1,  0, -1],
@@ -45,7 +45,7 @@ def test_dimerization():
         ])
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = StochasticSystem(reactions, rates)
+    system = StochasticSystem(stoichiometry, rates)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
