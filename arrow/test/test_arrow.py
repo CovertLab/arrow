@@ -73,7 +73,7 @@ def test_complexation():
     # semi-quantitative rate constants
     rates = np.full(stoichiometry.shape[0], 10)
 
-    system = StochasticSystem(stoichiometry.T, rates)
+    system = StochasticSystem(stoichiometry.transpose(), rates)
 
     time, counts = system.evolve(state, duration)
 
@@ -97,8 +97,8 @@ if __name__ == '__main__':
 
     systems = (
         test_equilibration,
-        # test_dimerization,
-        # test_complexation,
+        test_dimerization,
+        test_complexation,
         )
 
     n_systems = len(systems)
