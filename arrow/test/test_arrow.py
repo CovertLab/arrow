@@ -18,8 +18,7 @@ from arrow import evolve, StochasticSystem
 def test_equilibration():
     stoichiometry = np.array([
         [-1, +1,  0],
-        [+1, -1,  0],
-        [ 0,  0, -1]
+        [+1, -1, -1],
         ])
 
     rates = np.array([10, 10, 0.1])
@@ -98,8 +97,8 @@ if __name__ == '__main__':
 
     systems = (
         test_equilibration,
-        test_dimerization,
-        test_complexation,
+        # test_dimerization,
+        # test_complexation,
         )
 
     n_systems = len(systems)
@@ -120,6 +119,8 @@ if __name__ == '__main__':
         nrows = nrows, ncols = ncols,
         constrained_layout = True
         )
+
+    all_axes = np.asarray(all_axes)
 
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
