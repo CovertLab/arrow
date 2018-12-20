@@ -50,3 +50,13 @@ duration = 1
 # steps as they will be in uneven increments throughout the simulation.
 history, steps = system.evolve(state, duration)
 ```
+
+## testing
+
+`arrow` uses pytest: https://docs.pytest.org/en/latest/ so you can test simply by saying:
+
+    > pytest
+
+Also, we have a test that generates plots of various systems which can be run like so:
+
+    > python arrow/test/test_arrow.py
