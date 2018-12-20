@@ -18,12 +18,12 @@ def johns_system():
     state = np.array([1000, 0])
     duration = 1
 
-    steps, history = system.evolve(state, duration)
+    time, counts = system.evolve(state, duration)
 
-    assert history[-1].sum() < state.sum()
-    assert steps[-1] <= duration
+    assert counts[-1].sum() < state.sum()
+    assert time[-1] <= duration
 
-    return (steps, history)
+    return (time, counts)
 
 
 def test_dimers():
@@ -38,11 +38,11 @@ def test_dimers():
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    steps, history = system.evolve(state, duration)
+    time, counts = system.evolve(state, duration)
 
-    assert steps[-1] <= duration
+    assert time[-1] <= duration
 
-    return (steps, history)
+    return (time, counts)
 
 
 def test_complexation():
@@ -64,17 +64,17 @@ def test_complexation():
 
     system = StochasticSystem(stoichiometry, rates)
 
-    steps, history = system.evolve(state, duration)
+    time, counts = system.evolve(state, duration)
 
-    outcome = history[-1]
+    outcome = counts[-1]
     difference = (expected - outcome)
     total = np.abs(difference).sum()
 
     print('differences: {}'.format(total))
-    print('total steps: {}'.format(len(steps)))
-    print(steps)
+    print('total steps: {}'.format(len(time)))
+    print(time)
 
-    return (steps, history)
+    return (time, counts)
 
 
 if __name__ == '__main__':
