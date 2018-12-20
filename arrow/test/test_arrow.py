@@ -17,9 +17,10 @@ from arrow import evolve, StochasticSystem
 
 def test_equilibration():
     reactions = np.array([
-        [-1, 1],
-        [1, -1],
-        [0, -1]])
+        [-1, +1,  0],
+        [+1, -1,  0],
+        [ 0,  0, -1]
+        ])
 
     rates = np.array([10, 10, 0.1])
     system = StochasticSystem(reactions, rates)
@@ -37,9 +38,11 @@ def test_equilibration():
 
 def test_dimerization():
     reactions = np.array([
-        [-1, -1, 1, 0],
-        [-2, 0, 0, 1],
-        [1, 1, -1, 0]])
+        [-1, -2, +1],
+        [-1,  0, +1],
+        [+1,  0, -1],
+        [ 0, +1,  0]
+        ])
 
     rates = np.array([3, 1, 1]) * 0.01
     system = StochasticSystem(reactions, rates)
@@ -71,7 +74,7 @@ def test_complexation():
     # semi-quantitative rate constants
     rates = np.full(stoichiometry.shape[0], 10)
 
-    system = StochasticSystem(stoichiometry, rates)
+    system = StochasticSystem(stoichiometry.T, rates)
 
     time, counts = system.evolve(state, duration)
 
