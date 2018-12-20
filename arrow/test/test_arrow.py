@@ -1,3 +1,12 @@
+'''
+
+This submodule is for the expression of small to moderate test systems.  Pytest
+will catch any function called 'test_*'.  If called directly, this submodule
+will run all systems (provided they are enumerated in the 'systems' module-
+level attribute defined below) and plot their output, assuming the correct
+return  pattern is used.
+
+'''
 
 from __future__ import absolute_import, division, print_function
 
