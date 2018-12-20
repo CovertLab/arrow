@@ -31,7 +31,7 @@ def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
 
     distribution = (rates * propensities)
     total = distribution.sum()
-    if total == 0:
+    if not total:
         return (state, 0, -1, propensities)
 
     dt = np.random.exponential(1 / total)
@@ -66,7 +66,7 @@ def evolve(reactions, rates, state, duration, forms=choose):
             update_reactions)
 
         time += dt
-        if time > duration:
+        if not dt or time > duration:
             break
 
         history.append(state)

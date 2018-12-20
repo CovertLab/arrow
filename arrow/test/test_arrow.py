@@ -57,7 +57,7 @@ def test_complexation():
     assert stoichiometry.shape[1] == len(state)
 
     # semi-quantitative rate constants
-    rates = np.full(stoichiometry.shape[0], 3)
+    rates = np.full(stoichiometry.shape[0], 10)
 
     system = StochasticSystem(stoichiometry, rates)
 
