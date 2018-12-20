@@ -18,12 +18,12 @@ def johns_system():
     state = np.array([1000, 0])
     duration = 1
 
-    history, steps = system.evolve(state, duration)
+    steps, history = system.evolve(state, duration)
 
     assert history[-1].sum() < state.sum()
     assert steps[-1] <= duration
 
-    return (history, steps)
+    return (steps, history)
 
 
 def test_dimers():
@@ -38,11 +38,11 @@ def test_dimers():
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    history, steps = system.evolve(state, duration)
+    steps, history = system.evolve(state, duration)
 
     assert steps[-1] <= duration
 
-    return (history, steps)
+    return (steps, history)
 
 
 def test_complexation():
@@ -64,7 +64,7 @@ def test_complexation():
 
     system = StochasticSystem(stoichiometry, rates)
 
-    history, steps = system.evolve(state, duration)
+    steps, history = system.evolve(state, duration)
 
     outcome = history[-1]
     difference = (expected - outcome)
@@ -74,7 +74,7 @@ def test_complexation():
     print('total steps: {}'.format(len(steps)))
     print(steps)
 
-    return (history, steps)
+    return (steps, history)
 
 
 if __name__ == '__main__':
@@ -107,6 +107,6 @@ if __name__ == '__main__':
 
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
-        plot_full_history(axes, *system()[::-1])
+        plot_full_history(axes, system()[::-1])
 
     fig.savefig('test_systems.png')

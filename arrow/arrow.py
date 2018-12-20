@@ -25,28 +25,32 @@ def step(reactions, rates, state, forms, propensities=[], update_reactions=()):
             form = forms if callable(forms) else forms[update]
             propensities[update] = propensity(reaction, state, form)
     else:
-        propensities = [
+        propensities = np.array([
             propensity(reaction, state, forms if callable(forms) else forms[index])
-            for index, reaction in enumerate(reactions)]
+            for index, reaction in enumerate(reactions)])
 
     distribution = (rates * propensities)
     total = distribution.sum()
-    if not total:
-        return (state, 0, -1, propensities)
 
-    dt = np.random.exponential(1 / total)
-    random = np.random.uniform(0, 1) * total
-        
-    progress = 0
-    for choice, interval in enumerate(distribution):
-        progress += interval
-        if random <= progress:
-            break
+    if total == 0:
+        dt = 0
+        outcome = state
+        choice = -1
 
-    reaction = reactions[choice]
-    outcome = state + reaction
+    else:
+        dt = np.random.exponential(1 / total)
+        random = np.random.uniform(0, 1) * total
 
-    return outcome, dt, choice, propensities
+        progress = 0
+        for choice, interval in enumerate(distribution):
+            progress += interval
+            if random <= progress:
+                break
+
+        reaction = reactions[choice]
+        outcome = state + reaction
+
+    return dt, outcome, choice, propensities
 
 
 def evolve(reactions, rates, state, duration, forms=choose):
@@ -57,7 +61,7 @@ def evolve(reactions, rates, state, duration, forms=choose):
     update_reactions = []
 
     while True:
-        state, dt, choice, propensities = step(
+        dt, state, choice, propensities = step(
             reactions,
             rates,
             state,
@@ -76,7 +80,10 @@ def evolve(reactions, rates, state, duration, forms=choose):
         involved = np.where(reaction != 0)
         update_reactions = np.where(reactions[:, involved] != 0)[0]
 
-    return history, steps
+    steps = np.array(steps)
+    history = np.array(history)
+
+    return steps, history
 
 
 class StochasticSystem(object):
