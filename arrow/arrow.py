@@ -32,12 +32,12 @@ def step(stoichiometric_matrix, rates, state, forms, propensities=[], update_rea
     total = distribution.sum()
 
     if total == 0:
-        dt = 0
+        time_to_next = 0
         outcome = state
         choice = -1
 
     else:
-        dt = np.random.exponential(1 / total)
+        time_to_next = np.random.exponential(1 / total)
         random = np.random.uniform(0, 1) * total
 
         progress = 0
@@ -49,18 +49,18 @@ def step(stoichiometric_matrix, rates, state, forms, propensities=[], update_rea
         stoichiometry = stoichiometric_matrix[:, choice]
         outcome = state + stoichiometry
 
-    return dt, outcome, choice, propensities
+    return time_to_next, outcome, choice, propensities
 
 
 def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
-    t = 0
+    time_current = 0
     time = [0]
     counts = [state]
     propensities = []
     update_reactions = []
 
     while True:
-        dt, state, choice, propensities = step(
+        time_to_next, state, choice, propensities = step(
             stoichiometric_matrix,
             rates,
             state,
@@ -68,12 +68,12 @@ def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
             propensities,
             update_reactions)
 
-        t += dt
-        if not dt or t > duration:
+        time_current += time_to_next
+        if not time_to_next or time_current > duration:
             break
 
+        time.append(time_current)
         counts.append(state)
-        time.append(t)
 
         stoichiometry = stoichiometric_matrix[:, choice]
         involved = np.where(stoichiometry != 0)[0]
