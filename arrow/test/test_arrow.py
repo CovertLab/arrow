@@ -16,13 +16,13 @@ import json
 from arrow import evolve, StochasticSystem
 
 def test_equilibration():
-    stoichiometry = np.array([
+    stoichiometric_matrix = np.array([
         [-1, +1,  0],
         [+1, -1, -1],
         ])
 
     rates = np.array([10, 10, 0.1])
-    system = StochasticSystem(stoichiometry, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
     state = np.array([1000, 0])
     duration = 1
@@ -36,7 +36,7 @@ def test_equilibration():
 
 
 def test_dimerization():
-    stoichiometry = np.array([
+    stoichiometric_matrix = np.array([
         [-1, -2, +1],
         [-1,  0, +1],
         [+1,  0, -1],
@@ -44,7 +44,7 @@ def test_dimerization():
         ])
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = StochasticSystem(stoichiometry, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
@@ -62,18 +62,18 @@ def test_complexation():
 
     assert len(data) == 3
 
-    stoichiometry = np.array(data['stoichiometry']).transpose()
+    stoichiometric_matrix = np.array(data['stoichiometry']).transpose()
     state = np.array(data['before'])
     expected = np.array(data['after'])
     duration = 1
 
     assert len(state) == len(expected)
-    assert stoichiometry.shape[1] == len(state)
+    assert stoichiometric_matrix.shape[1] == len(state)
 
     # semi-quantitative rate constants
-    rates = np.full(stoichiometry.shape[0], 10)
+    rates = np.full(stoichiometric_matrix.shape[0], 10)
 
-    system = StochasticSystem(stoichiometry.transpose(), rates)
+    system = StochasticSystem(stoichiometric_matrix.transpose(), rates)
 
     time, counts = system.evolve(state, duration)
 
