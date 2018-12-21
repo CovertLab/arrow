@@ -61,10 +61,10 @@ def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
     events = np.zeros(rates.shape)
 
     dependencies = [
-        np.where(np.any(stoichiometry[
-            reaction_stoichoiometry != 0
+        np.where(np.any(stoichiometric_matrix[
+            stoichiometry != 0
             ] < 0, 0))[0]
-        for reaction_stoichoiometry in stoichiometry.T
+        for stoichiometry in stoichiometric_matrix.T
         ]
 
     while True:
