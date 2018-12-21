@@ -16,8 +16,8 @@ the state vector over the course of the simulation.
 
 ## Installation
 
-Add the following to your `requirements.txt`, or `pip install stochastic-
-arrow`:
+Add the following to your `requirements.txt`, or
+`pip install stochastic-arrow`:
 
     stochastic-arrow==0.0.1
 
@@ -34,7 +34,7 @@ import numpy as np
 # Each column is a reaction and each row is a molecular species (or other
 # entity). The first reaction here means that the first and second elements
 # combine to create the third, while the fourth is unaffected.
-stoichiometry = np.array([
+stoichiometric_matrix = np.array([
     [-1, -2, +1],
     [-1,  0, +1],
     [+1,  0, -1],
@@ -46,7 +46,7 @@ rates = np.array([3.0, 1.0, 1.0])
 
 # Once we have a matrix of reactions and their associated rates, we can
 # construct the system.
-system = StochasticSystem(stoichiometry, rates)
+system = StochasticSystem(stoichiometric_matrix, rates)
 ```
 
 Now that the system has been instantiated, we can invoke it with any initial
