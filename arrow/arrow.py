@@ -59,6 +59,13 @@ def evolve(stoichiometry, rates, state, duration, forms=choose):
     propensities = []
     update_reactions = []
 
+    dependencies = [
+        np.where(np.any(stoichiometry[
+            reaction_stoichoiometry != 0
+            ] < 0, 0))[0]
+        for reaction_stoichoiometry in stoichiometry.T
+        ]
+
     while True:
         dt, state, choice, propensities = step(
             stoichiometry,
@@ -75,9 +82,7 @@ def evolve(stoichiometry, rates, state, duration, forms=choose):
         counts.append(state)
         time.append(t)
 
-        reaction_stoichoiometry = stoichiometry[:, choice]
-        involved = np.where(reaction_stoichoiometry != 0)[0]
-        update_reactions = np.where(np.any(stoichiometry[involved] < 0, 0))[0]
+        update_reactions = dependencies[choice]
 
     time = np.array(time)
     counts = np.array(counts)
