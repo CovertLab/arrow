@@ -14,14 +14,14 @@ import os
 
 import numpy as np
 import json
+import argparse
 
 from arrow import evolve, StochasticSystem
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
         [-1, +1,  0],
-        [+1, -1, -1],
-        ])
+        [+1, -1, -1]])
 
     rates = np.array([10, 10, 0.1])
     system = StochasticSystem(stoichiometric_matrix, rates)
@@ -42,8 +42,7 @@ def test_dimerization():
         [-1, -2, +1],
         [-1,  0, +1],
         [+1,  0, -1],
-        [ 0, +1,  0]
-        ])
+        [ 0, +1,  0]])
 
     rates = np.array([3, 1, 1]) * 0.01
     system = StochasticSystem(stoichiometric_matrix, rates)
@@ -110,43 +109,53 @@ def test_complexation():
     return (time, counts, events)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--plot', action='store_true')
+    parser.add_argument('--complexation', action='store_true')
+    parser.add_argument('--runs', type=int, default=1)
+    args = parser.parse_args()
+
     from itertools import izip
-
-    import matplotlib.pyplot as plt
-
-    from arrow.analysis.plotting import plot_full_history
 
     systems = (
         test_equilibration,
         test_dimerization,
-        test_complexation,
-        )
+        test_complexation)
 
-    n_systems = len(systems)
+    if not args.plot:
+        if args.complexation:
+            for run in xrange(args.runs):
+                test_complexation()
+        else:
+            for system in systems:
+                system()
+    else:
+        import matplotlib.pyplot as plt
+        from arrow.analysis.plotting import plot_full_history
 
-    ncols = int(np.ceil(np.sqrt(n_systems)))
-    nrows = int(np.ceil(n_systems / ncols))
+        n_systems = len(systems)
 
-    margins = 1
-    axes_size = 3
+        ncols = int(np.ceil(np.sqrt(n_systems)))
+        nrows = int(np.ceil(n_systems / ncols))
 
-    figsize = (
-        margins + axes_size*ncols,
-        margins + axes_size*nrows
-        )
+        margins = 1
+        axes_size = 3
 
-    (fig, all_axes) = plt.subplots(
-        figsize = figsize,
-        nrows = nrows, ncols = ncols,
-        constrained_layout = True
-        )
+        figsize = (
+            margins + axes_size*ncols,
+            margins + axes_size*nrows)
 
-    all_axes = np.asarray(all_axes)
+        (fig, all_axes) = plt.subplots(
+            figsize = figsize,
+            nrows = nrows, ncols = ncols,
+            constrained_layout = True)
 
-    for (axes, system) in izip(all_axes.flatten(), systems):
-        axes.set_title(system.func_name)
+        all_axes = np.asarray(all_axes)
 
-        time, counts, events = system()
-        plot_full_history(axes, time, counts)
+        for (axes, system) in izip(all_axes.flatten(), systems):
+            axes.set_title(system.func_name)
 
-    fig.savefig('test_systems.png')
+            time, counts, events = system()
+            plot_full_history(axes, time, counts)
+
+        fig.savefig('test_systems.png')

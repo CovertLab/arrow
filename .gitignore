@@ -5,6 +5,7 @@ __pycache__
 MANIFEST
 build/
 dist/
+profile
 
 arrow.egg-info/
 stochastic_arrow.egg-info/
