@@ -25,7 +25,7 @@ def test_equilibration():
     system = StochasticSystem(stoichiometry, rates)
 
     state = np.array([1000, 0])
-    duration = 1
+    duration = 10
 
     time, counts = system.evolve(state, duration)
 
