@@ -20,12 +20,12 @@ def johns_system():
     state = np.array([1000, 0])
     duration = 1
 
-    history, steps = system.evolve(state, duration)
+    history, steps, events = system.evolve(state, duration)
 
     assert history[-1].sum() < state.sum()
     assert steps[-1] <= duration
 
-    return (history, steps)
+    return (history, steps, events)
 
 
 def test_dimers():
@@ -40,11 +40,11 @@ def test_dimers():
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    history, steps = system.evolve(state, duration)
+    history, steps, events = system.evolve(state, duration)
 
     assert steps[-1] <= duration
 
-    return (history, steps)
+    return (history, steps, events)
 
 
 def test_complexation():
@@ -83,7 +83,9 @@ def test_complexation():
 
     system = StochasticSystem(stoichiometry.T, rates)
 
-    history, steps = system.evolve(initial_state, duration)
+    history, steps, events = system.evolve(initial_state, duration)
+
+    assert(len(steps)-1 == events.sum())
 
     outcome = history[-1]
     difference = (final_state - outcome)
@@ -93,8 +95,8 @@ def test_complexation():
     print('total steps: {}'.format(len(steps)))
     print(steps)
 
-    return (history, steps)
-
+    return (history, steps, events)
+    
 
 if __name__ == '__main__':
     from itertools import izip
@@ -126,6 +128,7 @@ if __name__ == '__main__':
 
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
-        plot_full_history(axes, *system()[::-1])
+        history, steps, events = system()
+        plot_full_history(axes, steps, history)
 
     fig.savefig('test_systems.png')

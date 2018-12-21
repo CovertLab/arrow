@@ -55,6 +55,7 @@ def evolve(reactions, rates, state, duration, forms=choose):
     steps = [0]
     propensities = []
     update_reactions = []
+    events = np.zeros(rates.shape)
 
     while True:
         state, dt, choice, propensities = step(
@@ -72,11 +73,12 @@ def evolve(reactions, rates, state, duration, forms=choose):
         history.append(state)
         steps.append(time)
 
+        events[choice] += 1
         reaction = reactions[choice]
         involved = np.where(reaction != 0)
         update_reactions = np.where(reactions[:, involved] != 0)[0]
 
-    return history, steps
+    return history, steps, events
 
 
 class StochasticSystem(object):
