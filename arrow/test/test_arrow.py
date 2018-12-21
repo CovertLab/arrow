@@ -1,3 +1,12 @@
+'''
+
+This submodule is for the expression of small to moderate test systems.  Pytest
+will catch any function called 'test_*'.  If called directly, this submodule
+will run all systems (provided they are enumerated in the 'systems' module-
+level attribute defined below) and plot their output, assuming the correct
+return  pattern is used.
+
+'''
 
 from __future__ import absolute_import, division, print_function
 
@@ -8,43 +17,45 @@ import json
 
 from arrow import evolve, StochasticSystem
 
-def johns_system():
-    reactions = np.array([
-        [-1, 1],
-        [1, -1],
-        [0, -1]])
+def test_equilibration():
+    stoichiometric_matrix = np.array([
+        [-1, +1,  0],
+        [+1, -1, -1],
+        ])
 
     rates = np.array([10, 10, 0.1])
-    system = StochasticSystem(reactions, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
     state = np.array([1000, 0])
     duration = 1
 
-    history, steps, events = system.evolve(state, duration)
+    time, counts, events = system.evolve(state, duration)
 
-    assert history[-1].sum() < state.sum()
-    assert steps[-1] <= duration
+    assert counts[-1].sum() < state.sum()
+    assert time[-1] <= duration
 
-    return (history, steps, events)
+    return (time, counts, events)
 
 
-def test_dimers():
-    reactions = np.array([
-        [-1, -1, 1, 0],
-        [-2, 0, 0, 1],
-        [1, 1, -1, 0]])
+def test_dimerization():
+    stoichiometric_matrix = np.array([
+        [-1, -2, +1],
+        [-1,  0, +1],
+        [+1,  0, -1],
+        [ 0, +1,  0]
+        ])
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = StochasticSystem(reactions, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    history, steps, events = system.evolve(state, duration)
+    time, counts, events = system.evolve(state, duration)
 
-    assert steps[-1] <= duration
+    assert time[-1] <= duration
 
-    return (history, steps, events)
+    return (time, counts, events)
 
 
 def test_complexation():
@@ -68,35 +79,35 @@ def test_complexation():
 
     n_reactions = len(stoichiometry_sparse)
 
-    stoichiometry = np.zeros((n_metabolites, n_reactions), np.int64)
+    stoichiometric_matrix = np.zeros((n_metabolites, n_reactions), np.int64)
 
     for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
         for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
             # JSON doesn't allow for integer keys...
             metabolite_index = int(str_metabolite_index)
-            stoichiometry[metabolite_index, reaction_index] = stoich
+            stoichiometric_matrix[metabolite_index, reaction_index] = stoich
 
     duration = 1
 
     # semi-quantitative rate constants
-    rates = np.full(stoichiometry.shape[1], 10)
+    rates = np.full(n_reactions, 10)
 
-    system = StochasticSystem(stoichiometry.T, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
-    history, steps, events = system.evolve(initial_state, duration)
+    time, counts, events = system.evolve(initial_state, duration)
 
-    assert(len(steps)-1 == events.sum())
+    assert(len(time)-1 == events.sum())
 
-    outcome = history[-1]
+    outcome = counts[-1]
     difference = (final_state - outcome)
+
     total = np.abs(difference).sum()
 
     print('differences: {}'.format(total))
-    print('total steps: {}'.format(len(steps)))
-    print(steps)
+    print('total steps: {}'.format(len(time)))
+    print(time)
 
-    return (history, steps, events)
-    
+    return (time, counts, events)
 
 if __name__ == '__main__':
     from itertools import izip
@@ -105,7 +116,11 @@ if __name__ == '__main__':
 
     from arrow.analysis.plotting import plot_full_history
 
-    systems = (johns_system, test_dimers, test_complexation,)
+    systems = (
+        test_equilibration,
+        test_dimerization,
+        test_complexation,
+        )
 
     n_systems = len(systems)
 
@@ -126,9 +141,12 @@ if __name__ == '__main__':
         constrained_layout = True
         )
 
+    all_axes = np.asarray(all_axes)
+
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
-        history, steps, events = system()
-        plot_full_history(axes, steps, history)
+
+        time, counts, events = system()
+        plot_full_history(axes, time, counts)
 
     fig.savefig('test_systems.png')
