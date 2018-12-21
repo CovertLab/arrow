@@ -58,6 +58,7 @@ def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
     counts = [state]
     propensities = []
     update_reactions = []
+    events = np.zeros(rates.shape)
 
     while True:
         time_to_next, state, choice, propensities = step(
@@ -75,6 +76,8 @@ def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
         time.append(time_current)
         counts.append(state)
 
+        events[choice] += 1
+
         stoichiometry = stoichiometric_matrix[:, choice]
         involved = np.where(stoichiometry != 0)[0]
         update_reactions = np.where(np.any(stoichiometric_matrix[involved] < 0, 0))[0]
@@ -82,7 +85,7 @@ def evolve(stoichiometric_matrix, rates, state, duration, forms=choose):
     time = np.array(time)
     counts = np.array(counts)
 
-    return time, counts
+    return time, counts, events
 
 
 class StochasticSystem(object):

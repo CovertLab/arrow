@@ -10,6 +10,8 @@ return  pattern is used.
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import numpy as np
 import json
 
@@ -27,12 +29,12 @@ def test_equilibration():
     state = np.array([1000, 0])
     duration = 1
 
-    time, counts = system.evolve(state, duration)
+    time, counts, events = system.evolve(state, duration)
 
     assert counts[-1].sum() < state.sum()
     assert time[-1] <= duration
 
-    return (time, counts)
+    return (time, counts, events)
 
 
 def test_dimerization():
@@ -49,44 +51,63 @@ def test_dimerization():
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    time, counts = system.evolve(state, duration)
+    time, counts, events = system.evolve(state, duration)
 
     assert time[-1] <= duration
 
-    return (time, counts)
+    return (time, counts, events)
 
 
 def test_complexation():
-    with open('data/complexation/complexation-state.json', 'r') as file:
-        data = json.load(file)
+    fixtures_root = os.path.join('data', 'complexation')
 
-    assert len(data) == 3
+    def load_state(filename):
+        with open(os.path.join(fixtures_root, filename)) as f:
+            state = np.array(json.load(f))
 
-    stoichiometric_matrix = np.array(data['stoichiometry']).transpose()
-    state = np.array(data['before'])
-    expected = np.array(data['after'])
+        return state
+
+    initial_state = load_state('initial_state.json')
+    final_state = load_state('final_state.json')
+
+    assert initial_state.size == final_state.size
+
+    n_metabolites = initial_state.size
+
+    with open(os.path.join(fixtures_root, 'stoichiometry.json')) as f:
+        stoichiometry_sparse = json.load(f)
+
+    n_reactions = len(stoichiometry_sparse)
+
+    stoichiometric_matrix = np.zeros((n_metabolites, n_reactions), np.int64)
+
+    for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
+        for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
+            # JSON doesn't allow for integer keys...
+            metabolite_index = int(str_metabolite_index)
+            stoichiometric_matrix[metabolite_index, reaction_index] = stoich
+
     duration = 1
 
-    assert len(state) == len(expected)
-    assert stoichiometric_matrix.shape[1] == len(state)
-
     # semi-quantitative rate constants
-    rates = np.full(stoichiometric_matrix.shape[0], 10)
+    rates = np.full(n_reactions, 10)
 
-    system = StochasticSystem(stoichiometric_matrix.transpose(), rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
 
-    time, counts = system.evolve(state, duration)
+    time, counts, events = system.evolve(initial_state, duration)
+
+    assert(len(time)-1 == events.sum())
 
     outcome = counts[-1]
-    difference = (expected - outcome)
+    difference = (final_state - outcome)
+
     total = np.abs(difference).sum()
 
     print('differences: {}'.format(total))
     print('total steps: {}'.format(len(time)))
     print(time)
 
-    return (time, counts)
-
+    return (time, counts, events)
 
 if __name__ == '__main__':
     from itertools import izip
@@ -124,6 +145,8 @@ if __name__ == '__main__':
 
     for (axes, system) in izip(all_axes.flatten(), systems):
         axes.set_title(system.func_name)
-        plot_full_history(axes, *system())
+
+        time, counts, events = system()
+        plot_full_history(axes, time, counts)
 
     fig.savefig('test_systems.png')
