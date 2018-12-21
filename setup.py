@@ -6,7 +6,7 @@ with open("README.md", 'r') as readme:
 
 setup(
 	name='stochastic-arrow',
-	version='0.0.3',
+	version='0.0.4',
 	packages=['arrow'],
 	author='Ryan Spangler',
 	author_email='spanglry@stanford.edu',
