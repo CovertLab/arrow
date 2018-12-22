@@ -120,7 +120,8 @@ if __name__ == '__main__':
     systems = (
         test_equilibration,
         test_dimerization,
-        test_complexation)
+        test_complexation
+        )
 
     if not args.plot:
         if args.complexation:
