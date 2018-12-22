@@ -1,8 +1,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from itertools import izip
-
 import numpy as np
 
 def choose(n, k):
@@ -19,7 +17,6 @@ def choose(n, k):
 
     return combinations
 
-
 def multichoose(n, k):
     '''
     Enumerate the number of ways to pick elements from different sets of items,
@@ -31,7 +28,7 @@ def multichoose(n, k):
 
     combinations = 1.0
 
-    for n_i, k_i in izip(n, k):
-        combinations *= choose(n_i, k_i)
+    for i in xrange(n.size):
+        combinations *= choose(n[i], k[i])
 
     return combinations
