@@ -133,12 +133,6 @@
 
 
 
-/* int _print_array(double pr[], int length) { */
-/*   for (int index = 0; index < length; index++) */
-/*     printf("pr[%d] = %f\n", index, pr[index]); */
-/*   return 0; */
-/* } */
-
 static PyObject * _print_array(PyObject * self, PyObject * args) {
   PyObject *float_list;
   int pr_length;
