@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import, division, print_function
 
 from itertools import izip
@@ -7,31 +6,36 @@ import numpy as np
 
 from arrow.math import multichoose
 
-def _get_reactants_and_stoichiometries(stoichiometric_matrix):
+def derive_reactants(stoichiometric_matrix):
     reactants = [
         np.where(stoichiometry < 0)[0]
-        for stoichiometry in stoichiometric_matrix.T
-        ]
+        for stoichiometry in stoichiometric_matrix.T]
+
     reactant_stoichiometries = [
         -stoichiometric_matrix[r, reaction_index]
-        for reaction_index, r in enumerate(reactants)
-        ]
+        for reaction_index, r in enumerate(reactants)]
 
     return reactants, reactant_stoichiometries
 
+def calculate_dependencies(stoichiometric_matrix):
+    dependencies = [
+        np.where(np.any(stoichiometric_matrix[stoichiometry != 0] < 0, 0))[0]
+        for stoichiometry in stoichiometric_matrix.T]
+
+    return dependencies
 
 def step(
         stoichiometric_matrix,
         rates,
         state,
-        reactants = None, reactant_stoichiometries = None,
-        propensities=None, update_reactions=None
-        ):
+        reactants=None,
+        reactant_stoichiometries=None,
+        propensities=None,
+        update_reactions=None):
 
     if reactants is None:
-        reactants, reactant_stoichiometries = _get_reactants_and_stoichiometries(
-            stoichiometric_matrix
-            )
+        reactants, reactant_stoichiometries = derive_reactants(
+            stoichiometric_matrix)
 
     if update_reactions is None:
         n_reactions = stoichiometric_matrix.shape[1]
@@ -42,63 +46,69 @@ def step(
     for reaction_index in update_reactions:
         propensities[reaction_index] = rates[reaction_index] * multichoose(
             state[reactants[reaction_index]],
-            reactant_stoichiometries[reaction_index]
-            )
+            reactant_stoichiometries[reaction_index])
 
     total = propensities.sum()
 
     if total == 0:
-        time_to_next = 0
+        interval = 0
         outcome = state
         choice = None
 
     else:
-        time_to_next = np.random.exponential(1 / total)
+        interval = np.random.exponential(1 / total)
         random = np.random.uniform(0, 1) * total
 
         progress = 0
-        for choice, interval in enumerate(propensities):
-            progress += interval
+        for choice, span in enumerate(propensities):
+            progress += span
             if random <= progress:
                 break
 
         stoichiometry = stoichiometric_matrix[:, choice]
         outcome = state + stoichiometry
 
-    return time_to_next, outcome, choice, propensities
+    return interval, outcome, choice, propensities
 
 
-def evolve(stoichiometric_matrix, rates, state, duration):
-    time_current = 0
+def evolve(
+        stoichiometric_matrix,
+        rates,
+        state,
+        duration,
+        reactants=None,
+        reactant_stoichiometries=None,
+        dependencies=None):
+    now = 0
     time = [0]
     counts = [state]
     propensities = None
     update_reactions = None
     events = np.zeros(rates.shape)
 
-    reactants, reactant_stoichiometries = _get_reactants_and_stoichiometries(
-        stoichiometric_matrix
-        )
+    if reactants is None or reactant_stoichiometries is None:
+        reactants, reactant_stoichiometries = derive_reactants(
+            stoichiometric_matrix)
 
-    dependencies = [
-        np.where(np.any(stoichiometric_matrix[stoichiometry != 0] < 0, 0))[0]
-        for stoichiometry in stoichiometric_matrix.T]
+    if dependencies is None:
+        dependencies = calculate_dependencies(stoichiometric_matrix)
 
     while True:
-        time_to_next, state, choice, propensities = step(
+        interval, state, choice, propensities = step(
             stoichiometric_matrix,
             rates,
             state,
-            reactants, reactant_stoichiometries,
-            propensities, update_reactions
-            )
+            reactants,
+            reactant_stoichiometries,
+            propensities,
+            update_reactions)
 
-        time_current += time_to_next
+        now += interval
 
-        if choice is None or time_current > duration:
+        if choice is None or now > duration:
             break
 
-        time.append(time_current)
+        time.append(now)
         counts.append(state)
 
         events[choice] += 1
@@ -116,8 +126,21 @@ class StochasticSystem(object):
         self.stoichiometric_matrix = stoichiometric_matrix
         self.rates = rates
 
+        reactants, reactant_stoichiometries = derive_reactants(stoichiometric_matrix)
+
+        self.reactants = reactants
+        self.reactant_stoichiometries = reactant_stoichiometries
+        self.dependencies = calculate_dependencies(stoichiometric_matrix)
+
     def step(self, state):
         return step(self.stoichiometric_matrix, self.rates, state)
 
     def evolve(self, state, duration):
-        return evolve(self.stoichiometric_matrix, self.rates, state, duration)
+        return evolve(
+            self.stoichiometric_matrix,
+            self.rates,
+            state,
+            duration,
+            reactants=self.reactants,
+            reactant_stoichiometries=self.reactant_stoichiometries,
+            dependencies=self.dependencies)
