@@ -51,24 +51,24 @@ def step(
     total = propensities.sum()
 
     if total == 0:
-        time_to_next = 0
+        interval = 0
         outcome = state
         choice = None
 
     else:
-        time_to_next = np.random.exponential(1 / total)
+        interval = np.random.exponential(1 / total)
         random = np.random.uniform(0, 1) * total
 
         progress = 0
-        for choice, interval in enumerate(propensities):
-            progress += interval
+        for choice, span in enumerate(propensities):
+            progress += span
             if random <= progress:
                 break
 
         stoichiometry = stoichiometric_matrix[:, choice]
         outcome = state + stoichiometry
 
-    return time_to_next, outcome, choice, propensities
+    return interval, outcome, choice, propensities
 
 
 def evolve(
@@ -79,7 +79,7 @@ def evolve(
         reactants=None,
         reactant_stoichiometries=None,
         dependencies=None):
-    time_current = 0
+    now = 0
     time = [0]
     counts = [state]
     propensities = None
@@ -94,7 +94,7 @@ def evolve(
         dependencies = calculate_dependencies(stoichiometric_matrix)
 
     while True:
-        time_to_next, state, choice, propensities = step(
+        interval, state, choice, propensities = step(
             stoichiometric_matrix,
             rates,
             state,
@@ -103,12 +103,12 @@ def evolve(
             propensities,
             update_reactions)
 
-        time_current += time_to_next
+        now += interval
 
-        if choice is None or time_current > duration:
+        if choice is None or now > duration:
             break
 
-        time.append(time_current)
+        time.append(now)
         counts.append(state)
 
         events[choice] += 1
