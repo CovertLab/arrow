@@ -7,7 +7,11 @@ int print_array(double * array, int length) {
   return 0;
 }
 
-evolve_result evolve(double ** stoichiometry, double * rates, double * state, double duration) {
+evolve_result
+evolve(double ** stoichiometry,
+       double * rates,
+       double * state,
+       double duration) {
   evolve_result result = {NULL, NULL, NULL};
   return result;
 }

@@ -7,4 +7,8 @@ struct evolve_result {
   int * events;
 };
 
-evolve_result evolve(double ** stoichiometry, double * rates, double * state, double duration);
+evolve_result
+evolve(double ** stoichiometry,
+       double * rates,
+       double * state,
+       double duration);
