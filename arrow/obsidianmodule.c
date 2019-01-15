@@ -2,11 +2,11 @@
 #include <numpy/arrayobject.h>
 #include "obsidian.h"
 
-static PyObject *ErrorObject;
-
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
+  double * rates;
+  int rates_length;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
@@ -14,15 +14,17 @@ static PyTypeObject Obsidian_Type;
 #define ObsidianObject_Check(v) (Py_TYPE(v) == &Obsidian_Type)
 
 static ObsidianObject *
-newObsidianObject(PyObject *arg)
+newObsidianObject(double * rates, int rates_length)
 {
-  ObsidianObject *self;
+  ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
 
   if (self == NULL)
     return NULL;
 
   self->x_attr = NULL;
+  self->rates = rates;
+  self->rates_length = rates_length;
   return self;
 }
 
@@ -88,7 +90,7 @@ static PyTypeObject Obsidian_Type = {
   /* The ob_type field must be initialized in the module init function
    * to be portable to Windows without using C++. */
   PyVarObject_HEAD_INIT(NULL, 0)
-  "xxmodule.Obsidian",              /*tp_name*/
+  "obsidianmodule.Obsidian",        /*tp_name*/
   sizeof(ObsidianObject),           /*tp_basicsize*/
   0,                                /*tp_itemsize*/
   /* methods */
@@ -166,10 +168,10 @@ static PyObject *
 _invoke_obsidian(PyObject * self, PyObject * args) {
   ObsidianObject * obsidian;
   PyObject * stoichiometry_obj,
-    rates_obj,
-    reactants_obj,
-    reactions_obj,
-    dependencies_obj;
+    * rates_obj,
+    * reactants_obj,
+    * reactions_obj,
+    * dependencies_obj;
 
   if (!PyArg_ParseTuple(args,
                         "OOOOO",
@@ -180,16 +182,35 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                         &dependencies_obj))
     return NULL;
 
-  PyObject * rates_array = PyArray_FROM_OTF(rates_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+  PyObject * rates_array = PyArray_FROM_OTF(rates_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+
+  if (rates_array == NULL) {
+    Py_XDECREF(rates_array);
+    return NULL;
+  }
+
+  int rates_length = (int) PyArray_DIM(rates_array, 0);
+
+  double * rates = (double *) PyArray_DATA(rates_array);
+
+  print_array(rates, rates_length);
+
+  obsidian = newObsidianObject(rates, rates_length);
+  if (obsidian == NULL) {
+    return NULL;
+  }
+
+  return (PyObject *) obsidian;
 }
 
 static PyObject *
 _evolve(PyObject * self, PyObject * args) {
-
+  return self;
 }
 
 static PyMethodDef ObsidianMethods[] = {
   {"print_array", _print_array, METH_VARARGS, "print array of floats"},
+  {"obsidian", _invoke_obsidian, METH_VARARGS, "print array of floats"},
   {NULL, NULL, 0, NULL}
 };
 
