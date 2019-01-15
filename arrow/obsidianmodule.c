@@ -6,12 +6,12 @@ static PyObject *ErrorObject;
 
 typedef struct {
   PyObject_HEAD
-  PyObject *x_attr;
+  PyObject * x_attr;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
 
-#define ObsidianObject_Check(v)      (Py_TYPE(v) == &Obsidian_Type)
+#define ObsidianObject_Check(v) (Py_TYPE(v) == &Obsidian_Type)
 
 static ObsidianObject *
 newObsidianObject(PyObject *arg)
@@ -133,7 +133,8 @@ static PyTypeObject Obsidian_Type = {
 
 // https://dfm.io/posts/python-c-extensions/
 
-static PyObject * _print_array(PyObject * self, PyObject * args) {
+static PyObject *
+_print_array(PyObject * self, PyObject * args) {
   PyObject *float_list;
   int pr_length;
   double *pr;
@@ -159,6 +160,32 @@ static PyObject * _print_array(PyObject * self, PyObject * args) {
   }
 
   return Py_BuildValue("i", print_array(pr, pr_length));
+}
+
+static PyObject *
+_invoke_obsidian(PyObject * self, PyObject * args) {
+  ObsidianObject * obsidian;
+  PyObject * stoichiometry_obj,
+    rates_obj,
+    reactants_obj,
+    reactions_obj,
+    dependencies_obj;
+
+  if (!PyArg_ParseTuple(args,
+                        "OOOOO",
+                        &stoichiometry_obj,
+                        &rates_obj,
+                        &reactants_obj,
+                        &reactions_obj,
+                        &dependencies_obj))
+    return NULL;
+
+  PyObject * rates_array = PyArray_FROM_OTF(rates_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+}
+
+static PyObject *
+_evolve(PyObject * self, PyObject * args) {
+
 }
 
 static PyMethodDef ObsidianMethods[] = {

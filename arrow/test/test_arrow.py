@@ -93,6 +93,8 @@ def test_complexation():
 
     system = StochasticSystem(stoichiometric_matrix, rates)
 
+    # import ipdb; ipdb.set_trace()
+
     time, counts, events = system.evolve(initial_state, duration)
 
     assert(len(time)-1 == events.sum())
