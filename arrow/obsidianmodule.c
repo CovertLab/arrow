@@ -41,6 +41,8 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":demo"))
     return NULL;
 
+  print_array(self->rates, self->rates_length);
+
   Py_INCREF(Py_None);
   return Py_None;
 }
