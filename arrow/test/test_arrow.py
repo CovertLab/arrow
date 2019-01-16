@@ -111,6 +111,9 @@ def test_complexation():
 
     return (time, counts, events)
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
 def test_obsidian():
     stoichiometric_matrix = np.array([
         [1, 1, -1, 0],
@@ -119,15 +122,39 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    reactants, reactions = derive_reactants(stoichiometric_matrix)
-    dependencies = calculate_dependencies(stoichiometric_matrix)
+    reactants, reactions = derive_reactants(stoichiometric_matrix.T)
+    dependencies = calculate_dependencies(stoichiometric_matrix.T)
+
+    reactants_lengths = np.array([
+        len(reactant)
+        for reactant in reactants])
+    reactants_indexes = np.insert(reactants_lengths, 0, 0).cumsum()[:-1]
+    reactants_flat = np.array(flatten(reactants))
+    reactions_flat = np.array(flatten(reactions))
+
+    dependencies_lengths = np.array([
+        len(dependency)
+        for dependency in dependencies])
+    dependencies_indexes = np.insert(dependencies_lengths, 0, 0).cumsum()[:-1]
+    dependencies_flat = np.array(flatten(dependencies))
+
+    print('\nstoichiometry:\n {}'.format(stoichiometric_matrix))
+    print('reactants:\n {}\n {}\n {} -> {}'.format(reactants_lengths, reactants_indexes, reactants, reactants_flat))
+    print('reactions: {} -> {}'.format(reactions, reactions_flat))
+    print('dependencies: {} {} {}'.format(dependencies_lengths, dependencies_indexes, dependencies_flat))
 
     ob = obsidian.obsidian(
         stoichiometric_matrix,
         rates,
-        reactants,
-        reactions,
-        dependencies)
+        reactants_lengths,
+        reactants_indexes,
+        reactants_flat,
+        reactions_flat,
+        dependencies_lengths,
+        dependencies_indexes,
+        dependencies_flat)
+
+		# 5, 5, 5)
 
     assert(ob.reactions_length() == stoichiometric_matrix.shape[0])
     assert(ob.substrates_length() == stoichiometric_matrix.shape[1])

@@ -9,6 +9,15 @@ typedef struct {
   int substrates_length;
   double * stoichiometry;
   double * rates;
+
+  double * reactants_lengths;
+  double * reactants_indexes;
+  double * reactants;
+  double * reactions;
+
+  double * dependencies_lengths;
+  double * dependencies_indexes;
+  double * dependencies;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
@@ -19,7 +28,16 @@ static ObsidianObject *
 newObsidianObject(int reactions_length,
                   int substrates_length,
                   double * stoichiometry,
-                  double * rates)
+                  double * rates,
+
+                  double * reactants_lengths,
+                  double * reactants_indexes,
+                  double * reactants,
+                  double * reactions,
+
+                  double * dependencies_lengths,
+                  double * dependencies_indexes,
+                  double * dependencies)
 {
   ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
@@ -32,6 +50,14 @@ newObsidianObject(int reactions_length,
   self->substrates_length = substrates_length;
   self->stoichiometry = stoichiometry;
   self->rates = rates;
+
+  self->reactants_lengths = reactants_lengths;
+  self->reactants_indexes = reactants_indexes;
+  self->reactants = reactants;
+  self->reactions = reactions;
+  self->dependencies_lengths = dependencies_lengths;
+  self->dependencies_indexes = dependencies_indexes;
+  self->dependencies = dependencies;
 
   return self;
 }
@@ -199,54 +225,91 @@ _print_array(PyObject * self, PyObject * args) {
 }
 
 static PyObject *
+array_for(PyObject * array_obj) {
+  PyObject * array = PyArray_FROM_OTF(array_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+
+  if (array == NULL) {
+    Py_XDECREF(array);
+    return NULL;
+  }
+
+  return array;
+}
+
+static double *
+data_for(PyObject * array_obj) {
+  PyObject * array = array_for(array_obj);
+  return (double *) PyArray_DATA(array);
+}
+
+static PyObject *
 _invoke_obsidian(PyObject * self, PyObject * args) {
   ObsidianObject * obsidian;
   PyObject * stoichiometry_obj,
     * rates_obj,
+
+    * reactants_lengths_obj,
+    * reactants_indexes_obj,
     * reactants_obj,
     * reactions_obj,
+
+    * dependencies_lengths_obj,
+    * dependencies_indexes_obj,
     * dependencies_obj;
 
   if (!PyArg_ParseTuple(args,
-                        "OOOOO",
+                        "OOOOOOOOO",
                         &stoichiometry_obj,
                         &rates_obj,
+
+                        &reactants_lengths_obj,
+                        &reactants_indexes_obj,
                         &reactants_obj,
                         &reactions_obj,
+
+                        &dependencies_lengths_obj,
+                        &dependencies_indexes_obj,
                         &dependencies_obj))
     return NULL;
 
-  PyObject * stoichiometry_array = PyArray_FROM_OTF(stoichiometry_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-
-  if (stoichiometry_array == NULL) {
-    Py_XDECREF(stoichiometry_array);
-    return NULL;
-  }
-
+  // import the stoichiometric_matrix as a 2d numpy array
+  PyObject * stoichiometry_array = array_for(stoichiometry_obj);
   int reactions_length = (int) PyArray_DIM(stoichiometry_array, 0);
   int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
   double * stoichiometry = (double *) PyArray_DATA(stoichiometry_array);
 
   printf("dims - %d x %d\n", reactions_length, substrates_length);
-
   print_array(stoichiometry, reactions_length * substrates_length);
 
-  PyObject * rates_array = PyArray_FROM_OTF(rates_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-
-  if (rates_array == NULL) {
-    Py_XDECREF(rates_array);
-    return NULL;
-  }
-
-  int rates_length = (int) PyArray_DIM(rates_array, 0);
+  // import the rates as a 1d numpy array
+  PyObject * rates_array = array_for(rates_obj);
   double * rates = (double *) PyArray_DATA(rates_array);
 
-  print_array(rates, rates_length);
+  print_array(rates, reactions_length);
 
+  double * reactants_lengths = data_for(reactants_lengths_obj);
+  double * reactants_indexes = data_for(reactants_indexes_obj);
+  double * reactants = data_for(reactants_obj);
+  double * reactions = data_for(reactions_obj);
+
+  double * dependencies_lengths = data_for(dependencies_lengths_obj);
+  double * dependencies_indexes = data_for(dependencies_indexes_obj);
+  double * dependencies = data_for(dependencies_obj);
+
+  // create the obsidian object
   obsidian = newObsidianObject(reactions_length,
                                substrates_length,
                                stoichiometry,
-                               rates);
+                               rates,
+
+                               reactants_lengths,
+                               reactants_indexes,
+                               reactants,
+                               reactions,
+
+                               dependencies_lengths,
+                               dependencies_indexes,
+                               dependencies);
 
   if (obsidian == NULL) {
     return NULL;
