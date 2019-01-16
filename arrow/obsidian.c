@@ -18,9 +18,9 @@ print_array(double * array, int length) {
 }
 
 int
-print_int_array(int * array, int length) {
+print_long_array(long * array, int length) {
   for (int index = 0; index < length; index++) {
-    printf("a[%d] = %d", index, array[index]);
+    printf("a[%d] = %ld", index, array[index]);
     if (index == length - 1) {
       printf("\n");
     } else {
@@ -49,26 +49,26 @@ evolve(int reactions_length,
        double * stoichiometry,
        double * rates,
 
-       int * reactants_lengths,
-       int * reactants_indexes,
-       int * reactants,
+       long * reactants_lengths,
+       long * reactants_indexes,
+       long * reactants,
        double * reactions,
        
-       int * dependencies_lengths,
-       int * dependencies_indexes,
-       int * dependencies,
+       long * dependencies_lengths,
+       long * dependencies_indexes,
+       long * dependencies,
 
        double duration,
        double * state) {
 
   double * time = malloc((sizeof (double *)) * INITIAL_LENGTH);
-  int * events = malloc((sizeof (int *)) * INITIAL_LENGTH);
+  long * events = malloc((sizeof (long *)) * INITIAL_LENGTH);
 
   double * propensities = malloc((sizeof (double *)) * reactions_length);
-  int * update = malloc((sizeof (int *)) * reactions_length);
-  int update_length = reactions_length;
+  long * update = malloc((sizeof (long *)) * reactions_length);
+  long update_length = reactions_length;
 
-  int reaction, reactant, species, index;
+  long reaction, reactant, species, index;
   double total, interval, sample, progress, point;
   
   int choice, step = 0, up = 0;
@@ -89,26 +89,26 @@ evolve(int reactions_length,
   }
 
   printf("reactants_lengths: ");
-  print_int_array(reactants_lengths, reactions_length);
+  print_long_array(reactants_lengths, reactions_length);
   printf("reactants_indexes: ");
-  print_int_array(reactants_indexes, reactions_length);
+  print_long_array(reactants_indexes, reactions_length);
   printf("reactants: ");
-  print_int_array(reactants, rlength);
+  print_long_array(reactants, rlength);
   printf("reactions: ");
   print_array(reactions, rlength);
 
   printf("dependencies_lengths: ");
-  print_int_array(dependencies_lengths, reactions_length);
+  print_long_array(dependencies_lengths, reactions_length);
   printf("dependencies_indexes: ");
-  print_int_array(dependencies_indexes, reactions_length);
+  print_long_array(dependencies_indexes, reactions_length);
   printf("dependencies: ");
-  print_int_array(dependencies, dlength);
+  print_long_array(dependencies, dlength);
 
   while(now < duration) {
     printf("step %i\n", step);
 
     for (up = 0; up < update_length; up++) {
-      int reaction = update[up];
+      reaction = update[up];
       propensities[reaction] = rates[reaction];
 
       for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
@@ -117,7 +117,7 @@ evolve(int reactions_length,
       }
     }
 
-    printf("propensities\n");
+    printf("propensities: ");
     print_array(propensities, reactions_length);
 
     total = 0.0;
@@ -165,12 +165,11 @@ evolve(int reactions_length,
       update_length = dependencies_lengths[choice];
       for (up = 0; up < update_length; up++) {
         index = dependencies_indexes[choice] + up;
-        printf("index: %d - dependency: %d\n", index, dependencies[index]);
         update[up] = dependencies[index];
       }
 
       printf("update\n");
-      print_int_array(update, update_length);
+      print_long_array(update, update_length);
     }
 
     step += 1;

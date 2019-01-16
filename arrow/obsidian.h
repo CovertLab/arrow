@@ -1,10 +1,11 @@
 int print_array(double * array, int length);
+int print_long_array(long * array, int length);
 
 typedef struct evolve_result evolve_result;
 struct evolve_result {
   int steps;
   double * time;
-  int * events;
+  long * events;
   double * state;
 };
 
@@ -14,14 +15,14 @@ evolve(int reactions_length,
        double * stoichiometry,
        double * rates,
 
-       int * reactants_lengths,
-       int * reactants_indexes,
-       int * reactants,
+       long * reactants_lengths,
+       long * reactants_indexes,
+       long * reactants,
        double * reactions,
        
-       int * dependencies_lengths,
-       int * dependencies_indexes,
-       int * dependencies,
+       long * dependencies_lengths,
+       long * dependencies_indexes,
+       long * dependencies,
 
        double duration,
        double * state);
