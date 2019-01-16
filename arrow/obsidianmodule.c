@@ -5,8 +5,10 @@
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
+  int reactions_length;
+  int substrates_length;
+  double * stoichiometry;
   double * rates;
-  int rates_length;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
@@ -14,7 +16,10 @@ static PyTypeObject Obsidian_Type;
 #define ObsidianObject_Check(v) (Py_TYPE(v) == &Obsidian_Type)
 
 static ObsidianObject *
-newObsidianObject(double * rates, int rates_length)
+newObsidianObject(int reactions_length,
+                  int substrates_length,
+                  double * stoichiometry,
+                  double * rates)
 {
   ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
@@ -23,8 +28,11 @@ newObsidianObject(double * rates, int rates_length)
     return NULL;
 
   self->x_attr = NULL;
+  self->reactions_length = reactions_length;
+  self->substrates_length = substrates_length;
+  self->stoichiometry = stoichiometry;
   self->rates = rates;
-  self->rates_length = rates_length;
+
   return self;
 }
 
@@ -41,15 +49,35 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":demo"))
     return NULL;
 
-  print_array(self->rates, self->rates_length);
+  print_array(self->rates, self->reactions_length);
 
   Py_INCREF(Py_None);
   return Py_None;
 }
 
+static PyObject *
+Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
+{
+  if (!PyArg_ParseTuple(args, ":reactions_length"))
+    return NULL;
+
+  return Py_BuildValue("i", self->reactions_length);
+}
+
+static PyObject *
+Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
+{
+  if (!PyArg_ParseTuple(args, ":substrates_length"))
+    return NULL;
+
+  return Py_BuildValue("i", self->substrates_length);
+}
+
 static PyMethodDef Obsidian_methods[] = {
   {"demo", (PyCFunction) Obsidian_demo,  METH_VARARGS, PyDoc_STR("demo() -> None")},
-  {NULL, NULL}           /* sentinel */
+  {"reactions_length", (PyCFunction) Obsidian_reactions_length,  METH_VARARGS, PyDoc_STR("number of reactions this system is capable of.")},
+  {"substrates_length", (PyCFunction) Obsidian_substrates_length,  METH_VARARGS, PyDoc_STR("the number of substrates the reactions in this system operate upon.")},
+  {NULL, NULL} // sentinel
 };
 
 static PyObject *
@@ -163,7 +191,11 @@ _print_array(PyObject * self, PyObject * args) {
     pr[index] = PyFloat_AsDouble(item);
   }
 
-  return Py_BuildValue("i", print_array(pr, pr_length));
+  int value = print_array(pr, pr_length);
+
+  free(pr);
+
+  return Py_BuildValue("i", value);
 }
 
 static PyObject *
@@ -184,6 +216,21 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                         &dependencies_obj))
     return NULL;
 
+  PyObject * stoichiometry_array = PyArray_FROM_OTF(stoichiometry_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+
+  if (stoichiometry_array == NULL) {
+    Py_XDECREF(stoichiometry_array);
+    return NULL;
+  }
+
+  int reactions_length = (int) PyArray_DIM(stoichiometry_array, 0);
+  int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
+  double * stoichiometry = (double *) PyArray_DATA(stoichiometry_array);
+
+  printf("dims - %d x %d\n", reactions_length, substrates_length);
+
+  print_array(stoichiometry, reactions_length * substrates_length);
+
   PyObject * rates_array = PyArray_FROM_OTF(rates_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
   if (rates_array == NULL) {
@@ -192,12 +239,15 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   }
 
   int rates_length = (int) PyArray_DIM(rates_array, 0);
-
   double * rates = (double *) PyArray_DATA(rates_array);
 
   print_array(rates, rates_length);
 
-  obsidian = newObsidianObject(rates, rates_length);
+  obsidian = newObsidianObject(reactions_length,
+                               substrates_length,
+                               stoichiometry,
+                               rates);
+
   if (obsidian == NULL) {
     return NULL;
   }
@@ -212,7 +262,7 @@ _evolve(PyObject * self, PyObject * args) {
 
 static PyMethodDef ObsidianMethods[] = {
   {"print_array", _print_array, METH_VARARGS, "print array of floats"},
-  {"obsidian", _invoke_obsidian, METH_VARARGS, "print array of floats"},
+  {"obsidian", _invoke_obsidian, METH_VARARGS, "create new obsidian object"},
   {NULL, NULL, 0, NULL}
 };
 

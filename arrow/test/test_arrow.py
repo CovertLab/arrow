@@ -16,7 +16,8 @@ import numpy as np
 import json
 import argparse
 
-from arrow import evolve, StochasticSystem
+from arrow import evolve, derive_reactants, calculate_dependencies, StochasticSystem
+import obsidian
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
@@ -109,6 +110,27 @@ def test_complexation():
     print(time)
 
     return (time, counts, events)
+
+def test_obsidian():
+    stoichiometric_matrix = np.array([
+        [1, 1, -1, 0],
+        [-2, 0, 0, 1],
+        [-1, -1, 1, 0]])
+
+    rates = np.array([3, 1, 1]) * 0.01
+
+    reactants, reactions = derive_reactants(stoichiometric_matrix)
+    dependencies = calculate_dependencies(stoichiometric_matrix)
+
+    ob = obsidian.obsidian(
+        stoichiometric_matrix,
+        rates,
+        reactants,
+        reactions,
+        dependencies)
+
+    assert(ob.reactions_length() == stoichiometric_matrix.shape[0])
+    assert(ob.substrates_length() == stoichiometric_matrix.shape[1])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

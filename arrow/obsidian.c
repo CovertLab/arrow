@@ -9,7 +9,9 @@ print_array(double * array, int length) {
 }
 
 evolve_result
-evolve(double ** stoichiometry,
+evolve(int reactions_length,
+       int substrates_length,
+       double * stoichiometry,
        double * rates,
        double * state,
        double duration) {
