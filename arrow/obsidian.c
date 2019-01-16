@@ -5,8 +5,29 @@
 
 int
 print_array(double * array, int length) {
-  for (int index = 0; index < length; index++)
-    printf("array[%d] = %f\n", index, array[index]);
+  for (int index = 0; index < length; index++) {
+    printf("a[%d] = %f", index, array[index]);
+    if (index == length - 1) {
+      printf("\n");
+    } else {
+      printf(", ");
+    }
+  }
+
+  return 0;
+}
+
+int
+print_int_array(int * array, int length) {
+  for (int index = 0; index < length; index++) {
+    printf("a[%d] = %d", index, array[index]);
+    if (index == length - 1) {
+      printf("\n");
+    } else {
+      printf(", ");
+    }
+  }
+
   return 0;
 }
 
@@ -57,8 +78,34 @@ evolve(int reactions_length,
     update[reaction] = reaction;
   }
 
+  int rlength = 0;
+  for (reaction = 0; reaction < reactions_length; reaction++) {
+    rlength += reactants_lengths[reaction];
+  }
+
+  int dlength = 0;
+  for (reaction = 0; reaction < reactions_length; reaction++) {
+    dlength += dependencies_lengths[reaction];
+  }
+
+  printf("reactants_lengths: ");
+  print_int_array(reactants_lengths, reactions_length);
+  printf("reactants_indexes: ");
+  print_int_array(reactants_indexes, reactions_length);
+  printf("reactants: ");
+  print_int_array(reactants, rlength);
+  printf("reactions: ");
+  print_array(reactions, rlength);
+
+  printf("dependencies_lengths: ");
+  print_int_array(dependencies_lengths, reactions_length);
+  printf("dependencies_indexes: ");
+  print_int_array(dependencies_indexes, reactions_length);
+  printf("dependencies: ");
+  print_int_array(dependencies, dlength);
+
   while(now < duration) {
-    printf("step %i", step);
+    printf("step %i\n", step);
 
     for (up = 0; up < update_length; up++) {
       int reaction = update[up];
@@ -70,7 +117,7 @@ evolve(int reactions_length,
       }
     }
 
-    printf("propensities");
+    printf("propensities\n");
     print_array(propensities, reactions_length);
 
     total = 0.0;
@@ -99,8 +146,8 @@ evolve(int reactions_length,
 
       printf("progress: %f - choice: %d - now: %f - duration: %f\n", progress, choice, now, duration);
 
-      if ((choice == -1) || ((now + interval) > duration)) {
-        printf("completing: %d %d", choice == -1, (now + interval) > duration);
+      if (choice == -1 || (now + interval) > duration) {
+        printf("completing: %d %d\n", choice == -1, (now + interval) > duration);
         break;
       }
 
@@ -117,11 +164,13 @@ evolve(int reactions_length,
 
       update_length = dependencies_lengths[choice];
       for (up = 0; up < update_length; up++) {
-        update[up] = dependencies[dependencies_indexes[choice] + up];
+        index = dependencies_indexes[choice] + up;
+        printf("index: %d - dependency: %d\n", index, dependencies[index]);
+        update[up] = dependencies[index];
       }
 
       printf("update\n");
-      print_array(update, update_length);
+      print_int_array(update, update_length);
     }
 
     step += 1;
@@ -129,7 +178,7 @@ evolve(int reactions_length,
 
   print_array(state, substrates_length);
   
-  evolve_result result = {0, time, events, state};
+  evolve_result result = {step, time, events, state};
 
   free(propensities);
   free(update);
