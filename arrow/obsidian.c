@@ -78,17 +78,17 @@ evolve(int reactions_length,
       total += propensities[reaction];
     }
 
-    printf("total: %d\n", total);
+    printf("total: %f\n", total);
 
     if (total == 0) {
       interval = 0.0;
       choice = -1;
     } else {
-      sample = rand() / (RAND_MAX + 1.0);
+      sample = (double) rand() / RAND_MAX;
       interval = -log(1 - sample) / total;
-      point = rand() * total;
+      point = ((double) rand() / RAND_MAX) * total;
 
-      printf("sample: %d - interval: %d - point: %d", sample, interval, point);
+      printf("sample: %f - interval: %f - point: %f\n", sample, interval, point);
 
       choice = 0;
       progress = 0.0;
@@ -97,10 +97,17 @@ evolve(int reactions_length,
         choice += 1;
       }
 
-      if (choice == -1 || now + interval > duration)
+      printf("progress: %f - choice: %d - now: %f - duration: %f\n", progress, choice, now, duration);
+
+      if ((choice == -1) || ((now + interval) > duration)) {
+        printf("completing: %d %d", choice == -1, (now + interval) > duration);
         break;
+      }
 
       now += interval;
+
+      printf("new time: %f\n", now);
+
       time[step] = now;
       events[step] = choice;
 
@@ -112,6 +119,9 @@ evolve(int reactions_length,
       for (up = 0; up < update_length; up++) {
         update[up] = dependencies[dependencies_indexes[choice] + up];
       }
+
+      printf("update\n");
+      print_array(update, update_length);
     }
 
     step += 1;

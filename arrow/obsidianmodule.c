@@ -130,8 +130,10 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   double duration;
   PyObject * state_obj;
 
-  if (!PyArg_ParseTuple(args, "fO", &duration, &state_obj))
+  if (!PyArg_ParseTuple(args, "dO", &duration, &state_obj))
     return NULL;
+
+  printf("duration !!!! %f\n", duration);
 
   double * state = double_data_for(state_obj);
   evolve_result result = evolve(self->reactions_length,
