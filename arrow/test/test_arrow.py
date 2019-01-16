@@ -154,7 +154,12 @@ def test_obsidian():
         dependencies_indexes,
         dependencies_flat)
 
-		# 5, 5, 5)
+    steps, time, events, state = ob.evolve(1.0, np.array([50, 20, 30, 40]))
+
+    print('steps: {}'.format(steps))
+    print('time: {}'.format(time))
+    print('events: {}'.format(events))
+    print('state: {}'.format(state))
 
     assert(ob.reactions_length() == stoichiometric_matrix.shape[0])
     assert(ob.substrates_length() == stoichiometric_matrix.shape[1])
