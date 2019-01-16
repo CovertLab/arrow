@@ -133,7 +133,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "dO", &duration, &state_obj))
     return NULL;
 
-  printf("duration !!!! %f\n", duration);
+  /* printf("duration !!!! %f\n", duration); */
 
   double * state = double_data_for(state_obj);
   evolve_result result = evolve(self->reactions_length,
@@ -150,14 +150,14 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 duration,
                                 state);
   
-  printf("time: ");
-  print_array(result.time, result.steps);
+  /* printf("time: "); */
+  /* print_array(result.time, result.steps); */
 
-  printf("events: ");
-  print_long_array(result.events, result.steps);
+  /* printf("events: "); */
+  /* print_long_array(result.events, result.steps); */
 
-  printf("state: ");
-  print_array(result.state, self->substrates_length);
+  /* printf("state: "); */
+  /* print_array(result.state, self->substrates_length); */
 
   long steps[1];
   steps[0] = result.steps;
@@ -339,14 +339,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
   double * stoichiometry = (double *) PyArray_DATA(stoichiometry_array);
 
-  printf("dims - %d x %d\n", reactions_length, substrates_length);
-  print_array(stoichiometry, reactions_length * substrates_length);
-
   // import the rates as a 1d numpy array
   PyObject * rates_array = array_for(rates_obj, NPY_DOUBLE);
   double * rates = (double *) PyArray_DATA(rates_array);
-
-  print_array(rates, reactions_length);
 
   long * reactants_lengths = long_data_for(reactants_lengths_obj);
   long * reactants_indexes = long_data_for(reactants_indexes_obj);

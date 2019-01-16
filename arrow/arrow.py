@@ -5,6 +5,7 @@ from itertools import izip
 import numpy as np
 
 from arrow.math import multichoose
+import obsidian
 
 def derive_reactants(stoichiometric_matrix):
     reactants = [
@@ -144,3 +145,51 @@ class StochasticSystem(object):
             reactants=self.reactants,
             reactant_stoichiometries=self.reactant_stoichiometries,
             dependencies=self.dependencies)
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+class Arrow(object):
+    def __init__(self, stoichiometry, rates):
+        self.stoichiometry = stoichiometry
+        self.rates = rates
+
+        reactants, reactions = derive_reactants(stoichiometry.T)
+        dependencies = calculate_dependencies(stoichiometry.T)
+
+        self.reactants_lengths = np.array([
+            len(reactant)
+            for reactant in reactants])
+        self.reactants_indexes = np.insert(self.reactants_lengths, 0, 0).cumsum()[:-1]
+        self.reactants_flat = np.array(flatten(reactants))
+        self.reactions_flat = np.array(flatten(reactions))
+
+        self.dependencies_lengths = np.array([
+            len(dependency)
+            for dependency in dependencies])
+        self.dependencies_indexes = np.insert(self.dependencies_lengths, 0, 0).cumsum()[:-1]
+        self.dependencies_flat = np.array(flatten(dependencies))
+
+        self.obsidian = obsidian.obsidian(
+            self.stoichiometry,
+            self.rates,
+            self.reactants_lengths,
+            self.reactants_indexes,
+            self.reactants_flat,
+            self.reactions_flat,
+            self.dependencies_lengths,
+            self.dependencies_indexes,
+            self.dependencies_flat)
+
+    def evolve(self, duration, state):
+        steps, time, events, outcome = self.obsidian.evolve(duration, state)
+        occurrences = np.zeros(len(self.rates))
+        for event in events:
+            occurrences[event] += 1
+
+        return {
+            'steps': steps,
+            'time': time,
+            'events': events,
+            'occurrences': occurrences,
+            'outcome': outcome}

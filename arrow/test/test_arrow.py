@@ -17,6 +17,7 @@ import json
 import argparse
 
 from arrow import evolve, derive_reactants, calculate_dependencies, StochasticSystem
+from arrow import Arrow
 import obsidian
 
 def test_equilibration():
@@ -94,8 +95,6 @@ def test_complexation():
 
     system = StochasticSystem(stoichiometric_matrix, rates)
 
-    # import ipdb; ipdb.set_trace()
-
     time, counts, events = system.evolve(initial_state, duration)
 
     assert(len(time)-1 == events.sum())
@@ -111,9 +110,6 @@ def test_complexation():
 
     return (time, counts, events)
 
-def flatten(l):
-    return [item for sublist in l for item in sublist]
-
 def test_obsidian():
     stoichiometric_matrix = np.array([
         [1, 1, -1, 0],
@@ -122,47 +118,17 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    reactants, reactions = derive_reactants(stoichiometric_matrix.T)
-    dependencies = calculate_dependencies(stoichiometric_matrix.T)
+    arrow = Arrow(stoichiometric_matrix, rates)
+    result = arrow.evolve(1.0, np.array([50, 20, 30, 40]))
 
-    reactants_lengths = np.array([
-        len(reactant)
-        for reactant in reactants])
-    reactants_indexes = np.insert(reactants_lengths, 0, 0).cumsum()[:-1]
-    reactants_flat = np.array(flatten(reactants))
-    reactions_flat = np.array(flatten(reactions))
+    print('steps: {}'.format(result['steps']))
+    print('time: {}'.format(result['time']))
+    print('events: {}'.format(result['events']))
+    print('occurrences: {}'.format(result['occurrences']))
+    print('outcome: {}'.format(result['outcome']))
 
-    dependencies_lengths = np.array([
-        len(dependency)
-        for dependency in dependencies])
-    dependencies_indexes = np.insert(dependencies_lengths, 0, 0).cumsum()[:-1]
-    dependencies_flat = np.array(flatten(dependencies))
-
-    print('\nstoichiometry:\n {}'.format(stoichiometric_matrix))
-    print('reactants:\n {}\n {}\n {} -> {}'.format(reactants_lengths, reactants_indexes, reactants, reactants_flat))
-    print('reactions: {} -> {}'.format(reactions, reactions_flat))
-    print('dependencies: {} {} {}'.format(dependencies_lengths, dependencies_indexes, dependencies_flat))
-
-    ob = obsidian.obsidian(
-        stoichiometric_matrix,
-        rates,
-        reactants_lengths,
-        reactants_indexes,
-        reactants_flat,
-        reactions_flat,
-        dependencies_lengths,
-        dependencies_indexes,
-        dependencies_flat)
-
-    steps, time, events, state = ob.evolve(1.0, np.array([50, 20, 30, 40]))
-
-    print('steps: {}'.format(steps))
-    print('time: {}'.format(time))
-    print('events: {}'.format(events))
-    print('state: {}'.format(state))
-
-    assert(ob.reactions_length() == stoichiometric_matrix.shape[0])
-    assert(ob.substrates_length() == stoichiometric_matrix.shape[1])
+    assert(arrow.obsidian.reactions_length() == stoichiometric_matrix.shape[0])
+    assert(arrow.obsidian.substrates_length() == stoichiometric_matrix.shape[1])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
