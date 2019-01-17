@@ -6,7 +6,7 @@ struct evolve_result {
   int steps;
   double * time;
   long * events;
-  long * state;
+  long * outcome;
 };
 
 evolve_result

@@ -145,9 +145,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "dO", &duration, &state_obj))
     return NULL;
 
-  /* printf("duration !!!! %f\n", duration); */
+  PyObject * state_array = array_for(state_obj, NPY_INT64);
+  long * state = (long *) PyArray_DATA(state_array);
 
-  long * state = long_data_for(state_obj);
   evolve_result result = evolve(self->reactions_length,
                                 self->substrates_length,
                                 self->stoichiometry,
@@ -165,15 +165,6 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 duration,
                                 state);
   
-  /* printf("time: "); */
-  /* print_array(result.time, result.steps); */
-
-  /* printf("events: "); */
-  /* print_long_array(result.events, result.steps); */
-
-  /* printf("state: "); */
-  /* print_array(result.state, self->substrates_length); */
-
   long steps[1];
   steps[0] = result.steps;
 
@@ -182,11 +173,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
 
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
   PyObject * events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
-  PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.state);
+  PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome);
 
-  /* Py_XDECREF(state_obj); */
-  /* free(result.time); */
-  /* free(result.events); */
+  Py_XDECREF(state_array);
 
   return Py_BuildValue("iOOO",
                        result.steps,
@@ -366,18 +355,28 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   PyObject * rates_array = array_for(rates_obj, NPY_DOUBLE);
   double * rates = (double *) PyArray_DATA(rates_array);
 
-  long * reactants_lengths = long_data_for(reactants_lengths_obj);
-  long * reactants_indexes = long_data_for(reactants_indexes_obj);
-  long * reactants = long_data_for(reactants_obj);
-  long * reactions = long_data_for(reactions_obj);
+  PyObject * reactants_lengths_array = array_for(reactants_lengths_obj, NPY_INT64);
+  long * reactants_lengths = (long *) PyArray_DATA(reactants_lengths_array);
+  PyObject * reactants_indexes_array = array_for(reactants_indexes_obj, NPY_INT64);
+  long * reactants_indexes = (long *) PyArray_DATA(reactants_indexes_array);
+  PyObject * reactants_array = array_for(reactants_obj, NPY_INT64);
+  long * reactants = (long *) PyArray_DATA(reactants_array);
+  PyObject * reactions_array = array_for(reactions_obj, NPY_INT64);
+  long * reactions = (long *) PyArray_DATA(reactions_array);
 
-  long * dependencies_lengths = long_data_for(dependencies_lengths_obj);
-  long * dependencies_indexes = long_data_for(dependencies_indexes_obj);
-  long * dependencies = long_data_for(dependencies_obj);
+  PyObject * dependencies_lengths_array = array_for(dependencies_lengths_obj, NPY_INT64);
+  long * dependencies_lengths = (long *) PyArray_DATA(dependencies_lengths_array);
+  PyObject * dependencies_indexes_array = array_for(dependencies_indexes_obj, NPY_INT64);
+  long * dependencies_indexes = (long *) PyArray_DATA(dependencies_indexes_array);
+  PyObject * dependencies_array = array_for(dependencies_obj, NPY_INT64);
+  long * dependencies = (long *) PyArray_DATA(dependencies_array);
 
-  long * actors_lengths = long_data_for(actors_lengths_obj);
-  long * actors_indexes = long_data_for(actors_indexes_obj);
-  long * actors = long_data_for(actors_obj);
+  PyObject * actors_lengths_array = array_for(actors_lengths_obj, NPY_INT64);
+  long * actors_lengths = (long *) PyArray_DATA(actors_lengths_array);
+  PyObject * actors_indexes_array = array_for(actors_indexes_obj, NPY_INT64);
+  long * actors_indexes = (long *) PyArray_DATA(actors_indexes_array);
+  PyObject * actors_array = array_for(actors_obj, NPY_INT64);
+  long * actors = (long *) PyArray_DATA(actors_array);
 
   // create the obsidian object
   obsidian = newObsidianObject(reactions_length,
@@ -401,6 +400,19 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   if (obsidian == NULL) {
     return NULL;
   }
+
+  Py_XDECREF(reactants_lengths_array);
+  Py_XDECREF(reactants_indexes_array);
+  Py_XDECREF(reactants_array);
+  Py_XDECREF(reactions_array);
+
+  Py_XDECREF(dependencies_lengths_array);
+  Py_XDECREF(dependencies_indexes_array);
+  Py_XDECREF(dependencies_array);
+
+  Py_XDECREF(actors_lengths_array);
+  Py_XDECREF(actors_indexes_array);
+  Py_XDECREF(actors_array);
 
   return (PyObject *) obsidian;
 }

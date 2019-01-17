@@ -31,7 +31,7 @@ print_long_array(long * array, int length) {
   return 0;
 }
 
-static int INITIAL_LENGTH = 1000;
+static int INITIAL_LENGTH = 4000;
 
 double
 choose(long n, long k) {
@@ -65,8 +65,9 @@ evolve(int reactions_length,
        double duration,
        long * state) {
 
-  double * time = malloc((sizeof (double *)) * INITIAL_LENGTH);
-  long * events = malloc((sizeof (long *)) * INITIAL_LENGTH);
+  long event_bounds = INITIAL_LENGTH;
+  double * time = malloc((sizeof (double *)) * event_bounds);
+  long * events = malloc((sizeof (long *)) * event_bounds);
   long * outcome = malloc((sizeof (long *)) * substrates_length);
 
   double * propensities = malloc((sizeof (double *)) * reactions_length);
@@ -88,35 +89,7 @@ evolve(int reactions_length,
     update[reaction] = reaction;
   }
 
-  /* int rlength = 0; */
-  /* for (reaction = 0; reaction < reactions_length; reaction++) { */
-  /*   rlength += reactants_lengths[reaction]; */
-  /* } */
-
-  /* int dlength = 0; */
-  /* for (reaction = 0; reaction < reactions_length; reaction++) { */
-  /*   dlength += dependencies_lengths[reaction]; */
-  /* } */
-
-  /* printf("reactants_lengths: "); */
-  /* print_long_array(reactants_lengths, reactions_length); */
-  /* printf("reactants_indexes: "); */
-  /* print_long_array(reactants_indexes, reactions_length); */
-  /* printf("reactants: "); */
-  /* print_long_array(reactants, rlength); */
-  /* printf("reactions: "); */
-  /* print_array(reactions, rlength); */
-
-  /* printf("dependencies_lengths: "); */
-  /* print_long_array(dependencies_lengths, reactions_length); */
-  /* printf("dependencies_indexes: "); */
-  /* print_long_array(dependencies_indexes, reactions_length); */
-  /* printf("dependencies: "); */
-  /* print_long_array(dependencies, dlength); */
-
   while(now < duration) {
-    /* printf("step %i\n", step); */
-
     for (up = 0; up < update_length; up++) {
       reaction = update[up];
       propensities[reaction] = rates[reaction];
@@ -124,34 +97,23 @@ evolve(int reactions_length,
       for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
         index = reactants_indexes[reaction] + reactant;
         count = outcome[reactants[index]];
-        /* printf("count of %ld = %f\n", reactants[index], count); */
         propensities[reaction] *= choose(count, reactions[index]);
       }
-
-      /* printf("updated propensity[%ld]: %f\n", reaction, propensities[reaction]); */
     }
-
-    /* printf("propensities: "); */
-    /* print_array(propensities, reactions_length); */
 
     total = 0.0;
     for (reaction = 0; reaction < reactions_length; reaction++) {
       total += propensities[reaction];
     }
 
-    /* printf("total: %f\n", total); */
-
     if (total == 0.0) {
       interval = 0.0;
       choice = -1;
-      /* printf("breaking because total is 0.0\n"); */
       break;
     } else {
       sample = (double) rand() / RAND_MAX;
       interval = -log(1 - sample) / total;
       point = ((double) rand() / RAND_MAX) * total;
-
-      /* printf("sample: %f - interval: %f - point: %f\n", sample, interval, point); */
 
       choice = 0;
       progress = 0.0;
@@ -160,17 +122,11 @@ evolve(int reactions_length,
         choice += 1;
       }
 
-      /* printf("choice: %d\n", choice); */
-      /* printf("progress: %f - now: %f - duration: %f\n", progress, now, duration); */
-
       if (choice == -1 || (now + interval) > duration) {
-        /* printf("completing: %d %d\n", choice == -1, (now + interval) > duration); */
         break;
       }
 
       now += interval;
-
-      /* printf("new time: %f\n", now); */
 
       time[step] = now;
       events[step] = choice;
@@ -180,13 +136,7 @@ evolve(int reactions_length,
         index = actors_indexes[choice] + actor;
         adjustment = stoichiometry[choice * substrates_length + actors[index]];
         outcome[actors[index]] += adjustment;
-
-        /* printf("actor[%ld]: %ld -> %ld = %f\n", index, actor, actors[index], adjustment); */
       }
-
-      /* for (species = 0; species < substrates_length; species++) { */
-      /*   state[species] += stoichiometry[choice * substrates_length + species]; */
-      /* } */
 
       update_length = dependencies_lengths[choice];
       for (up = 0; up < update_length; up++) {
@@ -194,15 +144,24 @@ evolve(int reactions_length,
         update[up] = dependencies[index];
       }
 
-      /* printf("update\n"); */
-      /* print_long_array(update, update_length); */
-
       step += 1;
+
+      if (step >= event_bounds) {
+        double * new_time = malloc((sizeof (double *)) * event_bounds * 2);
+        memcpy(new_time, time, (sizeof (double *)) * event_bounds);
+        free(time);
+        time = new_time;
+
+        long * new_events = malloc((sizeof (long *)) * event_bounds * 2);
+        memcpy(new_events, events, (sizeof (long *)) * event_bounds);
+        free(events);
+        events = new_events;
+
+        event_bounds *= 2;
+      }
     }
   }
 
-  /* print_array(state, substrates_length); */
-  
   evolve_result result = {step, time, events, outcome};
 
   free(propensities);

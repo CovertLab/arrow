@@ -120,12 +120,12 @@ def test_obsidian():
     stoichiometric_matrix = np.array([
         [1, 1, -1, 0],
         [-2, 0, 0, 1],
-        [-1, -1, 1, 0]])
+        [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
 
     arrow = Arrow(stoichiometric_matrix, rates)
-    result = arrow.evolve(1.0, np.array([50, 20, 30, 40]))
+    result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
 
     print('steps: {}'.format(result['steps']))
     print('time: {}'.format(result['time']))
