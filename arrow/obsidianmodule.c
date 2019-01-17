@@ -42,6 +42,10 @@ typedef struct {
   long * dependencies_lengths;
   long * dependencies_indexes;
   long * dependencies;
+
+  long * actors_lengths;
+  long * actors_indexes;
+  long * actors;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
@@ -61,7 +65,11 @@ newObsidianObject(int reactions_length,
 
                   long * dependencies_lengths,
                   long * dependencies_indexes,
-                  long * dependencies)
+                  long * dependencies,
+
+                  long * actors_lengths,
+                  long * actors_indexes,
+                  long * actors)
 {
   ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
@@ -83,6 +91,10 @@ newObsidianObject(int reactions_length,
   self->dependencies_lengths = dependencies_lengths;
   self->dependencies_indexes = dependencies_indexes;
   self->dependencies = dependencies;
+
+  self->actors_lengths = actors_lengths;
+  self->actors_indexes = actors_indexes;
+  self->actors = actors;
 
   return self;
 }
@@ -147,6 +159,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 self->dependencies_lengths,
                                 self->dependencies_indexes,
                                 self->dependencies,
+                                self->actors_lengths,
+                                self->actors_indexes,
+                                self->actors,
                                 duration,
                                 state);
   
@@ -167,7 +182,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
 
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
   PyObject * events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
-  PyObject * result_obj = PyArray_SimpleNewFromData(1, substrates, NPY_DOUBLE, result.state);
+  PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_DOUBLE, result.state);
 
   /* Py_XDECREF(state_obj); */
   /* free(result.time); */
@@ -177,7 +192,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                        result.steps,
                        time_obj,
                        events_obj,
-                       result_obj);
+                       outcome_obj);
 }
 
 static PyMethodDef Obsidian_methods[] = {
@@ -316,10 +331,14 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
 
     * dependencies_lengths_obj,
     * dependencies_indexes_obj,
-    * dependencies_obj;
+    * dependencies_obj,
+
+    * actors_lengths_obj,
+    * actors_indexes_obj,
+    * actors_obj;
 
   if (!PyArg_ParseTuple(args,
-                        "OOOOOOOOO",
+                        "OOOOOOOOOOOO",
                         &stoichiometry_obj,
                         &rates_obj,
 
@@ -330,7 +349,11 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
 
                         &dependencies_lengths_obj,
                         &dependencies_indexes_obj,
-                        &dependencies_obj))
+                        &dependencies_obj,
+
+                        &actors_lengths_obj,
+                        &actors_indexes_obj,
+                        &actors_obj))
     return NULL;
 
   // import the stoichiometric_matrix as a 2d numpy array
@@ -352,6 +375,10 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   long * dependencies_indexes = long_data_for(dependencies_indexes_obj);
   long * dependencies = long_data_for(dependencies_obj);
 
+  long * actors_lengths = long_data_for(actors_lengths_obj);
+  long * actors_indexes = long_data_for(actors_indexes_obj);
+  long * actors = long_data_for(actors_obj);
+
   // create the obsidian object
   obsidian = newObsidianObject(reactions_length,
                                substrates_length,
@@ -365,7 +392,11 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
 
                                dependencies_lengths,
                                dependencies_indexes,
-                               dependencies);
+                               dependencies,
+
+                               actors_lengths,
+                               actors_indexes,
+                               actors);
 
   if (obsidian == NULL) {
     return NULL;

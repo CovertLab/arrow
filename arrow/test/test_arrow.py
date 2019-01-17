@@ -91,15 +91,21 @@ def test_complexation():
     duration = 1
 
     # semi-quantitative rate constants
-    rates = np.full(n_reactions, 10)
+    rates = np.full(n_reactions, 1000)
 
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    # system = StochasticSystem(stoichiometric_matrix, rates)
+    # time, counts, events = system.evolve(initial_state, duration)
+    # outcome = counts[-1]
 
-    time, counts, events = system.evolve(initial_state, duration)
+    system = Arrow(stoichiometric_matrix.T, rates)
+    result = system.evolve(duration, initial_state)
 
-    assert(len(time)-1 == events.sum())
+    time = result['time']
+    events = result['occurrences']
+    outcome = result['outcome']
 
-    outcome = counts[-1]
+    assert(len(time) == int(events.sum()))
+
     difference = (final_state - outcome)
 
     total = np.abs(difference).sum()
@@ -108,7 +114,7 @@ def test_complexation():
     print('total steps: {}'.format(len(time)))
     print(time)
 
-    return (time, counts, events)
+    return (time, outcome, events)
 
 def test_obsidian():
     stoichiometric_matrix = np.array([
