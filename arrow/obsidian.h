@@ -24,9 +24,9 @@ evolve(int reactions_length,
        long * dependencies_indexes,
        long * dependencies,
 
-       long * actors_lengths,
-       long * actors_indexes,
-       long * actors,
+       long * involved_lengths,
+       long * involved_indexes,
+       long * involved,
 
        double duration,
        long * state);

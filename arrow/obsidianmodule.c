@@ -43,9 +43,9 @@ typedef struct {
   long * dependencies_indexes;
   long * dependencies;
 
-  long * actors_lengths;
-  long * actors_indexes;
-  long * actors;
+  long * involved_lengths;
+  long * involved_indexes;
+  long * involved;
 } ObsidianObject;
 
 static PyTypeObject Obsidian_Type;
@@ -67,9 +67,9 @@ newObsidianObject(int reactions_length,
                   long * dependencies_indexes,
                   long * dependencies,
 
-                  long * actors_lengths,
-                  long * actors_indexes,
-                  long * actors)
+                  long * involved_lengths,
+                  long * involved_indexes,
+                  long * involved)
 {
   ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
@@ -92,9 +92,9 @@ newObsidianObject(int reactions_length,
   self->dependencies_indexes = dependencies_indexes;
   self->dependencies = dependencies;
 
-  self->actors_lengths = actors_lengths;
-  self->actors_indexes = actors_indexes;
-  self->actors = actors;
+  self->involved_lengths = involved_lengths;
+  self->involved_indexes = involved_indexes;
+  self->involved = involved;
 
   return self;
 }
@@ -159,9 +159,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 self->dependencies_lengths,
                                 self->dependencies_indexes,
                                 self->dependencies,
-                                self->actors_lengths,
-                                self->actors_indexes,
-                                self->actors,
+                                self->involved_lengths,
+                                self->involved_indexes,
+                                self->involved,
                                 duration,
                                 state);
   
@@ -322,9 +322,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
     * dependencies_indexes_obj,
     * dependencies_obj,
 
-    * actors_lengths_obj,
-    * actors_indexes_obj,
-    * actors_obj;
+    * involved_lengths_obj,
+    * involved_indexes_obj,
+    * involved_obj;
 
   if (!PyArg_ParseTuple(args,
                         "OOOOOOOOOOOO",
@@ -340,9 +340,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                         &dependencies_indexes_obj,
                         &dependencies_obj,
 
-                        &actors_lengths_obj,
-                        &actors_indexes_obj,
-                        &actors_obj))
+                        &involved_lengths_obj,
+                        &involved_indexes_obj,
+                        &involved_obj))
     return NULL;
 
   // import the stoichiometric_matrix as a 2d numpy array
@@ -371,12 +371,12 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   PyObject * dependencies_array = array_for(dependencies_obj, NPY_INT64);
   long * dependencies = (long *) PyArray_DATA(dependencies_array);
 
-  PyObject * actors_lengths_array = array_for(actors_lengths_obj, NPY_INT64);
-  long * actors_lengths = (long *) PyArray_DATA(actors_lengths_array);
-  PyObject * actors_indexes_array = array_for(actors_indexes_obj, NPY_INT64);
-  long * actors_indexes = (long *) PyArray_DATA(actors_indexes_array);
-  PyObject * actors_array = array_for(actors_obj, NPY_INT64);
-  long * actors = (long *) PyArray_DATA(actors_array);
+  PyObject * involved_lengths_array = array_for(involved_lengths_obj, NPY_INT64);
+  long * involved_lengths = (long *) PyArray_DATA(involved_lengths_array);
+  PyObject * involved_indexes_array = array_for(involved_indexes_obj, NPY_INT64);
+  long * involved_indexes = (long *) PyArray_DATA(involved_indexes_array);
+  PyObject * involved_array = array_for(involved_obj, NPY_INT64);
+  long * involved = (long *) PyArray_DATA(involved_array);
 
   // create the obsidian object
   obsidian = newObsidianObject(reactions_length,
@@ -393,9 +393,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                                dependencies_indexes,
                                dependencies,
 
-                               actors_lengths,
-                               actors_indexes,
-                               actors);
+                               involved_lengths,
+                               involved_indexes,
+                               involved);
 
   if (obsidian == NULL) {
     return NULL;
@@ -410,9 +410,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   Py_XDECREF(dependencies_indexes_array);
   Py_XDECREF(dependencies_array);
 
-  Py_XDECREF(actors_lengths_array);
-  Py_XDECREF(actors_indexes_array);
-  Py_XDECREF(actors_array);
+  Py_XDECREF(involved_lengths_array);
+  Py_XDECREF(involved_indexes_array);
+  Py_XDECREF(involved_array);
 
   return (PyObject *) obsidian;
 }

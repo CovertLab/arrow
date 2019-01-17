@@ -58,9 +58,9 @@ evolve(int reactions_length,
        long * dependencies_indexes,
        long * dependencies,
 
-       long * actors_lengths,
-       long * actors_indexes,
-       long * actors,
+       long * involved_lengths,
+       long * involved_indexes,
+       long * involved,
 
        double duration,
        long * state) {
@@ -73,9 +73,9 @@ evolve(int reactions_length,
   double * propensities = malloc((sizeof (double *)) * reactions_length);
   long * update = malloc((sizeof (long *)) * reactions_length);
   long update_length = reactions_length;
-  long actors_length;
+  long involved_length;
 
-  long reaction, reactant, species, index, actor, count, adjustment;
+  long reaction, reactant, species, index, involve, count, adjustment;
   double total, interval, sample, progress, point;
   
   int choice, step = 0, up = 0;
@@ -131,11 +131,11 @@ evolve(int reactions_length,
       time[step] = now;
       events[step] = choice;
 
-      actors_length = actors_lengths[choice];
-      for (actor = 0; actor < actors_length; actor++) {
-        index = actors_indexes[choice] + actor;
-        adjustment = stoichiometry[choice * substrates_length + actors[index]];
-        outcome[actors[index]] += adjustment;
+      involved_length = involved_lengths[choice];
+      for (involve = 0; involve < involved_length; involve++) {
+        index = involved_indexes[choice] + involve;
+        adjustment = stoichiometry[choice * substrates_length + involved[index]];
+        outcome[involved[index]] += adjustment;
       }
 
       update_length = dependencies_lengths[choice];

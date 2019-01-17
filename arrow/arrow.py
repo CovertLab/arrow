@@ -16,11 +16,11 @@ def derive_reactants(stoichiometric_matrix):
         -stoichiometric_matrix[r, reaction_index]
         for reaction_index, r in enumerate(reactants)]
 
-    actors = [
+    involved = [
         np.where(stoichiometry != 0)[0]
         for stoichiometry in stoichiometric_matrix.T]
 
-    return reactants, reactant_stoichiometries, actors
+    return reactants, reactant_stoichiometries, involved
 
 def calculate_dependencies(stoichiometric_matrix):
     dependencies = [
@@ -39,7 +39,7 @@ def step(
         update_reactions=None):
 
     if reactants is None:
-        reactants, reactant_stoichiometries, actors = derive_reactants(
+        reactants, reactant_stoichiometries, involved = derive_reactants(
             stoichiometric_matrix)
 
     if update_reactions is None:
@@ -92,7 +92,7 @@ def evolve(
     events = np.zeros(rates.shape)
 
     if reactants is None or reactant_stoichiometries is None:
-        reactants, reactant_stoichiometries, actors = derive_reactants(
+        reactants, reactant_stoichiometries, involved = derive_reactants(
             stoichiometric_matrix)
 
     if dependencies is None:
@@ -131,7 +131,7 @@ class StochasticSystem(object):
         self.stoichiometric_matrix = stoichiometric_matrix
         self.rates = rates
 
-        reactants, reactant_stoichiometries, actors = derive_reactants(stoichiometric_matrix)
+        reactants, reactant_stoichiometries, involved = derive_reactants(stoichiometric_matrix)
 
         self.reactants = reactants
         self.reactant_stoichiometries = reactant_stoichiometries
@@ -158,7 +158,7 @@ class Arrow(object):
         self.stoichiometry = stoichiometry
         self.rates = rates
 
-        reactants, reactions, actors = derive_reactants(stoichiometry.T)
+        reactants, reactions, involved = derive_reactants(stoichiometry.T)
         dependencies = calculate_dependencies(stoichiometry.T)
 
         self.reactants_lengths = np.array([
@@ -174,11 +174,11 @@ class Arrow(object):
         self.dependencies_indexes = np.insert(self.dependencies_lengths, 0, 0).cumsum()[:-1]
         self.dependencies_flat = np.array(flatten(dependencies))
 
-        self.actors_lengths = np.array([
-            len(actor)
-            for actor in actors])
-        self.actors_indexes = np.insert(self.actors_lengths, 0, 0).cumsum()[:-1]
-        self.actors_flat = np.array(flatten(actors))
+        self.involved_lengths = np.array([
+            len(involve)
+            for involve in involved])
+        self.involved_indexes = np.insert(self.involved_lengths, 0, 0).cumsum()[:-1]
+        self.involved_flat = np.array(flatten(involved))
 
         self.obsidian = obsidian.obsidian(
             self.stoichiometry,
@@ -190,9 +190,9 @@ class Arrow(object):
             self.dependencies_lengths,
             self.dependencies_indexes,
             self.dependencies_flat,
-            self.actors_lengths,
-            self.actors_indexes,
-            self.actors_flat)
+            self.involved_lengths,
+            self.involved_indexes,
+            self.involved_flat)
 
     def evolve(self, duration, state):
         steps, time, events, outcome = self.obsidian.evolve(duration, state)
