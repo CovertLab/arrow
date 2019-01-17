@@ -33,12 +33,12 @@ print_long_array(long * array, int length) {
 
 static int INITIAL_LENGTH = 1000;
 
-int
-choose(int n, int k) {
+double
+choose(long n, long k) {
   double combinations = 1.0;
-  int i;
+  long i;
   for (i = 0; i < k; i++) {
-    combinations *= (n - i) / (i + 1);
+    combinations *= ((double) (n - i)) / (i + 1);
   }
   return combinations;
 }
@@ -46,13 +46,13 @@ choose(int n, int k) {
 evolve_result
 evolve(int reactions_length,
        int substrates_length,
-       double * stoichiometry,
+       long * stoichiometry,
        double * rates,
 
        long * reactants_lengths,
        long * reactants_indexes,
        long * reactants,
-       double * reactions,
+       long * reactions,
        
        long * dependencies_lengths,
        long * dependencies_indexes,
@@ -63,19 +63,19 @@ evolve(int reactions_length,
        long * actors,
 
        double duration,
-       double * state) {
+       long * state) {
 
   double * time = malloc((sizeof (double *)) * INITIAL_LENGTH);
   long * events = malloc((sizeof (long *)) * INITIAL_LENGTH);
-  double * outcome = malloc((sizeof (double *)) * substrates_length);
+  long * outcome = malloc((sizeof (long *)) * substrates_length);
 
   double * propensities = malloc((sizeof (double *)) * reactions_length);
   long * update = malloc((sizeof (long *)) * reactions_length);
   long update_length = reactions_length;
   long actors_length;
 
-  long reaction, reactant, species, index, actor;
-  double total, interval, sample, progress, point, adjustment, count;
+  long reaction, reactant, species, index, actor, count, adjustment;
+  double total, interval, sample, progress, point;
   
   int choice, step = 0, up = 0;
   double now = 0.0;

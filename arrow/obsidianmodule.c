@@ -31,13 +31,13 @@ typedef struct {
   PyObject * x_attr;
   int reactions_length;
   int substrates_length;
-  double * stoichiometry;
+  long * stoichiometry;
   double * rates;
 
   long * reactants_lengths;
   long * reactants_indexes;
   long * reactants;
-  double * reactions;
+  long * reactions;
 
   long * dependencies_lengths;
   long * dependencies_indexes;
@@ -55,13 +55,13 @@ static PyTypeObject Obsidian_Type;
 static ObsidianObject *
 newObsidianObject(int reactions_length,
                   int substrates_length,
-                  double * stoichiometry,
+                  long * stoichiometry,
                   double * rates,
 
                   long * reactants_lengths,
                   long * reactants_indexes,
                   long * reactants,
-                  double * reactions,
+                  long * reactions,
 
                   long * dependencies_lengths,
                   long * dependencies_indexes,
@@ -147,7 +147,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
 
   /* printf("duration !!!! %f\n", duration); */
 
-  double * state = double_data_for(state_obj);
+  long * state = long_data_for(state_obj);
   evolve_result result = evolve(self->reactions_length,
                                 self->substrates_length,
                                 self->stoichiometry,
@@ -182,7 +182,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
 
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
   PyObject * events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
-  PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_DOUBLE, result.state);
+  PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.state);
 
   /* Py_XDECREF(state_obj); */
   /* free(result.time); */
@@ -357,10 +357,10 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
     return NULL;
 
   // import the stoichiometric_matrix as a 2d numpy array
-  PyObject * stoichiometry_array = array_for(stoichiometry_obj, NPY_DOUBLE);
+  PyObject * stoichiometry_array = array_for(stoichiometry_obj, NPY_INT64);
   int reactions_length = (int) PyArray_DIM(stoichiometry_array, 0);
   int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
-  double * stoichiometry = (double *) PyArray_DATA(stoichiometry_array);
+  long * stoichiometry = (long *) PyArray_DATA(stoichiometry_array);
 
   // import the rates as a 1d numpy array
   PyObject * rates_array = array_for(rates_obj, NPY_DOUBLE);
@@ -369,7 +369,7 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   long * reactants_lengths = long_data_for(reactants_lengths_obj);
   long * reactants_indexes = long_data_for(reactants_indexes_obj);
   long * reactants = long_data_for(reactants_obj);
-  double * reactions = double_data_for(reactions_obj);
+  long * reactions = long_data_for(reactions_obj);
 
   long * dependencies_lengths = long_data_for(dependencies_lengths_obj);
   long * dependencies_indexes = long_data_for(dependencies_indexes_obj);

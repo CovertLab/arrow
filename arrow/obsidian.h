@@ -6,19 +6,19 @@ struct evolve_result {
   int steps;
   double * time;
   long * events;
-  double * state;
+  long * state;
 };
 
 evolve_result
 evolve(int reactions_length,
        int substrates_length,
-       double * stoichiometry,
+       long * stoichiometry,
        double * rates,
 
        long * reactants_lengths,
        long * reactants_indexes,
        long * reactants,
-       double * reactions,
+       long * reactions,
        
        long * dependencies_lengths,
        long * dependencies_indexes,
@@ -29,4 +29,4 @@ evolve(int reactions_length,
        long * actors,
 
        double duration,
-       double * state);
+       long * state);
