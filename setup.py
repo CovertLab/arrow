@@ -4,6 +4,7 @@ import setuptools
 from distutils.core import setup, Extension
 import numpy.distutils.misc_util
 
+headers = glob.glob('arrow/*.h')
 sources = glob.glob('arrow/*.c')
 obsidian = Extension('obsidian', sources=sources)
 
@@ -18,7 +19,7 @@ print include
 
 setup(
 	name='stochastic-arrow',
-	version='0.0.12',
+	version='0.0.15',
 	packages=['arrow'],
 	author='Ryan Spangler',
 	author_email='spanglry@stanford.edu',
