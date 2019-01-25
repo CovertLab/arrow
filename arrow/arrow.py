@@ -7,51 +7,83 @@ import numpy as np
 from arrow.math import multichoose
 import obsidian
 
-def derive_reactants(stoichiometric_matrix):
-    reactants = [
-        np.where(stoichiometry < 0)[0]
-        for stoichiometry in stoichiometric_matrix.T]
+def derive_reactants(stoichiometry):
+    '''
+    Calculate the various derived values this Gillespie implementation uses extensively
+    to avoid recalculating these values every step or call to `evolve`.
 
-    reactant_stoichiometries = [
-        -stoichiometric_matrix[r, reaction_index]
-        for reaction_index, r in enumerate(reactants)]
+    Args:
+        stoichiometry: A matrix representing all of the reactions the system is capable of.
+            Each row is a reaction, and each column is a substrate.
+
+    Returns:
+        reactants: Array of indexes into each reactant (substrate consumed by the reaction)
+            for each reaction.
+        reactions: The value of the reaction for each reactant involved.
+        involved: Array of indexes for each substrate involved in the reaction (reactant or product).
+    '''
+
+    reactants = [
+        np.where(reaction < 0)[0]
+        for reaction in stoichiometry]
+
+    reactions = [
+        -stoichiometry[reaction, r]
+        for reaction, r in enumerate(reactants)]
 
     involved = [
-        np.where(stoichiometry != 0)[0]
-        for stoichiometry in stoichiometric_matrix.T]
+        np.where(reaction != 0)[0]
+        for reaction in stoichiometry]
 
-    return reactants, reactant_stoichiometries, involved
+    return reactants, reactions, involved
 
-def calculate_dependencies(stoichiometric_matrix):
+def calculate_dependencies(stoichiometry):
+    '''
+    Find out which reactions depend on which other reactions. A dependency exists if one of the
+    reactants or products of a reaction is a substrate involved in another reaction.
+
+    Args:
+        stoichiometry: A matrix representing all of the reactions the system is capable of.
+            Each row is a reaction, and each column is a substrate.
+
+    Returns:
+        dependencies: Array of indexes for each reaction that points to other reactions that will
+            be affected by the reaction.
+    '''
+
     dependencies = [
-        np.where(np.any(stoichiometric_matrix[stoichiometry != 0] < 0, 0))[0]
-        for stoichiometry in stoichiometric_matrix.T]
+        np.where(np.any(stoichiometry.T[reaction != 0] < 0, 0))[0]
+        for reaction in stoichiometry]
 
     return dependencies
 
 def step(
-        stoichiometric_matrix,
+        stoichiometry,
         rates,
         state,
         reactants=None,
-        reactant_stoichiometries=None,
+        reactions=None,
         propensities=None,
         update_reactions=None):
+    '''
+    Determines which reaction happens next and how much time passes before this event
+    given the stoichiometry, the rates of each reaction, and counts of all substrates.
+    '''
 
     if reactants is None:
-        reactants, reactant_stoichiometries, involved = derive_reactants(
-            stoichiometric_matrix.T)
+        reactants, reactions, involved = derive_reactants(
+            stoichiometry)
 
     if update_reactions is None:
-        n_reactions = stoichiometric_matrix.shape[0]
+        n_reactions = stoichiometry.shape[0]
 
         propensities = np.empty(n_reactions)
         update_reactions = xrange(n_reactions)
 
-    for reaction_index in update_reactions:
-        propensities[reaction_index] = rates[reaction_index] * multichoose(
-            state[reactants[reaction_index]],
-            reactant_stoichiometries[reaction_index])
+    for reaction in update_reactions:
+        propensities[reaction] = rates[reaction] * multichoose(
+            state[reactants[reaction]],
+            reactions[reaction])
 
     total = propensities.sum()
 
@@ -70,20 +102,24 @@ def step(
             if random <= progress:
                 break
 
-        stoichiometry = stoichiometric_matrix[choice, :]
-        outcome = state + stoichiometry
+        reaction = stoichiometry[choice]
+        outcome = state + reaction
 
     return interval, outcome, choice, propensities
 
 
 def evolve(
-        stoichiometric_matrix,
+        stoichiometry,
         rates,
         state,
         duration,
         reactants=None,
-        reactant_stoichiometries=None,
+        reactions=None,
         dependencies=None):
+    '''
+    Perform a series of steps in the Gillepsie algorithm until the given duration is reached.
+    '''
+
     now = 0
     time = [0]
     counts = [state]
@@ -91,20 +127,20 @@ def evolve(
     update_reactions = None
     events = np.zeros(rates.shape)
 
-    if reactants is None or reactant_stoichiometries is None:
-        reactants, reactant_stoichiometries, involved = derive_reactants(
-            stoichiometric_matrix.T)
+    if reactants is None or reactions is None:
+        reactants, reactions, involved = derive_reactants(
+            stoichiometry)
 
     if dependencies is None:
-        dependencies = calculate_dependencies(stoichiometric_matrix.T)
+        dependencies = calculate_dependencies(stoichiometry)
 
     while True:
         interval, state, choice, propensities = step(
-            stoichiometric_matrix,
+            stoichiometry,
             rates,
             state,
             reactants,
-            reactant_stoichiometries,
+            reactions,
             propensities,
             update_reactions)
 
@@ -125,43 +161,41 @@ def evolve(
 
     return time, counts, events
 
+class GillespieReference(object):
+    '''
+    This is a pure python implementation of the Gillespie algorithm:
+    https://en.wikipedia.org/wiki/Gillespie_algorithm
 
-class StochasticSystem(object):
-    def __init__(self, stoichiometric_matrix, rates):
-        self.stoichiometric_matrix = stoichiometric_matrix
+    It has been subsumed by the native implementation in C, Obsidian, but is still useful here as
+    reference to the algorithm.
+    '''
+    def __init__(self, stoichiometry, rates):
+        self.stoichiometry = stoichiometry
         self.rates = rates
 
-        reactants, reactant_stoichiometries, involved = derive_reactants(stoichiometric_matrix.T)
+        reactants, reactions, involved = derive_reactants(stoichiometry)
 
         self.reactants = reactants
-        self.reactant_stoichiometries = reactant_stoichiometries
-        self.dependencies = calculate_dependencies(stoichiometric_matrix.T)
+        self.reactions = reactions
+        self.dependencies = calculate_dependencies(stoichiometry)
 
     def step(self, state):
-        return step(self.stoichiometric_matrix, self.rates, state)
+        return step(self.stoichiometry, self.rates, state)
 
     def evolve(self, state, duration):
         return evolve(
-            self.stoichiometric_matrix,
+            self.stoichiometry,
             self.rates,
             state,
             duration,
             reactants=self.reactants,
-            reactant_stoichiometries=self.reactant_stoichiometries,
+            reactions=self.reactions,
             dependencies=self.dependencies)
 
-def reenact_events(stoichiometry, events, state):
-    '''
-    Reproduce the history of states given an initial state, the history of events and the
-    stoichiometry of those events.
-    '''
-    history = np.zeros((events.shape[0] + 1, state.shape[0]))
-    history[0] = state
-    for index, event in enumerate(events):
-        history[index + 1] = history[index] + stoichiometry[event]
-    return history
-
 def flatten(l):
+    '''
+    Flatten a list by one level: [[1, 2, 3], [[4, 5], 6], [7]] --> [1, 2, 3, [4, 5], 6, 7]
+    '''
     return [
         item
         for sublist in l
@@ -180,13 +214,24 @@ def flat_indexes(variable):
     flat = np.array(flatten(variable))
     return flat, lengths, indexes
 
-class Arrow(object):
+def reenact_events(stoichiometry, events, state):
+    '''
+    Reproduce the history of states given an initial state, the history of events and the
+    stoichiometry of those events.
+    '''
+    history = np.zeros((events.shape[0] + 1, state.shape[0]))
+    history[0] = state
+    for index, event in enumerate(events):
+        history[index + 1] = history[index] + stoichiometry[event]
+    return history
+
+class StochasticSystem(object):
     def __init__(self, stoichiometry, rates):
         self.stoichiometry = stoichiometry
         self.rates = rates
 
-        reactants, reactions, involved = derive_reactants(stoichiometry.T)
-        dependencies = calculate_dependencies(stoichiometry.T)
+        reactants, reactions, involved = derive_reactants(stoichiometry)
+        dependencies = calculate_dependencies(stoichiometry)
 
         self.reactants_flat, self.reactants_lengths, self.reactants_indexes = flat_indexes(reactants)
         self.reactions_flat = np.array(flatten(reactions))

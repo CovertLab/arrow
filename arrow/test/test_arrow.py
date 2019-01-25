@@ -16,8 +16,9 @@ import numpy as np
 import json
 import argparse
 
-from arrow import evolve, derive_reactants, calculate_dependencies, reenact_events, StochasticSystem
-from arrow import Arrow
+from arrow import derive_reactants, calculate_dependencies, reenact_events, StochasticSystem
+from arrow import evolve, GillespieReference
+
 import obsidian
 
 def test_equilibration():
@@ -27,7 +28,7 @@ def test_equilibration():
         [-1, +1]])
 
     rates = np.array([10, 10, 0.1])
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix, rates)
 
     state = np.array([1000, 0])
     duration = 10
@@ -47,7 +48,7 @@ def test_dimerization():
         [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix, rates)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
@@ -80,24 +81,24 @@ def test_complexation():
 
     n_reactions = len(stoichiometry_sparse)
 
-    stoichiometric_matrix = np.zeros((n_metabolites, n_reactions), np.int64)
+    stoichiometric_matrix = np.zeros((n_reactions, n_metabolites), np.int64)
 
     for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
         for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
             # JSON doesn't allow for integer keys...
             metabolite_index = int(str_metabolite_index)
-            stoichiometric_matrix[metabolite_index, reaction_index] = stoich
+            stoichiometric_matrix[reaction_index, metabolite_index] = stoich
 
     duration = 1
 
     # semi-quantitative rate constants
     rates = np.full(n_reactions, 1000)
 
-    # system = StochasticSystem(stoichiometric_matrix, rates)
+    # system = GillespieReference(stoichiometric_matrix, rates)
     # time, counts, events = system.evolve(initial_state, duration)
     # outcome = counts[-1]
 
-    system = Arrow(stoichiometric_matrix.T, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates)
     result = system.evolve(duration, initial_state)
 
     time = np.concatenate([[0.0], result['time']])
@@ -105,7 +106,7 @@ def test_complexation():
     occurrences = result['occurrences']
     outcome = result['outcome']
 
-    history = reenact_events(stoichiometric_matrix.T, events, initial_state)
+    history = reenact_events(stoichiometric_matrix, events, initial_state)
 
     assert(len(time) - 1 == int(occurrences.sum()))
 
@@ -129,7 +130,7 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    arrow = Arrow(stoichiometric_matrix, rates)
+    arrow = StochasticSystem(stoichiometric_matrix, rates)
     result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
 
     print('steps: {}'.format(result['steps']))
