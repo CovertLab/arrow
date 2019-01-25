@@ -3,34 +3,6 @@
 #include <stdlib.h>
 #include "obsidian.h"
 
-int
-print_array(double * array, int length) {
-  for (int index = 0; index < length; index++) {
-    printf("a[%d] = %f", index, array[index]);
-    if (index == length - 1) {
-      printf("\n");
-    } else {
-      printf(", ");
-    }
-  }
-
-  return 0;
-}
-
-int
-print_long_array(long * array, int length) {
-  for (int index = 0; index < length; index++) {
-    printf("a[%d] = %ld", index, array[index]);
-    if (index == length - 1) {
-      printf("\n");
-    } else {
-      printf(", ");
-    }
-  }
-
-  return 0;
-}
-
 static int INITIAL_LENGTH = 4000;
 
 double
@@ -169,3 +141,32 @@ evolve(int reactions_length,
 
   return result;
 }
+
+int
+print_array(double * array, int length) {
+  for (int index = 0; index < length; index++) {
+    printf("a[%d] = %f", index, array[index]);
+    if (index == length - 1) {
+      printf("\n");
+    } else {
+      printf(", ");
+    }
+  }
+
+  return 0;
+}
+
+int
+print_long_array(long * array, int length) {
+  for (int index = 0; index < length; index++) {
+    printf("a[%d] = %ld", index, array[index]);
+    if (index == length - 1) {
+      printf("\n");
+    } else {
+      printf(", ");
+    }
+  }
+
+  return 0;
+}
+

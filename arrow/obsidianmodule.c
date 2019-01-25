@@ -2,6 +2,19 @@
 #include <numpy/arrayobject.h>
 #include "obsidian.h"
 
+// The code in this file acts as a bridge between Python (the caller) and Obsidian (the called).
+// Most of this is to reify an object that will hold the references to the C values that will be
+// used to perform the actual Gillespie algorithm in pure C. The rest is translation of the
+// incoming numpy arrays into C double * and long *. 
+
+// The actual Gillespie algorithm is performed in pure C in obsidian.c, with a header in obsidian.h,
+// and some effort has been made to keep it clean of any reference or knowledge of python, which
+// is restricted to this file.
+
+
+// Converts an arbitrary PyObject * into another PyObject * that represents a numpy array.
+// The reference to this array is transferred to the caller, who is responsible for decrementing
+// the reference once it is finished with it.
 static PyObject *
 array_for(PyObject * array_obj, int npy_type) {
   PyObject * array = PyArray_FROM_OTF(array_obj, npy_type, NPY_ARRAY_IN_ARRAY);
@@ -14,18 +27,7 @@ array_for(PyObject * array_obj, int npy_type) {
   return array;
 }
 
-static long *
-long_data_for(PyObject * array_obj) {
-  PyObject * array = array_for(array_obj, NPY_INT64);
-  return (long *) PyArray_DATA(array);
-}
-
-static double *
-double_data_for(PyObject * array_obj) {
-  PyObject * array = array_for(array_obj, NPY_DOUBLE);
-  return (double *) PyArray_DATA(array);
-}
-
+// The definition of the data fields for an Obsidian object as a C struct.
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
@@ -48,10 +50,12 @@ typedef struct {
   long * involved;
 } ObsidianObject;
 
+// Declaring a new python type for Obsidian.
 static PyTypeObject Obsidian_Type;
-
 #define ObsidianObject_Check(v) (Py_TYPE(v) == &Obsidian_Type)
 
+// Accept all the information needed to construct a new Obsidian object
+// and return a reference to it.
 static ObsidianObject *
 newObsidianObject(int reactions_length,
                   int substrates_length,
@@ -99,6 +103,7 @@ newObsidianObject(int reactions_length,
   return self;
 }
 
+// Provide a means for deallocating the Obsidian object.
 static void
 Obsidian_dealloc(ObsidianObject *self)
 {
@@ -106,6 +111,7 @@ Obsidian_dealloc(ObsidianObject *self)
   PyObject_Del(self);
 }
 
+// A simple demo function that prints the reaction rates to stdout.
 static PyObject *
 Obsidian_demo(ObsidianObject *self, PyObject *args)
 {
@@ -118,6 +124,7 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   return Py_None;
 }
 
+// Obtain the number of reactions for this system.
 static PyObject *
 Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
 {
@@ -127,6 +134,7 @@ Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
   return Py_BuildValue("i", self->reactions_length);
 }
 
+// Find the number of substrates this system operates upon.
 static PyObject *
 Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
 {
@@ -136,18 +144,25 @@ Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
   return Py_BuildValue("i", self->substrates_length);
 }
 
+// The main entry point into the system, this function accepts all of the arguments from python
+// for running the Gillespie algorithm with the stoichiometry and rates initialized earlier on
+// the provided initial state for the given duration.
 static PyObject *
 Obsidian_evolve(ObsidianObject *self, PyObject *args)
 {
+  // The variables that will be extracted from python.
   double duration;
   PyObject * state_obj;
 
+  // Obtain the arguments as the references declared above.
   if (!PyArg_ParseTuple(args, "dO", &duration, &state_obj))
     return NULL;
 
+  // Pull the long * data out of the state numpy array.
   PyObject * state_array = array_for(state_obj, NPY_INT64);
   long * state = (long *) PyArray_DATA(state_array);
 
+  // Invoke the actual algorithm with all of the required information.
   evolve_result result = evolve(self->reactions_length,
                                 self->substrates_length,
                                 self->stoichiometry,
@@ -165,18 +180,22 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 duration,
                                 state);
   
+  // Declare containers for the results.
   long steps[1];
   steps[0] = result.steps;
 
   long substrates[1];
   substrates[0] = self->substrates_length;
 
+  // Create new python numpy arrays from the raw C results.
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
   PyObject * events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
   PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome);
 
+  // Decrement the reference to the state array now that we are done with it.
   Py_XDECREF(state_array);
 
+  // Construct the return value that will be ultimately visible to python.
   return Py_BuildValue("iOOO",
                        result.steps,
                        time_obj,
@@ -184,6 +203,8 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                        outcome_obj);
 }
 
+// Declare the various methods that an Obsidian object will have and align them with their
+// respective C definitions.
 static PyMethodDef Obsidian_methods[] = {
   {"demo", (PyCFunction) Obsidian_demo,  METH_VARARGS, PyDoc_STR("demo() -> None")},
   {"reactions_length", (PyCFunction) Obsidian_reactions_length,  METH_VARARGS, PyDoc_STR("number of reactions this system is capable of.")},
@@ -192,6 +213,7 @@ static PyMethodDef Obsidian_methods[] = {
   {NULL, NULL} // sentinel
 };
 
+// Provide a means for reading attributes from an Obsidian object.
 static PyObject *
 Obsidian_getattro(ObsidianObject *self, PyObject *name)
 {
@@ -207,6 +229,7 @@ Obsidian_getattro(ObsidianObject *self, PyObject *name)
   return PyObject_GenericGetAttr((PyObject *)self, name);
 }
 
+// Provide a means for setting attributes in an Obsidian object.
 static int
 Obsidian_setattr(ObsidianObject *self, const char *name, PyObject *v)
 {
@@ -228,52 +251,52 @@ Obsidian_setattr(ObsidianObject *self, const char *name, PyObject *v)
     return PyDict_SetItemString(self->x_attr, name, v);
 }
 
+// Create the object table for an Obsidian object as defined by python internals.
 static PyTypeObject Obsidian_Type = {
-  /* The ob_type field must be initialized in the module init function
-   * to be portable to Windows without using C++. */
   PyVarObject_HEAD_INIT(NULL, 0)
-  "obsidianmodule.Obsidian",        /*tp_name*/
-  sizeof(ObsidianObject),           /*tp_basicsize*/
-  0,                                /*tp_itemsize*/
-  /* methods */
-  (destructor) Obsidian_dealloc,    /*tp_dealloc*/
-  0,                                /*tp_print*/
-  (getattrfunc) 0,                  /*tp_getattr*/
-  (setattrfunc) Obsidian_setattr,   /*tp_setattr*/
-  0,                                /*tp_reserved*/
-  0,                                /*tp_repr*/
-  0,                                /*tp_as_number*/
-  0,                                /*tp_as_sequence*/
-  0,                                /*tp_as_mapping*/
-  0,                                /*tp_hash*/
-  0,                                /*tp_call*/
-  0,                                /*tp_str*/
-  (getattrofunc) Obsidian_getattro, /*tp_getattro*/
-  0,                                /*tp_setattro*/
-  0,                                /*tp_as_buffer*/
-  Py_TPFLAGS_DEFAULT,               /*tp_flags*/
-  0,                                /*tp_doc*/
-  0,                                /*tp_traverse*/
-  0,                                /*tp_clear*/
-  0,                                /*tp_richcompare*/
-  0,                                /*tp_weaklistoffset*/
-  0,                                /*tp_iter*/
-  0,                                /*tp_iternext*/
-  Obsidian_methods,                 /*tp_methods*/
-  0,                                /*tp_members*/
-  0,                                /*tp_getset*/
-  0,                                /*tp_base*/
-  0,                                /*tp_dict*/
-  0,                                /*tp_descr_get*/
-  0,                                /*tp_descr_set*/
-  0,                                /*tp_dictoffset*/
-  0,                                /*tp_init*/
-  0,                                /*tp_alloc*/
-  0,                                /*tp_new*/
-  0,                                /*tp_free*/
-  0,                                /*tp_is_gc*/
+  "obsidianmodule.Obsidian",        // tp_name
+  sizeof(ObsidianObject),           // tp_basicsize
+  0,                                // tp_itemsize
+  //  methods 
+  (destructor) Obsidian_dealloc,    // tp_dealloc
+  0,                                // tp_print
+  (getattrfunc) 0,                  // tp_getattr
+  (setattrfunc) Obsidian_setattr,   // tp_setattr
+  0,                                // tp_reserved
+  0,                                // tp_repr
+  0,                                // tp_as_number
+  0,                                // tp_as_sequence
+  0,                                // tp_as_mapping
+  0,                                // tp_hash
+  0,                                // tp_call
+  0,                                // tp_str
+  (getattrofunc) Obsidian_getattro, // tp_getattro
+  0,                                // tp_setattro
+  0,                                // tp_as_buffer
+  Py_TPFLAGS_DEFAULT,               // tp_flags
+  0,                                // tp_doc
+  0,                                // tp_traverse
+  0,                                // tp_clear
+  0,                                // tp_richcompare
+  0,                                // tp_weaklistoffset
+  0,                                // tp_iter
+  0,                                // tp_iternext
+  Obsidian_methods,                 // tp_methods
+  0,                                // tp_members
+  0,                                // tp_getset
+  0,                                // tp_base
+  0,                                // tp_dict
+  0,                                // tp_descr_get
+  0,                                // tp_descr_set
+  0,                                // tp_dictoffset
+  0,                                // tp_init
+  0,                                // tp_alloc
+  0,                                // tp_new
+  0,                                // tp_free
+  0,                                // tp_is_gc
 };
 
+// Print a python array of floats.
 static PyObject *
 _print_array(PyObject * self, PyObject * args) {
   PyObject *float_list;

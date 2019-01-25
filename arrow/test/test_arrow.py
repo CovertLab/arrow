@@ -94,10 +94,6 @@ def test_complexation():
     # semi-quantitative rate constants
     rates = np.full(n_reactions, 1000)
 
-    # system = GillespieReference(stoichiometric_matrix, rates)
-    # time, counts, events = system.evolve(initial_state, duration)
-    # outcome = counts[-1]
-
     system = StochasticSystem(stoichiometric_matrix, rates)
     result = system.evolve(duration, initial_state)
 

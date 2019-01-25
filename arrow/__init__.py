@@ -1,4 +1,3 @@
-from arrow import derive_reactants, calculate_dependencies, reenact_events, StochasticSystem
-from arrow import evolve, GillespieReference
-
+from reference import derive_reactants, calculate_dependencies, evolve, GillespieReference
+from arrow import reenact_events, StochasticSystem
 import obsidian
