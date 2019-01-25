@@ -31,15 +31,13 @@ matrix of stoichiometrix coefficients) and associated reaction rates:
 from arrow import StochasticSystem
 import numpy as np
 
-# Each column is a reaction and each row is a molecular species (or other
+# Each row is a reaction and each column is a molecular species (or other
 # entity). The first reaction here means that the first and second elements
 # combine to create the third, while the fourth is unaffected.
 stoichiometric_matrix = np.array([
-    [-1, -2, +1],
-    [-1,  0, +1],
-    [+1,  0, -1],
-    [ 0, +1,  0]
-    ])
+    [1, 1, -1, 0],
+    [-2, 0, 0, 1],
+    [-1, -1, 1, 0]], np.int64)
 
 # Each reaction has an associated rate for how probable that reaction is.
 rates = np.array([3.0, 1.0, 1.0])

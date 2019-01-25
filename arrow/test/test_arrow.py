@@ -16,14 +16,15 @@ import numpy as np
 import json
 import argparse
 
-from arrow import evolve, derive_reactants, calculate_dependencies, StochasticSystem
+from arrow import evolve, derive_reactants, calculate_dependencies, reenact_events, StochasticSystem
 from arrow import Arrow
 import obsidian
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
-        [-1, +1,  0],
-        [+1, -1, -1]])
+        [0, -1],
+        [+1, -1],
+        [-1, +1]])
 
     rates = np.array([10, 10, 0.1])
     system = StochasticSystem(stoichiometric_matrix, rates)
@@ -41,10 +42,9 @@ def test_equilibration():
 
 def test_dimerization():
     stoichiometric_matrix = np.array([
-        [-1, -2, +1],
-        [-1,  0, +1],
-        [+1,  0, -1],
-        [ 0, +1,  0]])
+        [1, 1, -1, 0],
+        [-2, 0, 0, 1],
+        [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
     system = StochasticSystem(stoichiometric_matrix, rates)
@@ -100,11 +100,14 @@ def test_complexation():
     system = Arrow(stoichiometric_matrix.T, rates)
     result = system.evolve(duration, initial_state)
 
-    time = result['time']
-    events = result['occurrences']
+    time = np.concatenate([[0.0], result['time']])
+    events = result['events']
+    occurrences = result['occurrences']
     outcome = result['outcome']
 
-    assert(len(time) == int(events.sum()))
+    history = reenact_events(stoichiometric_matrix.T, events, initial_state)
+
+    assert(len(time) - 1 == int(occurrences.sum()))
 
     difference = (final_state - outcome)
 
@@ -112,9 +115,11 @@ def test_complexation():
 
     print('differences: {}'.format(total))
     print('total steps: {}'.format(len(time)))
+    print('number of events: {}'.format(len(events)))
+    print('number of history: {}'.format(len(history)))
     print(time)
 
-    return (time, outcome, events)
+    return (time, history, occurrences)
 
 def test_obsidian():
     stoichiometric_matrix = np.array([

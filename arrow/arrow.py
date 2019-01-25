@@ -40,10 +40,10 @@ def step(
 
     if reactants is None:
         reactants, reactant_stoichiometries, involved = derive_reactants(
-            stoichiometric_matrix)
+            stoichiometric_matrix.T)
 
     if update_reactions is None:
-        n_reactions = stoichiometric_matrix.shape[1]
+        n_reactions = stoichiometric_matrix.shape[0]
 
         propensities = np.empty(n_reactions)
         update_reactions = xrange(n_reactions)
@@ -70,7 +70,7 @@ def step(
             if random <= progress:
                 break
 
-        stoichiometry = stoichiometric_matrix[:, choice]
+        stoichiometry = stoichiometric_matrix[choice, :]
         outcome = state + stoichiometry
 
     return interval, outcome, choice, propensities
@@ -93,10 +93,10 @@ def evolve(
 
     if reactants is None or reactant_stoichiometries is None:
         reactants, reactant_stoichiometries, involved = derive_reactants(
-            stoichiometric_matrix)
+            stoichiometric_matrix.T)
 
     if dependencies is None:
-        dependencies = calculate_dependencies(stoichiometric_matrix)
+        dependencies = calculate_dependencies(stoichiometric_matrix.T)
 
     while True:
         interval, state, choice, propensities = step(
@@ -131,11 +131,11 @@ class StochasticSystem(object):
         self.stoichiometric_matrix = stoichiometric_matrix
         self.rates = rates
 
-        reactants, reactant_stoichiometries, involved = derive_reactants(stoichiometric_matrix)
+        reactants, reactant_stoichiometries, involved = derive_reactants(stoichiometric_matrix.T)
 
         self.reactants = reactants
         self.reactant_stoichiometries = reactant_stoichiometries
-        self.dependencies = calculate_dependencies(stoichiometric_matrix)
+        self.dependencies = calculate_dependencies(stoichiometric_matrix.T)
 
     def step(self, state):
         return step(self.stoichiometric_matrix, self.rates, state)
@@ -152,6 +152,15 @@ class StochasticSystem(object):
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
+
+def reenact_events(stoichiometry, events, state):
+    history = np.zeros((events.shape[0] + 1, state.shape[0]))
+    history[0] = state
+    for index, event in enumerate(events):
+        print('index: {}'.format(index))
+        print('event: {}'.format(event))
+        history[index + 1] = history[index] + stoichiometry[event]
+    return history
 
 class Arrow(object):
     def __init__(self, stoichiometry, rates):
