@@ -1,6 +1,4 @@
-int print_array(double * array, int length);
-int print_long_array(long * array, int length);
-
+// The structure for holding the result of the Gillespie algorithm
 typedef struct evolve_result evolve_result;
 struct evolve_result {
   int steps;
@@ -9,6 +7,7 @@ struct evolve_result {
   long * outcome;
 };
 
+// Invoke the system with all the required information to run for the given duration
 evolve_result
 evolve(int reactions_length,
        int substrates_length,
@@ -30,3 +29,7 @@ evolve(int reactions_length,
 
        double duration,
        long * state);
+
+// Supporting print utilities
+int print_array(double * array, int length);
+int print_long_array(long * array, int length);

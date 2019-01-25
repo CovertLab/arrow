@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include "obsidian.h"
 
+// Initial length of event vectors
 static int INITIAL_LENGTH = 4000;
 
+// Find the number of combinations of choosing k selections from n items
 double
 choose(long n, long k) {
   double combinations = 1.0;
@@ -15,6 +17,8 @@ choose(long n, long k) {
   return combinations;
 }
 
+// Perform the Gillespie algorithm with the given stoichiometry, reaction rates and initial
+// state for the provided duration.
 evolve_result
 evolve(int reactions_length,
        int substrates_length,
@@ -37,35 +41,54 @@ evolve(int reactions_length,
        double duration,
        long * state) {
 
+  // The `event_bounds` will be used to determine how much space to allocate for tracking
+  // the evolution of the system's state. If a step is reached that exceeds `INITIAL_LENGTH`
+  // then these arrays will be reallocated after doubling `event_bounds`.
   long event_bounds = INITIAL_LENGTH;
+
+  // Allocate the dynamic arrays that will be used to track the progress of the system
   double * time = malloc((sizeof (double *)) * event_bounds);
   long * events = malloc((sizeof (long *)) * event_bounds);
   long * outcome = malloc((sizeof (long *)) * substrates_length);
 
+  // Allocate space for the temporary values that will be used entirely within this function
   double * propensities = malloc((sizeof (double *)) * reactions_length);
   long * update = malloc((sizeof (long *)) * reactions_length);
   long update_length = reactions_length;
-  long involved_length;
 
+  // Declare the working variables we will use throughout this function
+  long involved_length;
   long reaction, reactant, species, index, involve, count, adjustment;
   double total, interval, sample, progress, point;
-  
   int choice, step = 0, up = 0;
   double now = 0.0;
 
+  // Copy the initial state that was supplied from outside to the working `outcome` array
+  // we will use to actually apply the reactions and determine the next step's state.
   for (species = 0; species < substrates_length; species++) {
     outcome[species] = state[species];
   }
 
+  // The `update` array will hold for each step which propensities need to be updated for the
+  // next time step, based on the dependencies between reactions (sharing substrates).
   for (reaction = 0; reaction < reactions_length; reaction++) {
     update[reaction] = reaction;
   }
 
+  // Calculate steps until we reach the provided duration
   while(now < duration) {
+
+    // First update all propensities that were affected by the previous event
     for (up = 0; up < update_length; up++) {
+
+      // Find which reaction to update and initialize the propensity for that reaction
+      // with the rate for that reaction
       reaction = update[up];
       propensities[reaction] = rates[reaction];
 
+      // Go through each reactant and calculate its contribution to the propensity based on
+      // the counts of the corresponding substrate, which is then multiplied by the reaction's
+      // original rate and the contributions from other reactants
       for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
         index = reactants_indexes[reaction] + reactant;
         count = outcome[reactants[index]];
@@ -73,20 +96,26 @@ evolve(int reactions_length,
       }
     }
 
+    // Find the total for all propensities
     total = 0.0;
     for (reaction = 0; reaction < reactions_length; reaction++) {
       total += propensities[reaction];
     }
 
+    // If the total is zero, then we have no more reactions to perform and can exit early
     if (total == 0.0) {
       interval = 0.0;
       choice = -1;
       break;
     } else {
+      // Otherwise we need to find the next reaction to perform. First, sample two random values
+      // `point` from a linear distribution and `interval` from an exponential distribution.
       sample = (double) rand() / RAND_MAX;
       interval = -log(1 - sample) / total;
       point = ((double) rand() / RAND_MAX) * total;
 
+      // Based on the random sample, find the event that it corresponds to by iterating through
+      // the propensities until we surpass our sampled value
       choice = 0;
       progress = 0.0;
       while(progress + propensities[choice] < point) {
@@ -94,15 +123,20 @@ evolve(int reactions_length,
         choice += 1;
       }
 
+      // If we have surpassed the provided duration we can exit now
       if (choice == -1 || (now + interval) > duration) {
         break;
       }
 
+      // Increase time by the interval sampled above
       now += interval;
 
+      // Record the information about the chosen event this step
       time[step] = now;
       events[step] = choice;
 
+      // For each substrate involved in this reaction, update the ongoing state with its
+      // value from the stoichiometric matrix
       involved_length = involved_lengths[choice];
       for (involve = 0; involve < involved_length; involve++) {
         index = involved_indexes[choice] + involve;
@@ -110,14 +144,19 @@ evolve(int reactions_length,
         outcome[involved[index]] += adjustment;
       }
 
+      // Find which propensities depend on this reaction and therefore need to be updated
+      // in the next step (the rest of the propensities will not change)
       update_length = dependencies_lengths[choice];
       for (up = 0; up < update_length; up++) {
         index = dependencies_indexes[choice] + up;
         update[up] = dependencies[index];
       }
 
+      // Advance
       step += 1;
 
+      // If our step has advanced beyond the current `event_bounds`, double the `event_bounds`
+      // and reallocate these arrays with the new size
       if (step >= event_bounds) {
         double * new_time = malloc((sizeof (double *)) * event_bounds * 2);
         memcpy(new_time, time, (sizeof (double *)) * event_bounds);
@@ -134,14 +173,23 @@ evolve(int reactions_length,
     }
   }
 
+  // Construct the `evolve_result` from the results of performing steps until either the
+  // desired duration was achieved or there are no more reactions to perform. We return:
+  //   * How many steps were performed
+  //   * An array of the time of each event
+  //   * An array of each event that occurred each time step
+  //   * The resulting state of the system after the chosen reactions were applied
   evolve_result result = {step, time, events, outcome};
 
+  // Clean up the transient allocations
   free(propensities);
   free(update);
 
+  // Return the result constructed above
   return result;
 }
 
+// Print an array of doubles
 int
 print_array(double * array, int length) {
   for (int index = 0; index < length; index++) {
@@ -156,6 +204,7 @@ print_array(double * array, int length) {
   return 0;
 }
 
+// Print an array of longs
 int
 print_long_array(long * array, int length) {
   for (int index = 0; index < length; index++) {
@@ -169,4 +218,3 @@ print_long_array(long * array, int length) {
 
   return 0;
 }
-

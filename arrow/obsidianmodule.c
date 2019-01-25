@@ -14,7 +14,7 @@
 
 // Converts an arbitrary PyObject * into another PyObject * that represents a numpy array.
 // The reference to this array is transferred to the caller, who is responsible for decrementing
-// the reference once it is finished with it.
+// the reference once they are finished with it.
 static PyObject *
 array_for(PyObject * array_obj, int npy_type) {
   PyObject * array = PyArray_FROM_OTF(array_obj, npy_type, NPY_ARRAY_IN_ARRAY);
@@ -27,7 +27,7 @@ array_for(PyObject * array_obj, int npy_type) {
   return array;
 }
 
-// The definition of the data fields for an Obsidian object as a C struct.
+// The definition of the data fields for an Obsidian object as a C struct
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
@@ -50,12 +50,12 @@ typedef struct {
   long * involved;
 } ObsidianObject;
 
-// Declaring a new python type for Obsidian.
+// Declaring a new python type for Obsidian
 static PyTypeObject Obsidian_Type;
 #define ObsidianObject_Check(v) (Py_TYPE(v) == &Obsidian_Type)
 
 // Accept all the information needed to construct a new Obsidian object
-// and return a reference to it.
+// and return a reference to it
 static ObsidianObject *
 newObsidianObject(int reactions_length,
                   int substrates_length,
@@ -103,7 +103,7 @@ newObsidianObject(int reactions_length,
   return self;
 }
 
-// Provide a means for deallocating the Obsidian object.
+// Provide a means for deallocating the Obsidian object
 static void
 Obsidian_dealloc(ObsidianObject *self)
 {
@@ -111,7 +111,7 @@ Obsidian_dealloc(ObsidianObject *self)
   PyObject_Del(self);
 }
 
-// A simple demo function that prints the reaction rates to stdout.
+// A simple demo function that prints the reaction rates to stdout
 static PyObject *
 Obsidian_demo(ObsidianObject *self, PyObject *args)
 {
@@ -124,7 +124,7 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   return Py_None;
 }
 
-// Obtain the number of reactions for this system.
+// Obtain the number of reactions for this system
 static PyObject *
 Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
 {
@@ -134,7 +134,7 @@ Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
   return Py_BuildValue("i", self->reactions_length);
 }
 
-// Find the number of substrates this system operates upon.
+// Find the number of substrates this system operates upon
 static PyObject *
 Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
 {
@@ -150,19 +150,19 @@ Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
 static PyObject *
 Obsidian_evolve(ObsidianObject *self, PyObject *args)
 {
-  // The variables that will be extracted from python.
+  // The variables that will be extracted from python
   double duration;
   PyObject * state_obj;
 
-  // Obtain the arguments as the references declared above.
+  // Obtain the arguments as the references declared above
   if (!PyArg_ParseTuple(args, "dO", &duration, &state_obj))
     return NULL;
 
-  // Pull the long * data out of the state numpy array.
+  // Pull the long * data out of the state numpy array
   PyObject * state_array = array_for(state_obj, NPY_INT64);
   long * state = (long *) PyArray_DATA(state_array);
 
-  // Invoke the actual algorithm with all of the required information.
+  // Invoke the actual algorithm with all of the required information
   evolve_result result = evolve(self->reactions_length,
                                 self->substrates_length,
                                 self->stoichiometry,
@@ -180,22 +180,22 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 duration,
                                 state);
   
-  // Declare containers for the results.
+  // Declare containers for the results
   long steps[1];
   steps[0] = result.steps;
 
   long substrates[1];
   substrates[0] = self->substrates_length;
 
-  // Create new python numpy arrays from the raw C results.
+  // Create new python numpy arrays from the raw C results
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
   PyObject * events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
   PyObject * outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome);
 
-  // Decrement the reference to the state array now that we are done with it.
+  // Decrement the reference to the state array now that we are done with it
   Py_XDECREF(state_array);
 
-  // Construct the return value that will be ultimately visible to python.
+  // Construct the return value that will be ultimately visible to python
   return Py_BuildValue("iOOO",
                        result.steps,
                        time_obj,
@@ -204,7 +204,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
 }
 
 // Declare the various methods that an Obsidian object will have and align them with their
-// respective C definitions.
+// respective C definitions
 static PyMethodDef Obsidian_methods[] = {
   {"demo", (PyCFunction) Obsidian_demo,  METH_VARARGS, PyDoc_STR("demo() -> None")},
   {"reactions_length", (PyCFunction) Obsidian_reactions_length,  METH_VARARGS, PyDoc_STR("number of reactions this system is capable of.")},
@@ -213,7 +213,7 @@ static PyMethodDef Obsidian_methods[] = {
   {NULL, NULL} // sentinel
 };
 
-// Provide a means for reading attributes from an Obsidian object.
+// Provide a means for reading attributes from an Obsidian object
 static PyObject *
 Obsidian_getattro(ObsidianObject *self, PyObject *name)
 {
@@ -229,7 +229,7 @@ Obsidian_getattro(ObsidianObject *self, PyObject *name)
   return PyObject_GenericGetAttr((PyObject *)self, name);
 }
 
-// Provide a means for setting attributes in an Obsidian object.
+// Provide a means for setting attributes in an Obsidian object
 static int
 Obsidian_setattr(ObsidianObject *self, const char *name, PyObject *v)
 {
@@ -251,7 +251,7 @@ Obsidian_setattr(ObsidianObject *self, const char *name, PyObject *v)
     return PyDict_SetItemString(self->x_attr, name, v);
 }
 
-// Create the object table for an Obsidian object as defined by python internals.
+// Create the object table for an Obsidian object as defined by python internals
 static PyTypeObject Obsidian_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   "obsidianmodule.Obsidian",        // tp_name
@@ -296,7 +296,7 @@ static PyTypeObject Obsidian_Type = {
   0,                                // tp_is_gc
 };
 
-// Print a python array of floats.
+// Print a python array of floats
 static PyObject *
 _print_array(PyObject * self, PyObject * args) {
   PyObject *float_list;
@@ -330,6 +330,7 @@ _print_array(PyObject * self, PyObject * args) {
   return Py_BuildValue("i", value);
 }
 
+// Accept the necessary information to construct the Obsidian object.
 static PyObject *
 _invoke_obsidian(PyObject * self, PyObject * args) {
   ObsidianObject * obsidian;
@@ -368,13 +369,13 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                         &involved_obj))
     return NULL;
 
-  // import the stoichiometric_matrix as a 2d numpy array
+  // Import the 2d stoichiometric_matrix as a 1d numpy array
   PyObject * stoichiometry_array = array_for(stoichiometry_obj, NPY_INT64);
   int reactions_length = (int) PyArray_DIM(stoichiometry_array, 0);
   int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
   long * stoichiometry = (long *) PyArray_DATA(stoichiometry_array);
 
-  // import the rates as a 1d numpy array
+  // Import the rates for each reaction
   PyObject * rates_array = array_for(rates_obj, NPY_DOUBLE);
   double * rates = (double *) PyArray_DATA(rates_array);
 
@@ -401,7 +402,7 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   PyObject * involved_array = array_for(involved_obj, NPY_INT64);
   long * involved = (long *) PyArray_DATA(involved_array);
 
-  // create the obsidian object
+  // Create the obsidian object
   obsidian = newObsidianObject(reactions_length,
                                substrates_length,
                                stoichiometry,
@@ -424,6 +425,7 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
     return NULL;
   }
 
+  // Clean up all the PyObject * references
   Py_XDECREF(reactants_lengths_array);
   Py_XDECREF(reactants_indexes_array);
   Py_XDECREF(reactants_array);
@@ -437,20 +439,24 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   Py_XDECREF(involved_indexes_array);
   Py_XDECREF(involved_array);
 
+  // Return the Obsidian object as a PyObject *
   return (PyObject *) obsidian;
 }
 
+// Declare the methods that the Obsidian module will have (as opposed to the Obsidian object)
 static PyMethodDef ObsidianMethods[] = {
   {"print_array", _print_array, METH_VARARGS, "print array of floats"},
   {"obsidian", _invoke_obsidian, METH_VARARGS, "create new obsidian object"},
   {NULL, NULL, 0, NULL}
 };
 
+// Initialize the Obsidian module within the python runtime
 PyMODINIT_FUNC initobsidian(void) {
   (void) Py_InitModule("obsidian", ObsidianMethods);
   import_array();
 }
 
+// Perform fundamental initialization
 int main(int argc, char** argv) {
   Py_SetProgramName(argv[0]);
   Py_Initialize();
