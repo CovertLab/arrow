@@ -150,17 +150,35 @@ class StochasticSystem(object):
             reactant_stoichiometries=self.reactant_stoichiometries,
             dependencies=self.dependencies)
 
-def flatten(l):
-    return [item for sublist in l for item in sublist]
-
 def reenact_events(stoichiometry, events, state):
+    '''
+    Reproduce the history of states given an initial state, the history of events and the
+    stoichiometry of those events.
+    '''
     history = np.zeros((events.shape[0] + 1, state.shape[0]))
     history[0] = state
     for index, event in enumerate(events):
-        print('index: {}'.format(index))
-        print('event: {}'.format(event))
         history[index + 1] = history[index] + stoichiometry[event]
     return history
+
+def flatten(l):
+    return [
+        item
+        for sublist in l
+        for item in sublist]
+
+def flat_indexes(variable):
+    '''
+    Take a list of variable length lists and reduce it to a single flat list with associated
+    lengths and indexes, for use by the obsidian C module.
+    '''
+
+    lengths = np.array([
+        len(l)
+        for l in variable])
+    indexes = np.insert(lengths, 0, 0).cumsum()[:-1]
+    flat = np.array(flatten(variable))
+    return flat, lengths, indexes
 
 class Arrow(object):
     def __init__(self, stoichiometry, rates):
@@ -170,24 +188,11 @@ class Arrow(object):
         reactants, reactions, involved = derive_reactants(stoichiometry.T)
         dependencies = calculate_dependencies(stoichiometry.T)
 
-        self.reactants_lengths = np.array([
-            len(reactant)
-            for reactant in reactants])
-        self.reactants_indexes = np.insert(self.reactants_lengths, 0, 0).cumsum()[:-1]
-        self.reactants_flat = np.array(flatten(reactants))
+        self.reactants_flat, self.reactants_lengths, self.reactants_indexes = flat_indexes(reactants)
         self.reactions_flat = np.array(flatten(reactions))
-
-        self.dependencies_lengths = np.array([
-            len(dependency)
-            for dependency in dependencies])
-        self.dependencies_indexes = np.insert(self.dependencies_lengths, 0, 0).cumsum()[:-1]
-        self.dependencies_flat = np.array(flatten(dependencies))
-
-        self.involved_lengths = np.array([
-            len(involve)
-            for involve in involved])
-        self.involved_indexes = np.insert(self.involved_lengths, 0, 0).cumsum()[:-1]
-        self.involved_flat = np.array(flatten(involved))
+        self.dependencies_flat, self.dependencies_lengths, self.dependencies_indexes = flat_indexes(
+            dependencies)
+        self.involved_flat, self.involved_lengths, self.involved_indexes = flat_indexes(involved)
 
         self.obsidian = obsidian.obsidian(
             self.stoichiometry,
