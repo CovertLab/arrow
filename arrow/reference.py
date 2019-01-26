@@ -18,7 +18,8 @@ def derive_reactants(stoichiometric_matrix):
         reactants: Array of indexes into each reactant (substrate consumed by the
             reaction) for each reaction.
         reactant_stoichiometries: The value of the reaction for each reactant involved.
-        substrates: Array of indexes for each substrate involved in the reaction (reactant or product).
+        substrates: Array of indexes for each substrate involved in the reaction
+            (reactant or product).
     '''
 
     reactants = [
@@ -162,7 +163,7 @@ def evolve(
     counts = np.array(counts)
 
     return {
-        'steps': len(time),
+        'steps': len(events),
         'time': np.array(time),
         'events': np.array(events),
         'occurrences': occurrences,
@@ -182,7 +183,8 @@ class GillespieReference(object):
         self.stoichiometric_matrix = stoichiometric_matrix
         self.rates = rates
 
-        reactants, reactant_stoichiometries, substrates = derive_reactants(stoichiometric_matrix)
+        reactants, reactant_stoichiometries, substrates = derive_reactants(
+			stoichiometric_matrix)
 
         self.reactants = reactants
         self.reactant_stoichiometries = reactant_stoichiometries

@@ -11,13 +11,13 @@ return  pattern is used.
 from __future__ import absolute_import, division, print_function
 
 import os
-
-import numpy as np
+import time
 import json
+import numpy as np
 import argparse
 
-from arrow import derive_reactants, calculate_dependencies, reenact_events, StochasticSystem
-from arrow import evolve, GillespieReference
+from arrow import reenact_events, StochasticSystem
+from arrow import derive_reactants, calculate_dependencies, evolve, GillespieReference
 
 import obsidian
 
@@ -68,7 +68,7 @@ def test_dimerization():
     return (time, counts, events)
 
 
-def complexation_test(make_system):
+def load_complexation():
     fixtures_root = os.path.join('data', 'complexation')
 
     def load_state(filename):
@@ -102,6 +102,12 @@ def complexation_test(make_system):
     # semi-quantitative rate constants
     rates = np.full(n_reactions, 1000)
 
+    return stoichiometric_matrix, rates, initial_state, final_state
+
+def complexation_test(make_system):
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    duration = 1
+
     system = make_system(stoichiometric_matrix, rates)
     result = system.evolve(duration, initial_state)
 
@@ -111,8 +117,6 @@ def complexation_test(make_system):
     outcome = result['outcome']
 
     history = reenact_events(stoichiometric_matrix, events, initial_state)
-
-    assert(len(time) - 1 == int(occurrences.sum()))
 
     difference = (final_state - outcome)
 
@@ -127,7 +131,7 @@ def complexation_test(make_system):
     return (time, history, occurrences)
 
 def test_complexation():
-	complexation_test(StochasticSystem)
+    complexation_test(StochasticSystem)
 
 def test_obsidian():
     stoichiometric_matrix = np.array([
@@ -148,6 +152,26 @@ def test_obsidian():
 
     assert(arrow.obsidian.reactions_count() == stoichiometric_matrix.shape[0])
     assert(arrow.obsidian.substrates_count() == stoichiometric_matrix.shape[1])
+
+def test_compare_runtime():
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    duration = 1
+    amplify = 100
+
+    reference = GillespieReference(stoichiometric_matrix, rates)
+    reference_start = time.time()
+    for i in range(amplify):
+        result = reference.evolve(duration, initial_state)
+    reference_end = time.time()
+
+    system = StochasticSystem(stoichiometric_matrix, rates)
+    obsidian_start = time.time()
+    for i in range(amplify):
+        result = system.evolve(duration, initial_state)
+    obsidian_end = time.time()
+
+    print('reference time elapsed: {}'.format(reference_end - reference_start))
+    print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
