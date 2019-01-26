@@ -19,6 +19,51 @@ choose(long n, long k) {
 
 // Perform the Gillespie algorithm with the given stoichiometry, reaction rates and initial
 // state for the provided duration.
+
+// The main arguments to this function are:
+//   * reactions_length: the number of reactions in this system
+//   * substrates_length: the number of substrates this system operates on
+//   * stoichiometry: an array of length `reactions_length * substrates_length` that contains all
+//       the information about the reactions this system performs. Each row is a reaction, and each
+//       column is a substrate, so every entry is the change in counts of that substrate when the
+//       given reaction is performed.
+//   * rates: an array of length `reactions_length` that encodes the base rate for each reaction.
+//       The actual propensity is further dependent on the counts for each reactant in the reaction.
+//   * duration: How long to run the simulation for.
+//   * state: An array of length `substrates_length` that contains the inital count for each
+//       substrate. The outcome of the algorithm will involve an array of the same size that
+//       signifies the counts of each substrate after all the reactions are performed.
+
+// There are four arrays that are derived from the original stoichiometry that are nonetheless passed
+// into this function to avoid recomputing these every step. These values are nested arrays whose
+// subarrays are of variable length. This implementation renders these nested arrays as a single
+// flat array with two corresponding arrays describing the index into each subarray and the length
+// of each subarray (*_indexes and *_lengths respectively).
+
+// So to iterate through a subarray of array `array` at index `sub`:
+
+//   for (long i = 0; i < lengths[sub]; i++) {
+//     long index = indexes[sub];
+//     long value = array[index + i];
+//     ..... (do something with value)
+//   }
+
+// You will see this pattern throughout this function.
+
+// The derived values are:
+//   * reactants: Array of indexes into each reactant (substrate consumed by the reaction)
+//       for each reaction.
+//   * reactions: The value of the reaction for each reactant involved.
+//   * involved: Array of indexes for each substrate involved in the reaction (reactant or product).
+//   * dependencies: Array of indexes for each reaction that points to other reactions that will
+//       be affected by the reaction.
+
+// The return value of this function is a struct of type `evolve_result`, defined in obsidian.h.
+// This has four fields:
+//   * steps: How many steps were performed
+//   * time: An array of length `steps` containing the value at each time point
+//   * events: An array of length `steps` signifying which reaction took place at each time point
+//   * outcome: The final state after all of the reactions have been performed.
 evolve_result
 evolve(int reactions_length,
        int substrates_length,

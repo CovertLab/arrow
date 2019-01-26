@@ -52,6 +52,22 @@ class StochasticSystem(object):
     '''
 
     def __init__(self, stoichiometry, rates):
+		'''
+		This invokes the Obsidian C module with the stoichiometry, reaction rates and a variety of
+		derived values. Once constructed, this can be invoked by calling `evolve` with a duration
+		and initial state, since the stoichiometry will be shared among all calls.
+
+		There are four derived values, each of which is a list of variable length lists. In order
+		to pass this into C, these nested lists are flattened and two associated lists are
+		constructed: one to hold the indexes for each sublist and one to hold the lengths of these
+		sublists. So, to access one of the sublists at index `i`, you can find the start index of
+		the sublist inside of `_flat` with `_indexes[i]`, then iterate through it for the number
+		of elements given by `_lengths[i]`. Strictly speaking this could have been implemented
+		with only the lengths, but that would require iterating through each length to discover
+		the start index of the sublist in the flattened form and since this effort is in order to
+		trade time for space the most expedient approach is chosen.
+		'''
+
         self.stoichiometry = stoichiometry
         self.rates = rates
 
