@@ -135,8 +135,8 @@ def test_obsidian():
     print('occurrences: {}'.format(result['occurrences']))
     print('outcome: {}'.format(result['outcome']))
 
-    assert(arrow.obsidian.reactions_length() == stoichiometric_matrix.shape[0])
-    assert(arrow.obsidian.substrates_length() == stoichiometric_matrix.shape[1])
+    assert(arrow.obsidian.reactions_count() == stoichiometric_matrix.shape[0])
+    assert(arrow.obsidian.substrates_count() == stoichiometric_matrix.shape[1])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

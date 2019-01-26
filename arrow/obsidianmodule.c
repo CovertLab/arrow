@@ -2,19 +2,19 @@
 #include <numpy/arrayobject.h>
 #include "obsidian.h"
 
-// The code in this file acts as a bridge between Python (the caller) and Obsidian (the called).
-// Most of this is to reify an object that will hold the references to the C values that will be
-// used to perform the actual Gillespie algorithm in pure C. The rest is translation of the
-// incoming numpy arrays into C double * and long *. 
+// The code in this file acts as a bridge between Python (the caller) and Obsidian
+// (the called). Most of this is to reify an object that will hold the references to
+// the C values that will be used to perform the actual Gillespie algorithm in pure C.
+// The rest is translation of the incoming numpy arrays into C double * and long *. 
 
-// The actual Gillespie algorithm is performed in pure C in obsidian.c, with a header in obsidian.h,
-// and some effort has been made to keep it clean of any reference or knowledge of python, which
-// is restricted to this file.
+// The actual Gillespie algorithm is performed in pure C in obsidian.c, with a header
+// in obsidian.h, and some effort has been made to keep it clean of any reference or
+// knowledge of python, which is restricted to this file.
 
 
-// Converts an arbitrary PyObject * into another PyObject * that represents a numpy array.
-// The reference to this array is transferred to the caller, who is responsible for decrementing
-// the reference once they are finished with it.
+// Convert an arbitrary PyObject * into another PyObject * that represents a numpy
+// array. The reference to this array is transferred to the caller, who is responsible
+// for decrementing the reference once they are finished with it.
 static PyObject *
 array_for(PyObject * array_obj, int npy_type) {
   PyObject * array = PyArray_FROM_OTF(array_obj, npy_type, NPY_ARRAY_IN_ARRAY);
@@ -31,8 +31,8 @@ array_for(PyObject * array_obj, int npy_type) {
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
-  int reactions_length;
-  int substrates_length;
+  int reactions_count;
+  int substrates_count;
   long * stoichiometry;
   double * rates;
 
@@ -45,9 +45,9 @@ typedef struct {
   long * dependencies_indexes;
   long * dependencies;
 
-  long * involved_lengths;
-  long * involved_indexes;
-  long * involved;
+  long * substrates_lengths;
+  long * substrates_indexes;
+  long * substrates;
 } ObsidianObject;
 
 // Declaring a new python type for Obsidian
@@ -57,8 +57,8 @@ static PyTypeObject Obsidian_Type;
 // Accept all the information needed to construct a new Obsidian object
 // and return a reference to it
 static ObsidianObject *
-newObsidianObject(int reactions_length,
-                  int substrates_length,
+newObsidianObject(int reactions_count,
+                  int substrates_count,
                   long * stoichiometry,
                   double * rates,
 
@@ -71,9 +71,9 @@ newObsidianObject(int reactions_length,
                   long * dependencies_indexes,
                   long * dependencies,
 
-                  long * involved_lengths,
-                  long * involved_indexes,
-                  long * involved)
+                  long * substrates_lengths,
+                  long * substrates_indexes,
+                  long * substrates)
 {
   ObsidianObject * self;
   self = PyObject_New(ObsidianObject, &Obsidian_Type);
@@ -82,8 +82,8 @@ newObsidianObject(int reactions_length,
     return NULL;
 
   self->x_attr = NULL;
-  self->reactions_length = reactions_length;
-  self->substrates_length = substrates_length;
+  self->reactions_count = reactions_count;
+  self->substrates_count = substrates_count;
   self->stoichiometry = stoichiometry;
   self->rates = rates;
 
@@ -96,9 +96,9 @@ newObsidianObject(int reactions_length,
   self->dependencies_indexes = dependencies_indexes;
   self->dependencies = dependencies;
 
-  self->involved_lengths = involved_lengths;
-  self->involved_indexes = involved_indexes;
-  self->involved = involved;
+  self->substrates_lengths = substrates_lengths;
+  self->substrates_indexes = substrates_indexes;
+  self->substrates = substrates;
 
   return self;
 }
@@ -118,7 +118,7 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":demo"))
     return NULL;
 
-  print_array(self->rates, self->reactions_length);
+  print_array(self->rates, self->reactions_count);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -126,27 +126,27 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
 
 // Obtain the number of reactions for this system
 static PyObject *
-Obsidian_reactions_length(ObsidianObject *self, PyObject *args)
+Obsidian_reactions_count(ObsidianObject *self, PyObject *args)
 {
-  if (!PyArg_ParseTuple(args, ":reactions_length"))
+  if (!PyArg_ParseTuple(args, ":reactions_count"))
     return NULL;
 
-  return Py_BuildValue("i", self->reactions_length);
+  return Py_BuildValue("i", self->reactions_count);
 }
 
 // Find the number of substrates this system operates upon
 static PyObject *
-Obsidian_substrates_length(ObsidianObject *self, PyObject *args)
+Obsidian_substrates_count(ObsidianObject *self, PyObject *args)
 {
-  if (!PyArg_ParseTuple(args, ":substrates_length"))
+  if (!PyArg_ParseTuple(args, ":substrates_count"))
     return NULL;
 
-  return Py_BuildValue("i", self->substrates_length);
+  return Py_BuildValue("i", self->substrates_count);
 }
 
-// The main entry point into the system, this function accepts all of the arguments from python
-// for running the Gillespie algorithm with the stoichiometry and rates initialized earlier on
-// the provided initial state for the given duration.
+// The main entry point into the system, this function accepts all of the arguments
+// from python for running the Gillespie algorithm with the stoichiometry and rates
+// initialized earlier on the provided initial state for the given duration.
 static PyObject *
 Obsidian_evolve(ObsidianObject *self, PyObject *args)
 {
@@ -163,8 +163,8 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   long * state = (long *) PyArray_DATA(state_array);
 
   // Invoke the actual algorithm with all of the required information
-  evolve_result result = evolve(self->reactions_length,
-                                self->substrates_length,
+  evolve_result result = evolve(self->reactions_count,
+                                self->substrates_count,
                                 self->stoichiometry,
                                 self->rates,
                                 self->reactants_lengths,
@@ -174,9 +174,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 self->dependencies_lengths,
                                 self->dependencies_indexes,
                                 self->dependencies,
-                                self->involved_lengths,
-                                self->involved_indexes,
-                                self->involved,
+                                self->substrates_lengths,
+                                self->substrates_indexes,
+                                self->substrates,
                                 duration,
                                 state);
   
@@ -185,7 +185,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   steps[0] = result.steps;
 
   long substrates[1];
-  substrates[0] = self->substrates_length;
+  substrates[0] = self->substrates_count;
 
   // Create new python numpy arrays from the raw C results
   PyObject * time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
@@ -203,12 +203,12 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                        outcome_obj);
 }
 
-// Declare the various methods that an Obsidian object will have and align them with their
-// respective C definitions
+// Declare the various methods that an Obsidian object will have and align them with
+// their respective C definitions
 static PyMethodDef Obsidian_methods[] = {
   {"demo", (PyCFunction) Obsidian_demo,  METH_VARARGS, PyDoc_STR("demo() -> None")},
-  {"reactions_length", (PyCFunction) Obsidian_reactions_length,  METH_VARARGS, PyDoc_STR("number of reactions this system is capable of.")},
-  {"substrates_length", (PyCFunction) Obsidian_substrates_length,  METH_VARARGS, PyDoc_STR("the number of substrates the reactions in this system operate upon.")},
+  {"reactions_count", (PyCFunction) Obsidian_reactions_count,  METH_VARARGS, PyDoc_STR("number of reactions this system is capable of.")},
+  {"substrates_count", (PyCFunction) Obsidian_substrates_count,  METH_VARARGS, PyDoc_STR("the number of substrates the reactions in this system operate upon.")},
   {"evolve", (PyCFunction) Obsidian_evolve,  METH_VARARGS, PyDoc_STR("evolve the system for the given duration and given initial state.")},  
   {NULL, NULL} // sentinel
 };
@@ -346,9 +346,9 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
     * dependencies_indexes_obj,
     * dependencies_obj,
 
-    * involved_lengths_obj,
-    * involved_indexes_obj,
-    * involved_obj;
+    * substrates_lengths_obj,
+    * substrates_indexes_obj,
+    * substrates_obj;
 
   if (!PyArg_ParseTuple(args,
                         "OOOOOOOOOOOO",
@@ -364,21 +364,22 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                         &dependencies_indexes_obj,
                         &dependencies_obj,
 
-                        &involved_lengths_obj,
-                        &involved_indexes_obj,
-                        &involved_obj))
+                        &substrates_lengths_obj,
+                        &substrates_indexes_obj,
+                        &substrates_obj))
     return NULL;
 
   // Import the 2d stoichiometric_matrix as a 1d numpy array
   PyObject * stoichiometry_array = array_for(stoichiometry_obj, NPY_INT64);
-  int reactions_length = (int) PyArray_DIM(stoichiometry_array, 0);
-  int substrates_length = (int) PyArray_DIM(stoichiometry_array, 1);
+  int reactions_count = (int) PyArray_DIM(stoichiometry_array, 0);
+  int substrates_count = (int) PyArray_DIM(stoichiometry_array, 1);
   long * stoichiometry = (long *) PyArray_DATA(stoichiometry_array);
 
   // Import the rates for each reaction
   PyObject * rates_array = array_for(rates_obj, NPY_DOUBLE);
   double * rates = (double *) PyArray_DATA(rates_array);
 
+  // Pull all the precalculated nested arrays
   PyObject * reactants_lengths_array = array_for(reactants_lengths_obj, NPY_INT64);
   long * reactants_lengths = (long *) PyArray_DATA(reactants_lengths_array);
   PyObject * reactants_indexes_array = array_for(reactants_indexes_obj, NPY_INT64);
@@ -395,16 +396,16 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   PyObject * dependencies_array = array_for(dependencies_obj, NPY_INT64);
   long * dependencies = (long *) PyArray_DATA(dependencies_array);
 
-  PyObject * involved_lengths_array = array_for(involved_lengths_obj, NPY_INT64);
-  long * involved_lengths = (long *) PyArray_DATA(involved_lengths_array);
-  PyObject * involved_indexes_array = array_for(involved_indexes_obj, NPY_INT64);
-  long * involved_indexes = (long *) PyArray_DATA(involved_indexes_array);
-  PyObject * involved_array = array_for(involved_obj, NPY_INT64);
-  long * involved = (long *) PyArray_DATA(involved_array);
+  PyObject * substrates_lengths_array = array_for(substrates_lengths_obj, NPY_INT64);
+  long * substrates_lengths = (long *) PyArray_DATA(substrates_lengths_array);
+  PyObject * substrates_indexes_array = array_for(substrates_indexes_obj, NPY_INT64);
+  long * substrates_indexes = (long *) PyArray_DATA(substrates_indexes_array);
+  PyObject * substrates_array = array_for(substrates_obj, NPY_INT64);
+  long * substrates = (long *) PyArray_DATA(substrates_array);
 
   // Create the obsidian object
-  obsidian = newObsidianObject(reactions_length,
-                               substrates_length,
+  obsidian = newObsidianObject(reactions_count,
+                               substrates_count,
                                stoichiometry,
                                rates,
 
@@ -417,10 +418,11 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
                                dependencies_indexes,
                                dependencies,
 
-                               involved_lengths,
-                               involved_indexes,
-                               involved);
+                               substrates_lengths,
+                               substrates_indexes,
+                               substrates);
 
+  // if something went wrong throw an error
   if (obsidian == NULL) {
     return NULL;
   }
@@ -435,15 +437,16 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   Py_XDECREF(dependencies_indexes_array);
   Py_XDECREF(dependencies_array);
 
-  Py_XDECREF(involved_lengths_array);
-  Py_XDECREF(involved_indexes_array);
-  Py_XDECREF(involved_array);
+  Py_XDECREF(substrates_lengths_array);
+  Py_XDECREF(substrates_indexes_array);
+  Py_XDECREF(substrates_array);
 
   // Return the Obsidian object as a PyObject *
   return (PyObject *) obsidian;
 }
 
-// Declare the methods that the Obsidian module will have (as opposed to the Obsidian object)
+// Declare the methods that the Obsidian module will have (as opposed to the Obsidian
+// object)
 static PyMethodDef ObsidianMethods[] = {
   {"print_array", _print_array, METH_VARARGS, "print array of floats"},
   {"obsidian", _invoke_obsidian, METH_VARARGS, "create new obsidian object"},

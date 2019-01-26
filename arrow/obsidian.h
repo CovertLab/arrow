@@ -9,8 +9,8 @@ struct evolve_result {
 
 // Invoke the system with all the required information to run for the given duration
 evolve_result
-evolve(int reactions_length,
-       int substrates_length,
+evolve(int reactions_count,
+       int substrates_count,
        long * stoichiometry,
        double * rates,
 
@@ -23,9 +23,9 @@ evolve(int reactions_length,
        long * dependencies_indexes,
        long * dependencies,
 
-       long * involved_lengths,
-       long * involved_indexes,
-       long * involved,
+       long * substrates_lengths,
+       long * substrates_indexes,
+       long * substrates,
 
        double duration,
        long * state);
