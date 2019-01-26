@@ -19,7 +19,7 @@ print include
 
 setup(
 	name='stochastic-arrow',
-	version='0.0.15',
+	version='0.0.16',
 	packages=['arrow'],
 	author='Ryan Spangler',
 	author_email='spanglry@stanford.edu',
