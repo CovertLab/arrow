@@ -11,12 +11,12 @@ def derive_reactants(stoichiometric_matrix):
     to avoid recalculating these values every step or call to `evolve`.
 
     Args:
-        stoichiometric_matrix: A matrix representing all of the reactions the system is capable of.
-            Each row is a reaction, and each column is a substrate.
+        stoichiometric_matrix: A matrix representing all of the reactions the system
+            is capable of. Each row is a reaction, and each column is a substrate.
 
     Returns:
-        reactants: Array of indexes into each reactant (substrate consumed by the reaction)
-            for each reaction.
+        reactants: Array of indexes into each reactant (substrate consumed by the
+            reaction) for each reaction.
         reactant_stoichiometries: The value of the reaction for each reactant involved.
         substrates: Array of indexes for each substrate involved in the reaction (reactant or product).
     '''
@@ -37,16 +37,16 @@ def derive_reactants(stoichiometric_matrix):
 
 def calculate_dependencies(stoichiometric_matrix):
     '''
-    Find out which reactions depend on which other reactions. A dependency exists if one of the
-    reactants or products of a reaction is a substrate involved in another reaction.
+    Find out which reactions depend on which other reactions. A dependency exists if
+    one of the reactants or products of a reaction is a substrate involved in another reaction.
 
     Args:
-        stoichiometric_matrix: A matrix representing all of the reactions the system is capable of.
-            Each row is a reaction, and each column is a substrate.
+        stoichiometric_matrix: A matrix representing all of the reactions the system
+            is capable of. Each row is a reaction, and each column is a substrate.
 
     Returns:
-        dependencies: Array of indexes for each reaction that points to other reactions that will
-            be affected by the reaction.
+        dependencies: Array of indexes for each reaction that points to other reactions
+            that will be affected by the reaction.
     '''
 
     dependencies = [
@@ -65,7 +65,8 @@ def step(
         update_reactions=None):
     '''
     Determines which reaction happens next and how much time passes before this event
-    given the stoichiometric_matrix, the rates of each reaction, and counts of all substrates.
+    given the stoichiometric_matrix, the rates of each reaction, and counts of all
+    substrates.
     '''
 
     if reactants is None:
@@ -115,15 +116,17 @@ def evolve(
         reactant_stoichiometries=None,
         dependencies=None):
     '''
-    Perform a series of steps in the Gillepsie algorithm until the given duration is reached.
+    Perform a series of steps in the Gillepsie algorithm until the given duration is
+    reached.
     '''
 
     now = 0
     time = [0]
+    events = []
     counts = [state]
     propensities = None
     update_reactions = None
-    events = np.zeros(rates.shape)
+    occurrences = np.zeros(rates.shape)
 
     if reactants is None or reactant_stoichiometries is None:
         reactants, reactant_stoichiometries, substrates = derive_reactants(
@@ -148,24 +151,31 @@ def evolve(
             break
 
         time.append(now)
+        events.append(choice)
         counts.append(state)
 
-        events[choice] += 1
+        occurrences[choice] += 1
 
         update_reactions = dependencies[choice]
 
     time = np.array(time)
     counts = np.array(counts)
 
-    return time, counts, events
+    return {
+        'steps': len(time),
+        'time': np.array(time),
+        'events': np.array(events),
+        'occurrences': occurrences,
+        'outcome': counts[-1],
+        'counts': np.array(counts)}
 
 class GillespieReference(object):
     '''
     This is a pure python implementation of the Gillespie algorithm:
     https://en.wikipedia.org/wiki/Gillespie_algorithm
 
-    It has been subsumed by the native implementation in C, Obsidian, but is still useful here as
-    reference to the algorithm.
+    It has been subsumed by the native implementation in C, Obsidian, but is still
+    useful here as reference to the algorithm.
     '''
 
     def __init__(self, stoichiometric_matrix, rates):
@@ -181,7 +191,7 @@ class GillespieReference(object):
     def step(self, state):
         return step(self.stoichiometric_matrix, self.rates, state)
 
-    def evolve(self, state, duration):
+    def evolve(self, duration, state):
         return evolve(
             self.stoichiometric_matrix,
             self.rates,
@@ -190,4 +200,3 @@ class GillespieReference(object):
             reactants=self.reactants,
             reactant_stoichiometries=self.reactant_stoichiometries,
             dependencies=self.dependencies)
-

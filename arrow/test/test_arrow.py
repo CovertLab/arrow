@@ -33,7 +33,11 @@ def test_equilibration():
     state = np.array([1000, 0])
     duration = 10
 
-    time, counts, events = system.evolve(state, duration)
+    result = system.evolve(duration, state)
+
+    time = result['time']
+    counts = reenact_events(stoichiometric_matrix, result['events'], state)
+    events = result['occurrences']
 
     assert counts[-1].sum() < state.sum()
     assert time[-1] <= duration
@@ -53,14 +57,18 @@ def test_dimerization():
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    time, counts, events = system.evolve(state, duration)
+    result = system.evolve(duration, state)
+
+    time = result['time']
+    counts = reenact_events(stoichiometric_matrix, result['events'], state)
+    events = result['occurrences']
 
     assert time[-1] <= duration
 
     return (time, counts, events)
 
 
-def test_complexation():
+def complexation_test(make_system):
     fixtures_root = os.path.join('data', 'complexation')
 
     def load_state(filename):
@@ -94,7 +102,7 @@ def test_complexation():
     # semi-quantitative rate constants
     rates = np.full(n_reactions, 1000)
 
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = make_system(stoichiometric_matrix, rates)
     result = system.evolve(duration, initial_state)
 
     time = np.concatenate([[0.0], result['time']])
@@ -113,10 +121,13 @@ def test_complexation():
     print('differences: {}'.format(total))
     print('total steps: {}'.format(len(time)))
     print('number of events: {}'.format(len(events)))
-    print('number of history: {}'.format(len(history)))
+    print('length of history: {}'.format(len(history)))
     print(time)
 
     return (time, history, occurrences)
+
+def test_complexation():
+	complexation_test(StochasticSystem)
 
 def test_obsidian():
     stoichiometric_matrix = np.array([
@@ -150,13 +161,13 @@ if __name__ == '__main__':
     systems = (
         test_equilibration,
         test_dimerization,
-        test_complexation
-        )
+        lambda: complexation_test(StochasticSystem),
+        lambda: complexation_test(GillespieReference))
 
     if not args.plot:
         if args.complexation:
             for run in xrange(args.runs):
-                test_complexation()
+                lambda: complexation_test(StochasticSystem)
         else:
             for system in systems:
                 system()
