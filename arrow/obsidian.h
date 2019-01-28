@@ -1,3 +1,5 @@
+#include "mersenne.h"
+
 // The structure for holding the result of the Gillespie algorithm
 typedef struct evolve_result evolve_result;
 struct evolve_result {
@@ -9,7 +11,9 @@ struct evolve_result {
 
 // Invoke the system with all the required information to run for the given duration
 evolve_result
-evolve(int reactions_count,
+evolve(MTState * random_state,
+
+       int reactions_count,
        int substrates_count,
        long * stoichiometry,
        double * rates,

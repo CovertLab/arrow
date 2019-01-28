@@ -52,7 +52,7 @@ class StochasticSystem(object):
    (and zero everywhere else). 
     '''
 
-    def __init__(self, stoichiometry, rates):
+    def __init__(self, stoichiometry, rates, random_seed=0):
         '''
         This invokes the Obsidian C module with the stoichiometry, reaction rates and
         a variety of derived values. Once constructed, this can be invoked by calling
@@ -75,6 +75,8 @@ class StochasticSystem(object):
         self.stoichiometry = stoichiometry
         self.rates = rates
 
+        self.random_seed = random_seed
+
         reactants, reactions, substrates = derive_reactants(stoichiometry)
         dependencies = calculate_dependencies(stoichiometry)
 
@@ -85,6 +87,7 @@ class StochasticSystem(object):
         self.substrates_flat, self.substrates_lengths, self.substrates_indexes = flat_indexes(substrates)
 
         self.obsidian = obsidian.obsidian(
+            self.random_seed,
             self.stoichiometry,
             self.rates,
             self.reactants_lengths,

@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mersenne.h"
 #include "obsidian.h"
 
 // Initial length of event vectors
@@ -71,7 +72,9 @@ choose(long n, long k) {
 //       each time point
 //   * outcome: The final state after all of the reactions have been performed.
 evolve_result
-evolve(int reactions_count,
+evolve(MTState * random_state,
+
+       int reactions_count,
        int substrates_count,
        long * stoichiometry,
        double * rates,
@@ -98,20 +101,20 @@ evolve(int reactions_count,
   long event_bounds = INITIAL_LENGTH;
 
   // Allocate the dynamic arrays that will be used to track the progress of the system
-  double * time = malloc((sizeof (double *)) * event_bounds);
-  long * events = malloc((sizeof (long *)) * event_bounds);
-  long * outcome = malloc((sizeof (long *)) * substrates_count);
+  double * time = malloc((sizeof (double)) * event_bounds);
+  long * events = malloc((sizeof (long)) * event_bounds);
+  long * outcome = malloc((sizeof (long)) * substrates_count);
 
   // Allocate space for the temporary values that will be used entirely within this
   // function
-  double * propensities = malloc((sizeof (double *)) * reactions_count);
-  long * update = malloc((sizeof (long *)) * reactions_count);
+  double * propensities = malloc((sizeof (double)) * reactions_count);
+  long * update = malloc((sizeof (long)) * reactions_count);
   long update_length = reactions_count;
 
   // Declare the working variables we will use throughout this function
   long substrates_length;
   long reaction, reactant, species, index, involve, count, adjustment;
-  double total, interval, sample, progress, point;
+  double total, interval, point, progress;
   int choice, step = 0, up = 0;
   double now = 0.0;
 
@@ -168,9 +171,12 @@ evolve(int reactions_count,
 
       // First, sample two random values, `point` from a linear distribution and
       // `interval` from an exponential distribution.
-      sample = (double) rand() / RAND_MAX;
-      interval = -log(1 - sample) / total;
-      point = ((double) rand() / RAND_MAX) * total;
+      // sample = (double) rand() / RAND_MAX;
+      // interval = -log(1 - sample) / total;
+      // point = ((double) rand() / RAND_MAX) * total;
+
+      interval = sample_exponential(random_state, total);
+      point = sample_uniform(random_state);
 
       // Based on the random sample, find the event that it corresponds to by
       // iterating through the propensities until we surpass our sampled value

@@ -1,5 +1,6 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#include "mersenne.h"
 #include "obsidian.h"
 
 // The code in this file acts as a bridge between Python (the caller) and Obsidian
@@ -31,6 +32,10 @@ array_for(PyObject * array_obj, int npy_type) {
 typedef struct {
   PyObject_HEAD
   PyObject * x_attr;
+
+  int random_seed;
+  MTState * random_state;
+
   int reactions_count;
   int substrates_count;
   long * stoichiometry;
@@ -57,7 +62,8 @@ static PyTypeObject Obsidian_Type;
 // Accept all the information needed to construct a new Obsidian object
 // and return a reference to it
 static ObsidianObject *
-newObsidianObject(int reactions_count,
+newObsidianObject(int random_seed,
+                  int reactions_count,
                   int substrates_count,
                   long * stoichiometry,
                   double * rates,
@@ -82,6 +88,13 @@ newObsidianObject(int reactions_count,
     return NULL;
 
   self->x_attr = NULL;
+
+  // set up mersenne twister state from the provided seed
+  self->random_seed = random_seed;
+  MTState * random_state = malloc(sizeof (MTState));
+  seed(random_state, random_seed);
+  self->random_state = random_state;
+
   self->reactions_count = reactions_count;
   self->substrates_count = substrates_count;
   self->stoichiometry = stoichiometry;
@@ -107,6 +120,8 @@ newObsidianObject(int reactions_count,
 static void
 Obsidian_dealloc(ObsidianObject *self)
 {
+  free(self->random_state);
+
   Py_XDECREF(self->x_attr);
   PyObject_Del(self);
 }
@@ -163,7 +178,8 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   long * state = (long *) PyArray_DATA(state_array);
 
   // Invoke the actual algorithm with all of the required information
-  evolve_result result = evolve(self->reactions_count,
+  evolve_result result = evolve(self->random_state,
+                                self->reactions_count,
                                 self->substrates_count,
                                 self->stoichiometry,
                                 self->rates,
@@ -334,6 +350,8 @@ _print_array(PyObject * self, PyObject * args) {
 static PyObject *
 _invoke_obsidian(PyObject * self, PyObject * args) {
   ObsidianObject * obsidian;
+
+  int random_seed;
   PyObject * stoichiometry_obj,
     * rates_obj,
 
@@ -351,7 +369,8 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
     * substrates_obj;
 
   if (!PyArg_ParseTuple(args,
-                        "OOOOOOOOOOOO",
+                        "iOOOOOOOOOOOO",
+                        &random_seed,
                         &stoichiometry_obj,
                         &rates_obj,
 
@@ -404,7 +423,8 @@ _invoke_obsidian(PyObject * self, PyObject * args) {
   long * substrates = (long *) PyArray_DATA(substrates_array);
 
   // Create the obsidian object
-  obsidian = newObsidianObject(reactions_count,
+  obsidian = newObsidianObject(random_seed,
+                               reactions_count,
                                substrates_count,
                                stoichiometry,
                                rates,
