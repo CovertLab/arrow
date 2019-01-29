@@ -72,28 +72,28 @@ choose(long n, long k) {
 //       each time point
 //   * outcome: The final state after all of the reactions have been performed.
 evolve_result
-evolve(MTState * random_state,
+evolve(MTState *random_state,
 
        int reactions_count,
        int substrates_count,
-       long * stoichiometry,
-       double * rates,
+       long *stoichiometry,
+       double *rates,
 
-       long * reactants_lengths,
-       long * reactants_indexes,
-       long * reactants,
-       long * reactions,
+       long *reactants_lengths,
+       long *reactants_indexes,
+       long *reactants,
+       long *reactions,
        
-       long * dependencies_lengths,
-       long * dependencies_indexes,
-       long * dependencies,
+       long *dependencies_lengths,
+       long *dependencies_indexes,
+       long *dependencies,
 
-       long * substrates_lengths,
-       long * substrates_indexes,
-       long * substrates,
+       long *substrates_lengths,
+       long *substrates_indexes,
+       long *substrates,
 
        double duration,
-       long * state) {
+       long *state) {
 
   // The `event_bounds` will be used to determine how much space to allocate for
   // tracking the evolution of the system's state. If a step is reached that exceeds
@@ -101,14 +101,14 @@ evolve(MTState * random_state,
   long event_bounds = INITIAL_LENGTH;
 
   // Allocate the dynamic arrays that will be used to track the progress of the system
-  double * time = malloc((sizeof (double)) * event_bounds);
-  long * events = malloc((sizeof (long)) * event_bounds);
-  long * outcome = malloc((sizeof (long)) * substrates_count);
+  double *time = malloc((sizeof (double)) * event_bounds);
+  long *events = malloc((sizeof (long)) * event_bounds);
+  long *outcome = malloc((sizeof (long)) * substrates_count);
 
   // Allocate space for the temporary values that will be used entirely within this
   // function
-  double * propensities = malloc((sizeof (double)) * reactions_count);
-  long * update = malloc((sizeof (long)) * reactions_count);
+  double *propensities = malloc((sizeof (double)) * reactions_count);
+  long *update = malloc((sizeof (long)) * reactions_count);
   long update_length = reactions_count;
 
   // Declare the working variables we will use throughout this function
@@ -222,13 +222,13 @@ evolve(MTState * random_state,
       // If our step has advanced beyond the current `event_bounds`, double the
       // `event_bounds` and reallocate these arrays with the new size
       if (step >= event_bounds) {
-        double * new_time = malloc((sizeof (double *)) * event_bounds * 2);
-        memcpy(new_time, time, (sizeof (double *)) * event_bounds);
+        double *new_time = malloc((sizeof (double)) * event_bounds * 2);
+        memcpy(new_time, time, (sizeof (double)) * event_bounds);
         free(time);
         time = new_time;
 
-        long * new_events = malloc((sizeof (long *)) * event_bounds * 2);
-        memcpy(new_events, events, (sizeof (long *)) * event_bounds);
+        long *new_events = malloc((sizeof (long)) * event_bounds * 2);
+        memcpy(new_events, events, (sizeof (long)) * event_bounds);
         free(events);
         events = new_events;
 
@@ -256,7 +256,7 @@ evolve(MTState * random_state,
 
 // Print an array of doubles
 int
-print_array(double * array, int length) {
+print_array(double *array, int length) {
   for (int index = 0; index < length; index++) {
     printf("a[%d] = %f", index, array[index]);
     if (index == length - 1) {
@@ -271,7 +271,7 @@ print_array(double * array, int length) {
 
 // Print an array of longs
 int
-print_long_array(long * array, int length) {
+print_long_array(long *array, int length) {
   for (int index = 0; index < length; index++) {
     printf("a[%d] = %ld", index, array[index]);
     if (index == length - 1) {

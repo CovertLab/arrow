@@ -15,9 +15,11 @@
  * 2015-02-17, 2017-12-06
  */
 
+#ifndef MERSENNE_H
+#define MERSENNE_H
+
 #include <stdint.h>
 
-#ifndef TWISTER_SIZE
 #define TWISTER_SIZE 624
 
 typedef struct MTState MTState;
@@ -26,16 +28,17 @@ struct MTState {
   uint32_t MT_TEMPERED[TWISTER_SIZE];
   size_t index;
 };
-#endif
 
 // Initialize Mersenne Twister with given seed value.
-void seed(MTState * state, uint32_t seed_value);
+void seed(MTState *state, uint32_t seed_value);
 
 // Extract a pseudo-random unsigned 32-bit integer in the range 0 ... UINT32_MAX
-uint32_t rand_u32(MTState * state);
+uint32_t rand_u32(MTState *state);
 
 // Sample from a uniform distribution
-double sample_uniform(MTState * state);
+double sample_uniform(MTState *state);
 
 // Sample from an exponential distribution of a given lambda
-double sample_exponential(MTState * state, double lambda);
+double sample_exponential(MTState *state, double lambda);
+
+#endif

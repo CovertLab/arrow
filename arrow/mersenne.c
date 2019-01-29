@@ -40,7 +40,7 @@ static const uint32_t MAGIC = 0x9908b0df;
 /*   state.MT[i] = state.MT[expr] ^ (y >> 1) ^ (((int32_t(y) << 31) >> 31) & MAGIC); \ */
 /*   ++i; */
 
-static void generate_numbers(MTState * state)
+static void generate_numbers(MTState *state)
 {
   /*
    * For performance reasons, we've unrolled the loop three times, thus
@@ -92,7 +92,7 @@ static void generate_numbers(MTState * state)
   state->index = 0;
 }
 
-void seed(MTState * state, uint32_t value)
+void seed(MTState *state, uint32_t value)
 {
   /*
    * The equation below is a linear congruential generator (LCG), one of the
@@ -132,7 +132,7 @@ void seed(MTState * state, uint32_t value)
     state->MT[i] = 0x6c078965*(state->MT[i-1] ^ state->MT[i-1]>>30) + i;
 }
 
-uint32_t rand_u32(MTState * state)
+uint32_t rand_u32(MTState *state)
 {
   if ( state->index == TWISTER_SIZE ) {
     generate_numbers(state);
@@ -142,14 +142,14 @@ uint32_t rand_u32(MTState * state)
   return state->MT_TEMPERED[state->index++];
 }
 
-double sample_uniform(MTState * state)
+double sample_uniform(MTState *state)
 {
   uint32_t sample = rand_u32(state);
   double floating = (double) sample;
   return floating * 0.5 / M32;
 }
 
-double sample_exponential(MTState * state, double lambda)
+double sample_exponential(MTState *state, double lambda)
 {
   double sample = sample_uniform(state);
   return -log(1 - sample) / lambda;
