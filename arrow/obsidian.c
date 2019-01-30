@@ -5,7 +5,7 @@
 #include "obsidian.h"
 
 // Initial length of event vectors
-static int INITIAL_LENGTH = 4000;
+static const int INITIAL_LENGTH = 4000;
 
 // Find the number of combinations of choosing k selections from n items
 double
@@ -121,9 +121,7 @@ evolve(MTState *random_state,
   // Copy the initial state that was supplied from outside to the working `outcome`
   // array we will use to actually apply the reactions and determine the next step's
   // state.
-  for (species = 0; species < substrates_count; species++) {
-    outcome[species] = state[species];
-  }
+  memcpy(outcome, state, (sizeof (long)) * substrates_count);
 
   // The `update` array will hold for each step which propensities need to be updated
   // for the next time step, based on the dependencies between reactions (sharing

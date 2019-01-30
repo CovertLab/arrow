@@ -15,23 +15,45 @@ def flatten(l):
         for sublist in l
         for item in sublist]
 
-def flat_indexes(variable):
+def flat_indexes(assorted_lists):
     '''
-    Take a list of variable length lists and reduce it to a single flat list with
-    associated lengths and indexes, for use by the obsidian C module.
+    Take a list of variable length lists and reduce it to a single flat array with
+    associated indexes and lengths. These indexes and lengths can be used in
+    conjunction with the flat array to recover the original list of lists.
+
+    Args:
+        assorted_lists (List[List]): A list of variable length lists. 
+
+    Return:
+        flat: The original list as a flattened array.
+        lengths: A list containing the lengths of all the sublists.
+        indexes: Indexes of where each sublist begins in the flat array.
     '''
 
     lengths = np.array([
         len(l)
-        for l in variable])
+        for l in assorted_lists])
     indexes = np.insert(lengths, 0, 0).cumsum()[:-1]
-    flat = np.array(flatten(variable))
+    flat = np.array(flatten(assorted_lists))
     return flat, lengths, indexes
 
 def reenact_events(stoichiometry, events, state):
     '''
     Reproduce the history of states given an initial state, the history of events and
     the stoichiometry of those events.
+
+    Args:
+        stoichiometry: 2d array where each row is a reaction and each column is a substrate.
+        events: History of reactions as indexes into the stoichiometric matrix.
+        state: Initial state of the system.
+
+    The function iteratively applies each reaction from `events` to the original state
+    and returns the history of states the system took on.
+
+    Return:
+        history: 2d array where each row is the state of the system at some point in
+            the history of its evolution. Each subsequent row is the previous state with
+            the next reaction from `events` applied.
     '''
 
     history = np.zeros((events.shape[0] + 1, state.shape[0]))
@@ -47,17 +69,23 @@ class StochasticSystem(object):
 
         https://en.wikipedia.org/wiki/Gillespie_algorithm
 
+    A basic summary is that the algorithm is given a stoichiometric matrix representing
+    each reaction that can occur in the system, the rates of each reaction, an initial
+    state and a duration, and it finds how much time passes and which reaction occurs
+    next. By applying this iteratively you can "evolve" the system through time, one
+    reaction at a time.
+
     The stoichiometric matrix has a reaction for each row, with the values in that row
     encoding how many of each substrate are either consumed or produced by the reaction
-   (and zero everywhere else). 
+    (and zero everywhere else). 
     '''
 
     def __init__(self, stoichiometry, rates, random_seed=0):
         '''
-        This invokes the Obsidian C module with the stoichiometry, reaction rates and
-        a variety of derived values. Once constructed, this can be invoked by calling
-        `evolve` with a duration and initial state, since the stoichiometry will be
-        shared among all calls.
+        This invokes the Obsidian C module (see obsidianmodule.c) with the
+        stoichiometry, reaction rates and a variety of derived values. Once constructed,
+        this can be invoked by calling `evolve` with a duration and initial state, since
+        the stoichiometry will be shared among all calls.
 
         There are four derived values, each of which is a list of variable length
         lists. In order to pass this into C, these nested lists are flattened and two
