@@ -131,7 +131,7 @@ evolve(MTState *random_state,
   }
 
   // Calculate steps until we reach the provided duration
-  while(now < duration) {
+  while (now < duration) {
 
     // First update all propensities that were affected by the previous event
     for (up = 0; up < update_length; up++) {
@@ -180,7 +180,7 @@ evolve(MTState *random_state,
       // iterating through the propensities until we surpass our sampled value
       choice = 0;
       progress = 0.0;
-      while(progress + propensities[choice] < point) {
+      while (progress + propensities[choice] < point) {
         progress += propensities[choice];
         choice += 1;
       }
