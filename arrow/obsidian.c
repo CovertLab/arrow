@@ -1,11 +1,17 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
 #include "mersenne.h"
 #include "obsidian.h"
 
 // Initial length of event vectors
 static const int INITIAL_LENGTH = 4000;
+
+// Create a value to represent failures
+static const evolve_result failure = {-1, NULL, NULL, NULL};
 
 // Find the number of combinations of choosing k selections from n items
 double
@@ -111,9 +117,25 @@ evolve(MTState *random_state,
   long *update = malloc((sizeof (long)) * reactions_count);
   long update_length = reactions_count;
 
+  if (time == NULL ||
+      events == NULL ||
+      outcome == NULL ||
+      propensities == NULL ||
+      update == NULL) {
+    printf("allocating memory inside evolve failed: %d", errno);
+
+    if (time != NULL) free(time);
+    if (events != NULL) free(events);
+    if (outcome != NULL) free(outcome);
+    if (propensities != NULL) free(propensities);
+    if (update != NULL) free(update);
+
+    return failure;
+  }
+
   // Declare the working variables we will use throughout this function
   long substrates_length;
-  long reaction, reactant, species, index, involve, count, adjustment;
+  long reaction, reactant, index, involve, count, adjustment;
   double total, interval, point, progress;
   int choice, step = 0, up = 0;
   double now = 0.0;
@@ -221,11 +243,35 @@ evolve(MTState *random_state,
       // `event_bounds` and reallocate these arrays with the new size
       if (step >= event_bounds) {
         double *new_time = malloc((sizeof (double)) * event_bounds * 2);
+        if (new_time == NULL) {
+          printf("failed to allocate memory: %d", errno);
+
+          if (time != NULL) free(time);
+          if (events != NULL) free(events);
+          if (outcome != NULL) free(outcome);
+          if (propensities != NULL) free(propensities);
+          if (update != NULL) free(update);
+
+          return failure;
+        }
+
         memcpy(new_time, time, (sizeof (double)) * event_bounds);
         free(time);
         time = new_time;
 
         long *new_events = malloc((sizeof (long)) * event_bounds * 2);
+        if (new_events == NULL) {
+          printf("failed to allocate memory: %d", errno);
+
+          if (time != NULL) free(time);
+          if (events != NULL) free(events);
+          if (outcome != NULL) free(outcome);
+          if (propensities != NULL) free(propensities);
+          if (update != NULL) free(update);
+
+          return failure;
+        }
+
         memcpy(new_events, events, (sizeof (long)) * event_bounds);
         free(events);
         events = new_events;

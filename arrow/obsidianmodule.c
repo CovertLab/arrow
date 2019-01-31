@@ -91,7 +91,12 @@ newObsidianObject(int random_seed,
 
   // set up mersenne twister state from the provided seed
   self->random_seed = random_seed;
+
   MTState *random_state = malloc(sizeof (MTState));
+  if (random_state == NULL) {
+    return NULL;
+  }
+
   seed(random_state, random_seed);
   self->random_state = random_state;
 
@@ -196,6 +201,11 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 duration,
                                 state);
   
+  if (result.steps == -1) {
+    Py_XDECREF(state_array);
+    return NULL;
+  }
+
   // Declare containers for the results
   long steps[1];
   steps[0] = result.steps;
