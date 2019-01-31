@@ -17,7 +17,7 @@ include = [arrow_dir] + numpy.distutils.misc_util.get_numpy_include_dirs()
 
 setup(
 	name='stochastic-arrow',
-	version='0.0.18',
+	version='0.1.0',
 	packages=['arrow'],
 	author='Ryan Spangler',
 	author_email='spanglry@stanford.edu',

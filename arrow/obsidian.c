@@ -124,11 +124,11 @@ evolve(MTState *random_state,
       update == NULL) {
     printf("allocating memory inside evolve failed: %d", errno);
 
-    if (time != NULL) free(time);
-    if (events != NULL) free(events);
-    if (outcome != NULL) free(outcome);
-    if (propensities != NULL) free(propensities);
-    if (update != NULL) free(update);
+    free(time);
+    free(events);
+    free(outcome);
+    free(propensities);
+    free(update);
 
     return failure;
   }
@@ -246,11 +246,11 @@ evolve(MTState *random_state,
         if (new_time == NULL) {
           printf("failed to allocate memory: %d", errno);
 
-          if (time != NULL) free(time);
-          if (events != NULL) free(events);
-          if (outcome != NULL) free(outcome);
-          if (propensities != NULL) free(propensities);
-          if (update != NULL) free(update);
+          free(time);
+          free(events);
+          free(outcome);
+          free(propensities);
+          free(update);
 
           return failure;
         }
@@ -263,11 +263,11 @@ evolve(MTState *random_state,
         if (new_events == NULL) {
           printf("failed to allocate memory: %d", errno);
 
-          if (time != NULL) free(time);
-          if (events != NULL) free(events);
-          if (outcome != NULL) free(outcome);
-          if (propensities != NULL) free(propensities);
-          if (update != NULL) free(update);
+          free(time);
+          free(events);
+          free(outcome);
+          free(propensities);
+          free(update);
 
           return failure;
         }
