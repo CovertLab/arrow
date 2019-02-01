@@ -122,7 +122,7 @@ evolve(MTState *random_state,
       outcome == NULL ||
       propensities == NULL ||
       update == NULL) {
-    printf("allocating memory inside evolve failed: %d", errno);
+    printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
     free(time);
     free(events);
@@ -244,7 +244,7 @@ evolve(MTState *random_state,
       if (step >= event_bounds) {
         double *new_time = malloc((sizeof (double)) * event_bounds * 2);
         if (new_time == NULL) {
-          printf("failed to allocate memory: %d", errno);
+          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);
@@ -261,7 +261,7 @@ evolve(MTState *random_state,
 
         long *new_events = malloc((sizeof (long)) * event_bounds * 2);
         if (new_events == NULL) {
-          printf("failed to allocate memory: %d", errno);
+          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);
