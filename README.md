@@ -19,7 +19,7 @@ the state vector over the course of the simulation.
 Add the following to your `requirements.txt`, or
 `pip install stochastic-arrow`:
 
-    stochastic-arrow==0.0.1
+    stochastic-arrow==0.0.16
 
 ## Usage
 
@@ -31,15 +31,13 @@ matrix of stoichiometrix coefficients) and associated reaction rates:
 from arrow import StochasticSystem
 import numpy as np
 
-# Each column is a reaction and each row is a molecular species (or other
+# Each row is a reaction and each column is a molecular species (or other
 # entity). The first reaction here means that the first and second elements
 # combine to create the third, while the fourth is unaffected.
 stoichiometric_matrix = np.array([
-    [-1, -2, +1],
-    [-1,  0, +1],
-    [+1,  0, -1],
-    [ 0, +1,  0]
-    ])
+    [1, 1, -1, 0],
+    [-2, 0, 0, 1],
+    [-1, -1, 1, 0]], np.int64)
 
 # Each reaction has an associated rate for how probable that reaction is.
 rates = np.array([3.0, 1.0, 1.0])
@@ -60,12 +58,29 @@ state = np.array([1000, 1000, 0, 0])
 # We also specify how long we want the simulation to run. Here we set it to one
 # second.
 duration = 1
+```
 
-# Once we have an initial state and duration, we can run the simulation for the
-# given duration. `evolve` returns the history of the state vector (counts) for
-# each time step, and the history of time steps as they will be in uneven
-# increments throughout the simulation.
-time, counts = system.evolve(state, duration)
+Once we have an initial state and duration, we can run the simulation for the
+given duration. `evolve` returns a dictionary with five keys:
+
+* steps - the number of steps the simulation took
+* time - at what time point each event took place
+* events - the events that occurred
+* occurrences - the number of times each event occurred (derived directly from `events`)
+* outcome - the final state of the system
+
+```python
+result = system.evolve(state, duration)
+```
+
+If you are interested in the history of states for plotting or otherwise, these can be
+derived from the list of events and the stoichiometric matrix, along with the inital
+state. A function `` is provided to do this for you:
+
+```python
+from arrow import reenact_events
+
+history = reenact_events(stoichiometry, result['events'], state)
 ```
 
 ## Testing
@@ -78,4 +93,4 @@ by invoking:
 Also, we have a test that generates plots of various systems which can be run
 like so:
 
-    > python arrow/test/test_arrow.py
+    > python arrow/test/test_arrow.py --plot

@@ -11,25 +11,33 @@ return  pattern is used.
 from __future__ import absolute_import, division, print_function
 
 import os
-
-import numpy as np
+import time
 import json
+import numpy as np
 import argparse
 
-from arrow import evolve, StochasticSystem
+from arrow import reenact_events, StochasticSystem
+from arrow import derive_reactants, calculate_dependencies, evolve, GillespieReference
+
+import obsidian
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
-        [-1, +1,  0],
-        [+1, -1, -1]])
+        [0, -1],
+        [+1, -1],
+        [-1, +1]])
 
     rates = np.array([10, 10, 0.1])
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix, rates)
 
     state = np.array([1000, 0])
     duration = 10
 
-    time, counts, events = system.evolve(state, duration)
+    result = system.evolve(duration, state)
+
+    time = result['time']
+    counts = reenact_events(stoichiometric_matrix, result['events'], state)
+    events = result['occurrences']
 
     assert counts[-1].sum() < state.sum()
     assert time[-1] <= duration
@@ -39,25 +47,28 @@ def test_equilibration():
 
 def test_dimerization():
     stoichiometric_matrix = np.array([
-        [-1, -2, +1],
-        [-1,  0, +1],
-        [+1,  0, -1],
-        [ 0, +1,  0]])
+        [1, 1, -1, 0],
+        [-2, 0, 0, 1],
+        [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix, rates)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    time, counts, events = system.evolve(state, duration)
+    result = system.evolve(duration, state)
+
+    time = result['time']
+    counts = reenact_events(stoichiometric_matrix, result['events'], state)
+    events = result['occurrences']
 
     assert time[-1] <= duration
 
     return (time, counts, events)
 
 
-def test_complexation():
+def load_complexation():
     fixtures_root = os.path.join('data', 'complexation')
 
     def load_state(filename):
@@ -78,35 +89,89 @@ def test_complexation():
 
     n_reactions = len(stoichiometry_sparse)
 
-    stoichiometric_matrix = np.zeros((n_metabolites, n_reactions), np.int64)
+    stoichiometric_matrix = np.zeros((n_reactions, n_metabolites), np.int64)
 
     for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
         for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
             # JSON doesn't allow for integer keys...
             metabolite_index = int(str_metabolite_index)
-            stoichiometric_matrix[metabolite_index, reaction_index] = stoich
+            stoichiometric_matrix[reaction_index, metabolite_index] = stoich
 
     duration = 1
 
     # semi-quantitative rate constants
-    rates = np.full(n_reactions, 10)
+    rates = np.full(n_reactions, 1000)
 
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    return stoichiometric_matrix, rates, initial_state, final_state
 
-    time, counts, events = system.evolve(initial_state, duration)
+def complexation_test(make_system):
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    duration = 1
 
-    assert(len(time)-1 == events.sum())
+    system = make_system(stoichiometric_matrix, rates)
+    result = system.evolve(duration, initial_state)
 
-    outcome = counts[-1]
+    time = np.concatenate([[0.0], result['time']])
+    events = result['events']
+    occurrences = result['occurrences']
+    outcome = result['outcome']
+
+    history = reenact_events(stoichiometric_matrix, events, initial_state)
+
     difference = (final_state - outcome)
 
     total = np.abs(difference).sum()
 
     print('differences: {}'.format(total))
     print('total steps: {}'.format(len(time)))
+    print('number of events: {}'.format(len(events)))
+    print('length of history: {}'.format(len(history)))
     print(time)
 
-    return (time, counts, events)
+    return (time, history, occurrences)
+
+def test_complexation():
+    complexation_test(StochasticSystem)
+
+def test_obsidian():
+    stoichiometric_matrix = np.array([
+        [1, 1, -1, 0],
+        [-2, 0, 0, 1],
+        [-1, -1, 1, 0]], np.int64)
+
+    rates = np.array([3, 1, 1]) * 0.01
+
+    arrow = StochasticSystem(stoichiometric_matrix, rates)
+    result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
+
+    print('steps: {}'.format(result['steps']))
+    print('time: {}'.format(result['time']))
+    print('events: {}'.format(result['events']))
+    print('occurrences: {}'.format(result['occurrences']))
+    print('outcome: {}'.format(result['outcome']))
+
+    assert(arrow.obsidian.reactions_count() == stoichiometric_matrix.shape[0])
+    assert(arrow.obsidian.substrates_count() == stoichiometric_matrix.shape[1])
+
+def test_compare_runtime():
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    duration = 1
+    amplify = 100
+
+    reference = GillespieReference(stoichiometric_matrix, rates)
+    reference_start = time.time()
+    for i in range(amplify):
+        result = reference.evolve(duration, initial_state)
+    reference_end = time.time()
+
+    system = StochasticSystem(stoichiometric_matrix, rates)
+    obsidian_start = time.time()
+    for i in range(amplify):
+        result = system.evolve(duration, initial_state)
+    obsidian_end = time.time()
+
+    print('reference time elapsed: {}'.format(reference_end - reference_start))
+    print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -120,13 +185,13 @@ if __name__ == '__main__':
     systems = (
         test_equilibration,
         test_dimerization,
-        test_complexation
-        )
+        lambda: complexation_test(StochasticSystem),
+        lambda: complexation_test(GillespieReference))
 
     if not args.plot:
         if args.complexation:
             for run in xrange(args.runs):
-                test_complexation()
+                lambda: complexation_test(StochasticSystem)
         else:
             for system in systems:
                 system()
