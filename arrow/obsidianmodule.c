@@ -340,7 +340,8 @@ _print_array(PyObject *self, PyObject *args) {
   if (pr == NULL)
     return NULL;
 
-  for (int index = 0; index < pr_length; index++) {
+  int index;
+  for (index = 0; index < pr_length; index++) {
     PyObject *item;
     item = PyList_GetItem(float_list, index);
     if (!PyFloat_Check(item))

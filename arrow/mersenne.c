@@ -24,7 +24,7 @@
  * We have an array of 624 32-bit values, and there are 31 unused bits, so we
  * have a seed value of 624*32-31 = 19937 bits.
  */
-static const size_t PERIOD = 397;
+#define PERIOD 397
 static const size_t DIFF   = TWISTER_SIZE - PERIOD;
 
 static const uint32_t MAGIC = 0x9908b0df;
@@ -82,7 +82,7 @@ static void generate_numbers(MTState *state)
   }
 
   // Temper all numbers in a batch
-  for (size_t i = 0; i < TWISTER_SIZE; ++i) {
+  for (i = 0; i < TWISTER_SIZE; ++i) {
     y = state->MT[i];
     y ^= y >> 11;
     y ^= y << 7  & 0x9d2c5680;
@@ -130,7 +130,8 @@ void seed(MTState *state, uint32_t value)
   state->MT[0] = value;
   state->index = TWISTER_SIZE;
 
-  for ( uint_fast32_t i=1; i<TWISTER_SIZE; ++i )
+  uint_fast32_t i;
+  for ( i=1; i<TWISTER_SIZE; ++i )
     state->MT[i] = 0x6c078965*(state->MT[i-1] ^ state->MT[i-1]>>30) + i;
 }
 

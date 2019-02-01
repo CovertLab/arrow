@@ -20,7 +20,8 @@
 
 #include <stdint.h>
 
-static const size_t TWISTER_SIZE = 624;
+// static const size_t TWISTER_SIZE = 624;
+#define TWISTER_SIZE 624
 
 typedef struct MTState MTState;
 struct MTState {
