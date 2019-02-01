@@ -298,7 +298,8 @@ evolve(MTState *random_state,
 // Print an array of doubles
 int
 print_array(double *array, int length) {
-  for (int index = 0; index < length; index++) {
+  int index;
+  for (index = 0; index < length; index++) {
     printf("a[%d] = %f", index, array[index]);
     if (index == length - 1) {
       printf("\n");
@@ -313,7 +314,8 @@ print_array(double *array, int length) {
 // Print an array of longs
 int
 print_long_array(long *array, int length) {
-  for (int index = 0; index < length; index++) {
+  int index;
+  for (index = 0; index < length; index++) {
     printf("a[%d] = %ld", index, array[index]);
     if (index == length - 1) {
       printf("\n");
