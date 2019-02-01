@@ -191,9 +191,6 @@ evolve(MTState *random_state,
 
       // First, sample two random values, `point` from a linear distribution and
       // `interval` from an exponential distribution.
-      // sample = (double) rand() / RAND_MAX;
-      // interval = -log(1 - sample) / total;
-      // point = ((double) rand() / RAND_MAX) * total;
 
       interval = sample_exponential(random_state, total);
       point = sample_uniform(random_state);
