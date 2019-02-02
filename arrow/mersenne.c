@@ -25,7 +25,7 @@
  * have a seed value of 624*32-31 = 19937 bits.
  */
 #define PERIOD 397
-#define DIFF (TWISTER_SIZE - PERIOD)
+#define DIFF ((TWISTER_SIZE) - (PERIOD))
 
 static const uint32_t MAGIC = 0x9908b0df;
 
