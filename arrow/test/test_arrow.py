@@ -173,6 +173,17 @@ def test_compare_runtime():
     print('reference time elapsed: {}'.format(reference_end - reference_start))
     print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
+def test_forms():
+    stoichiometric_matrix = np.array([
+        [-1, 1],
+        [1, -1]], np.int64)
+
+    rates = np.array([1, 2])
+    forms = np.array([1, 1])
+
+    arrow = StochasticSystem(stoichiometric_matrix, rates, forms)
+    result = arrow.evolve(1.0, np.array([50, 20], np.int64))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--plot', action='store_true')
