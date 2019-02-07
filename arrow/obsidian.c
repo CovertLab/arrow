@@ -84,6 +84,7 @@ evolve(MTState *random_state,
        int substrates_count,
        long *stoichiometry,
        double *rates,
+       long *forms,
 
        long *reactants_lengths,
        long *reactants_indexes,

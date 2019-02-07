@@ -40,6 +40,7 @@ typedef struct {
   int substrates_count;
   long *stoichiometry;
   double *rates;
+  long *forms;
 
   long *reactants_lengths;
   long *reactants_indexes;
@@ -67,6 +68,7 @@ newObsidianObject(int random_seed,
                   int substrates_count,
                   long *stoichiometry,
                   double *rates,
+                  long *forms,
 
                   long *reactants_lengths,
                   long *reactants_indexes,
@@ -104,6 +106,7 @@ newObsidianObject(int random_seed,
   self->substrates_count = substrates_count;
   self->stoichiometry = stoichiometry;
   self->rates = rates;
+  self->forms = forms;
 
   self->reactants_lengths = reactants_lengths;
   self->reactants_indexes = reactants_indexes;
@@ -188,6 +191,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 self->substrates_count,
                                 self->stoichiometry,
                                 self->rates,
+                                self->forms,
                                 self->reactants_lengths,
                                 self->reactants_indexes,
                                 self->reactants,
@@ -365,6 +369,7 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
   int random_seed;
   PyObject *stoichiometry_obj,
     *rates_obj,
+    *forms_obj,
 
     *reactants_lengths_obj,
     *reactants_indexes_obj,
@@ -380,10 +385,11 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
     *substrates_obj;
 
   if (!PyArg_ParseTuple(args,
-                        "iOOOOOOOOOOOO",
+                        "iOOOOOOOOOOOOO",
                         &random_seed,
                         &stoichiometry_obj,
                         &rates_obj,
+                        &forms_obj,
 
                         &reactants_lengths_obj,
                         &reactants_indexes_obj,
@@ -408,6 +414,10 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
   // Import the rates for each reaction
   PyObject *rates_array = array_for(rates_obj, NPY_DOUBLE);
   double *rates = (double *) PyArray_DATA(rates_array);
+
+  // Import the forms for each reaction
+  PyObject *forms_array = array_for(forms_obj, NPY_INT64);
+  long *forms = (long *) PyArray_DATA(forms_array);
 
   // Pull all the precalculated nested arrays
   PyObject *reactants_lengths_array = array_for(reactants_lengths_obj, NPY_INT64);
@@ -439,6 +449,7 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
                                substrates_count,
                                stoichiometry,
                                rates,
+                               forms,
 
                                reactants_lengths,
                                reactants_indexes,
