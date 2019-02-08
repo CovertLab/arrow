@@ -182,7 +182,14 @@ def test_forms():
     forms = np.array([1, 1])
 
     arrow = StochasticSystem(stoichiometric_matrix, rates, forms)
-    result = arrow.evolve(1.0, np.array([50, 20], np.int64))
+    result = arrow.evolve(10.0, np.array([50, 20], np.int64))
+
+    print('steps: {}'.format(result['steps']))
+    print('time: {}'.format(result['time']))
+    print('events: {}'.format(result['events']))
+    print('occurrences: {}'.format(result['occurrences']))
+    print('outcome: {}'.format(result['outcome']))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
