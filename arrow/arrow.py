@@ -83,9 +83,10 @@ class StochasticSystem(object):
     def __init__(self, stoichiometry, rates, forms=None, random_seed=0):
         '''
         This invokes the Obsidian C module (see obsidianmodule.c) with the
-        stoichiometry, reaction rates and a variety of derived values. Once constructed,
-        this can be invoked by calling `evolve` with a duration and initial state, since
-        the stoichiometry will be shared among all calls.
+        stoichiometry, reaction rates, the form of each reaction (optional)
+        and a variety of derived values. Once constructed, this can be invoked
+        by calling `evolve` with a duration and initial state, since the
+        stoichiometry will be shared among all calls.
 
         There are four derived values, each of which is a list of variable length
         lists. In order to pass this into C, these nested lists are flattened and two

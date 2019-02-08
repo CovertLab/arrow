@@ -24,9 +24,9 @@ choose(long n, long k) {
   return combinations;
 }
 
-// Compute the substrate saturation fraction
+// Compute the fractional saturation
 double
-substrate_fraction(long s, long k) {
+fraction_saturation(long s, long k) {
   return ((double) s / (s + k));
 }
 
@@ -43,8 +43,10 @@ substrate_fraction(long s, long k) {
 //   * rates: an array of length `reactions_count` that encodes the base rate for
 //       each reaction. The actual propensity is further dependent on the counts for
 //       each reactant in the reaction.
+//   * forms: an array of length `reactions_count` that indicates the type of
+//       propensity computation that is associated with each reaction.
 //   * duration: How long to run the simulation for.
-//   * state: An array of length `substrates_count` that contains the inital count
+//   * state: An array of length `substrates_count` that contains the initial count
 //       for each substrate. The outcome of the algorithm will involve an array of
 //       the same size that signifies the counts of each substrate after all the
 //       reactions are performed.
@@ -170,13 +172,15 @@ evolve(MTState *random_state,
 
       // Compute propensity depending on the reaction's form
       switch(forms[reaction]) {
+
         case 0: // Standard Gillespie
           // Initialize the propensity for reaction with its rate constant
           propensities[reaction] = rates[reaction];
 
-          // Go through each reactant and calculate its contribution to the propensity
-          // based on the counts of the corresponding substrate, which is then multiplied
-          // by the reaction's original rate and the contributions from other reactants
+          // Go through each reactant and calculate its contribution to the
+          // propensity based on the counts of the corresponding substrate,
+          // which is then multiplied by the reaction's original rate and the
+          // contributions from other reactants
           for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
             index = reactants_indexes[reaction] + reactant;
             count = outcome[reactants[index]];
@@ -185,19 +189,17 @@ evolve(MTState *random_state,
 
           break;
 
-        case 1: // Michaelis-Menten with 3 substrates
-          // Initialize the propensity for reaction with its rate constant
-          // Note: the rate constant for form '2' reactions is the production of
-          // k_cat (rate of catalysis) and enzyme count.
+        case 1: // Michaelis-Menten
+          // Initialize the propensity for reaction with its maximal propensity
           propensities[reaction] = rates[reaction];
 
-          // Go through each reactant and calculate its contribution to the propensity
-          // based on the counts of the corresponding substrates - relative to
-          // their Michaelis-Menten constant.
+          // Go through each reactant and calculate its contribution to the
+          // propensity based on the counts of the corresponding substrates
+          // relative to their Michaelis-Menten constant.
           for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
             index = reactants_indexes[reaction] + reactant;
             count = outcome[reactants[index]];
-            propensities[reaction] *= substrate_fraction(count, rates[reaction]);
+            propensities[reaction] *= fraction_saturation(count, rates[reaction]);
           }
 
           break;
