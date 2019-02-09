@@ -175,17 +175,18 @@ def test_compare_runtime():
 
 def test_forms():
     stoichiometric_matrix = np.array([
-        [-1, 1],
-        [1, -1]], np.int64)
+        [-1, -1, 1, 0, 0, 0],
+        [0, 0, 0, -1, -1, 1]], np.int64)
 
-    rates = np.array([1, 2])
+    rates = np.array([
+        [10, 1, 1],
+        [1, 1, 1]], np.float64)
     forms = np.array([1, 1])
 
     arrow = StochasticSystem(stoichiometric_matrix, rates, forms)
-    result = arrow.evolve(10.0, np.array([50, 20], np.int64))
+    result = arrow.evolve(1., np.array([50, 50, 0, 20, 20, 0], np.int64))
 
     print('steps: {}'.format(result['steps']))
-    print('time: {}'.format(result['time']))
     print('events: {}'.format(result['events']))
     print('occurrences: {}'.format(result['occurrences']))
     print('outcome: {}'.format(result['outcome']))
