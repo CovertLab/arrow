@@ -26,7 +26,7 @@ choose(long n, long k) {
 
 // Compute the fractional saturation
 double
-fraction_saturation(long s, long k) {
+fraction_saturation(long s, double k) {
   return ((double) s / (s + k));
 }
 
