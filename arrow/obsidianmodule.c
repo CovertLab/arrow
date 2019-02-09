@@ -39,7 +39,9 @@ typedef struct {
   int reactions_count;
   int substrates_count;
   long *stoichiometry;
-  double *rates;
+  double *rates_flat;
+  long *rates_lengths;
+  long *rates_indexes;
   long *forms;
 
   long *reactants_lengths;
@@ -67,7 +69,9 @@ newObsidianObject(int random_seed,
                   int reactions_count,
                   int substrates_count,
                   long *stoichiometry,
-                  double *rates,
+                  double *rates_flat,
+                  long *rates_lengths,
+                  long *rates_indexes,
                   long *forms,
 
                   long *reactants_lengths,
@@ -105,7 +109,9 @@ newObsidianObject(int random_seed,
   self->reactions_count = reactions_count;
   self->substrates_count = substrates_count;
   self->stoichiometry = stoichiometry;
-  self->rates = rates;
+  self->rates_flat = rates_flat;
+  self->rates_lengths = rates_lengths;
+  self->rates_indexes = rates_indexes;
   self->forms = forms;
 
   self->reactants_lengths = reactants_lengths;
@@ -141,7 +147,7 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":demo"))
     return NULL;
 
-  print_array(self->rates, self->reactions_count);
+  print_array(self->rates_flat, self->reactions_count);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -190,7 +196,9 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
                                 self->reactions_count,
                                 self->substrates_count,
                                 self->stoichiometry,
-                                self->rates,
+                                self->rates_flat,
+                                self->rates_lengths,
+                                self->rates_indexes,
                                 self->forms,
                                 self->reactants_lengths,
                                 self->reactants_indexes,
@@ -368,7 +376,9 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
 
   int random_seed;
   PyObject *stoichiometry_obj,
-    *rates_obj,
+    *rates_flat_obj,
+    *rates_lengths_obj,
+    *rates_indexes_obj,
     *forms_obj,
 
     *reactants_lengths_obj,
@@ -385,10 +395,12 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
     *substrates_obj;
 
   if (!PyArg_ParseTuple(args,
-                        "iOOOOOOOOOOOOO",
+                        "iOOOOOOOOOOOOOOO",
                         &random_seed,
                         &stoichiometry_obj,
-                        &rates_obj,
+                        &rates_flat_obj,
+                        &rates_lengths_obj,
+                        &rates_indexes_obj,
                         &forms_obj,
 
                         &reactants_lengths_obj,
@@ -412,8 +424,12 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
   long *stoichiometry = (long *) PyArray_DATA(stoichiometry_array);
 
   // Import the rates for each reaction
-  PyObject *rates_array = array_for(rates_obj, NPY_DOUBLE);
-  double *rates = (double *) PyArray_DATA(rates_array);
+  PyObject *rates_flat_array = array_for(rates_flat_obj, NPY_DOUBLE);
+  double *rates_flat = (double *) PyArray_DATA(rates_flat_array);
+  PyObject *rates_lengths_array = array_for(rates_lengths_obj, NPY_INT64);
+  long *rates_lengths = (long *) PyArray_DATA(rates_lengths_array);
+  PyObject *rates_indexes_array = array_for(rates_indexes_obj, NPY_INT64);
+  long *rates_indexes = (long *) PyArray_DATA(rates_indexes_array);
 
   // Import the forms for each reaction
   PyObject *forms_array = array_for(forms_obj, NPY_INT64);
@@ -448,7 +464,9 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
                                reactions_count,
                                substrates_count,
                                stoichiometry,
-                               rates,
+                               rates_flat,
+                               rates_lengths,
+                               rates_indexes,
                                forms,
 
                                reactants_lengths,
@@ -470,6 +488,10 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
   }
 
   // Clean up all the PyObject * references
+  Py_XDECREF(rates_flat_array);
+  Py_XDECREF(rates_lengths_array);
+  Py_XDECREF(rates_indexes_array);
+
   Py_XDECREF(reactants_lengths_array);
   Py_XDECREF(reactants_indexes_array);
   Py_XDECREF(reactants_array);

@@ -40,9 +40,10 @@ fraction_saturation(long s, long k) {
 //       contains all the information about the reactions this system performs. Each
 //       row is a reaction, and each column is a substrate, so every entry is the
 //       change in counts of each substrate when the given reaction is performed.
-//   * rates: an array of length `reactions_count` that encodes the base rate for
-//       each reaction. The actual propensity is further dependent on the counts for
-//       each reactant in the reaction.
+//   * rates_flat: an array of length `reactions_count` (or greater if the reaction
+//       is not of the default form 0) that encodes the base rate for each reaction.
+//       The actual propensity is further dependent on the counts for each reactant
+//       in the reaction.
 //   * forms: an array of length `reactions_count` that indicates the type of
 //       propensity computation that is associated with each reaction.
 //   * duration: How long to run the simulation for.
@@ -91,7 +92,9 @@ evolve(MTState *random_state,
        int reactions_count,
        int substrates_count,
        long *stoichiometry,
-       double *rates,
+       double *rates_flat,
+       long *rates_lengths,
+       long *rates_indexes,
        long *forms,
 
        long *reactants_lengths,
@@ -175,7 +178,7 @@ evolve(MTState *random_state,
 
         case 0: // Standard Gillespie
           // Initialize the propensity for reaction with its rate constant
-          propensities[reaction] = rates[reaction];
+          propensities[reaction] = rates_flat[reaction];
 
           // Go through each reactant and calculate its contribution to the
           // propensity based on the counts of the corresponding substrate,
@@ -191,7 +194,8 @@ evolve(MTState *random_state,
 
         case 1: // Michaelis-Menten
           // Initialize the propensity for reaction with its maximal propensity
-          propensities[reaction] = rates[reaction];
+          index = rates_indexes[reaction];
+          propensities[reaction] = rates_flat[index];
 
           // Go through each reactant and calculate its contribution to the
           // propensity based on the counts of the corresponding substrates
@@ -199,13 +203,14 @@ evolve(MTState *random_state,
           for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
             index = reactants_indexes[reaction] + reactant;
             count = outcome[reactants[index]];
-            propensities[reaction] *= fraction_saturation(count, rates[reaction]);
+            propensities[reaction] *= fraction_saturation(count,
+              rates_flat[rates_indexes[reaction] + reactant + 1]);
           }
 
           break;
 
         default:
-          printf("arrow.obsidian.evolve - unexpected form: %d", forms[reaction]);
+          printf("arrow.obsidian.evolve - unexpected form: %ld", forms[reaction]);
       }
     }
 

@@ -102,7 +102,9 @@ class StochasticSystem(object):
         '''
 
         self.stoichiometry = stoichiometry
-        self.rates = rates
+        if rates.ndim == 1:
+            rates = [[rate] for rate in rates.astype(np.float64)]
+        self.rates_flat, self.rates_lengths, self.rates_indexes = flat_indexes(rates)
 
         if forms is not None:
             self.forms = forms
@@ -123,7 +125,9 @@ class StochasticSystem(object):
         self.obsidian = obsidian.obsidian(
             self.random_seed,
             self.stoichiometry,
-            self.rates,
+            self.rates_flat,
+            self.rates_lengths,
+            self.rates_indexes,
             self.forms,
             self.reactants_lengths,
             self.reactants_indexes,
@@ -138,7 +142,7 @@ class StochasticSystem(object):
 
     def evolve(self, duration, state):
         steps, time, events, outcome = self.obsidian.evolve(duration, state)
-        occurrences = np.zeros(len(self.rates))
+        occurrences = np.zeros(self.stoichiometry.shape[0])
         for event in events:
             occurrences[event] += 1
 
