@@ -80,12 +80,13 @@ class StochasticSystem(object):
     (and zero everywhere else). 
     '''
 
-    def __init__(self, stoichiometry, rates, random_seed=0):
+    def __init__(self, stoichiometry, rates, forms=None, random_seed=0):
         '''
         This invokes the Obsidian C module (see obsidianmodule.c) with the
-        stoichiometry, reaction rates and a variety of derived values. Once constructed,
-        this can be invoked by calling `evolve` with a duration and initial state, since
-        the stoichiometry will be shared among all calls.
+        stoichiometry, reaction rates, the form of each reaction (optional)
+        and a variety of derived values. Once constructed, this can be invoked
+        by calling `evolve` with a duration and initial state, since the
+        stoichiometry will be shared among all calls.
 
         There are four derived values, each of which is a list of variable length
         lists. In order to pass this into C, these nested lists are flattened and two
@@ -101,7 +102,14 @@ class StochasticSystem(object):
         '''
 
         self.stoichiometry = stoichiometry
-        self.rates = rates
+        if rates.ndim == 1:
+            rates = [[rate] for rate in rates.astype(np.float64)]
+        self.rates_flat, self.rates_lengths, self.rates_indexes = flat_indexes(rates)
+
+        if forms is not None:
+            self.forms = forms
+        else:
+            self.forms = np.zeros(stoichiometry.shape[0], dtype=np.int64)
 
         self.random_seed = random_seed
 
@@ -117,7 +125,10 @@ class StochasticSystem(object):
         self.obsidian = obsidian.obsidian(
             self.random_seed,
             self.stoichiometry,
-            self.rates,
+            self.rates_flat,
+            self.rates_lengths,
+            self.rates_indexes,
+            self.forms,
             self.reactants_lengths,
             self.reactants_indexes,
             self.reactants_flat,
@@ -131,7 +142,7 @@ class StochasticSystem(object):
 
     def evolve(self, duration, state):
         steps, time, events, outcome = self.obsidian.evolve(duration, state)
-        occurrences = np.zeros(len(self.rates))
+        occurrences = np.zeros(self.stoichiometry.shape[0])
         for event in events:
             occurrences[event] += 1
 
