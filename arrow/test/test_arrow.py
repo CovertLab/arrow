@@ -191,6 +191,8 @@ def test_memory():
             print('memory increase iteration {}: {}'.format(i, memory))
             memory_previous = memory
         result = system.evolve(duration, initial_state)
+        difference = np.abs(final_state - result['outcome']).sum()
+        print('difference is {}'.format(difference))
     obsidian_end = time.time()
 
     print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
