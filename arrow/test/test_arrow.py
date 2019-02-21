@@ -14,6 +14,7 @@ import os
 import time
 import json
 import numpy as np
+import psutil
 import argparse
 
 from arrow import reenact_events, StochasticSystem
@@ -173,11 +174,33 @@ def test_compare_runtime():
     print('reference time elapsed: {}'.format(reference_end - reference_start))
     print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
+def test_memory():
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    duration = 1
+    amplify = 100
+
+    this = psutil.Process(os.getpid())
+    memory = 0
+    memory_previous = 0
+
+    system = StochasticSystem(stoichiometric_matrix, rates)
+    obsidian_start = time.time()
+    for i in range(amplify):
+        memory = this.memory_info().rss
+        if (memory != memory_previous):
+            print('memory increase iteration {}: {}'.format(i, memory))
+            memory_previous = memory
+        result = system.evolve(duration, initial_state)
+    obsidian_end = time.time()
+
+    print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--complexation', action='store_true')
     parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--memory', action='store_true')
     args = parser.parse_args()
 
     from itertools import izip
@@ -192,6 +215,8 @@ if __name__ == '__main__':
         if args.complexation:
             for run in xrange(args.runs):
                 lambda: complexation_test(StochasticSystem)
+        elif args.memory:
+            test_memory()
         else:
             for system in systems:
                 system()

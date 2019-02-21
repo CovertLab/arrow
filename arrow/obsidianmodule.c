@@ -213,10 +213,22 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   long substrates[1];
   substrates[0] = self->substrates_count;
 
+  /* // Create new python numpy arrays from the raw C results */
+  /* PyObject *time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time); */
+  /* PyObject *events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events); */
+  /* PyObject *outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome); */
+
   // Create new python numpy arrays from the raw C results
-  PyObject *time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time);
-  PyObject *events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events);
-  PyObject *outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome);
+  PyObject *time_obj = PyArray_ZEROS(1, steps, NPY_DOUBLE, 0);
+  memcpy(PyArray_GETPTR1(time_obj, 0), result.time, (sizeof (double)) * result.steps);
+  PyObject *events_obj = PyArray_ZEROS(1, steps, NPY_INT64, 0);
+  memcpy(PyArray_GETPTR1(events_obj, 0), result.events, (sizeof (long)) * result.steps);
+  PyObject *outcome_obj = PyArray_ZEROS(1, substrates, NPY_INT64, 0);
+  memcpy(PyArray_GETPTR1(outcome_obj, 0), result.outcome, (sizeof (long)) * self->substrates_count);
+
+  free(result.time);
+  free(result.events);
+  free(result.outcome);
 
   // Decrement the reference to the state array now that we are done with it
   Py_XDECREF(state_array);
@@ -453,12 +465,10 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
                                substrates_indexes,
                                substrates);
 
-  // if something went wrong throw an error
-  if (obsidian == NULL) {
-    return NULL;
-  }
-
   // Clean up all the PyObject * references
+  Py_XDECREF(stoichiometry_array);
+  Py_XDECREF(rates_array);
+
   Py_XDECREF(reactants_lengths_array);
   Py_XDECREF(reactants_indexes_array);
   Py_XDECREF(reactants_array);
@@ -471,6 +481,11 @@ _invoke_obsidian(PyObject *self, PyObject *args) {
   Py_XDECREF(substrates_lengths_array);
   Py_XDECREF(substrates_indexes_array);
   Py_XDECREF(substrates_array);
+
+  // if something went wrong throw an error
+  if (obsidian == NULL) {
+    return NULL;
+  }
 
   // Return the Obsidian object as a PyObject *
   return (PyObject *) obsidian;
