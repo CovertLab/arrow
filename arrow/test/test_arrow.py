@@ -142,7 +142,7 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    arrow = StochasticSystem(stoichiometric_matrix, rates)
+    arrow = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
     result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
 
     print('steps: {}'.format(result['steps']))
@@ -200,6 +200,7 @@ def test_memory():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--plot', action='store_true')
+    parser.add_argument('--obsidian', action='store_true')
     parser.add_argument('--complexation', action='store_true')
     parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--memory', action='store_true')
@@ -216,7 +217,9 @@ if __name__ == '__main__':
     if not args.plot:
         if args.complexation:
             for run in xrange(args.runs):
-                lambda: complexation_test(StochasticSystem)
+                complexation_test(StochasticSystem)
+        elif args.obsidian:
+            test_obsidian()
         elif args.memory:
             test_memory()
         else:
