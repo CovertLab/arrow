@@ -101,15 +101,15 @@ def load_complexation():
     duration = 1
 
     # semi-quantitative rate constants
-    rates = np.full(n_reactions, 1000)
+    rates = np.full(n_reactions, 1000.0)
 
-    return stoichiometric_matrix, rates, initial_state, final_state
+    return (stoichiometric_matrix, rates, initial_state, final_state)
 
 def complexation_test(make_system):
     stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
     duration = 1
 
-    system = make_system(stoichiometric_matrix, rates)
+    system = make_system(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
     result = system.evolve(duration, initial_state)
 
     time = np.concatenate([[0.0], result['time']])
@@ -183,15 +183,17 @@ def test_memory():
     memory = 0
     memory_previous = 0
 
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
     obsidian_start = time.time()
     for i in range(amplify):
         memory = this.memory_info().rss
         if (memory != memory_previous):
             print('memory increase iteration {}: {}'.format(i, memory))
             memory_previous = memory
+
         result = system.evolve(duration, initial_state)
         difference = np.abs(final_state - result['outcome']).sum()
+
         print('difference is {}'.format(difference))
     obsidian_end = time.time()
 

@@ -152,8 +152,13 @@ evolve(MTState *random_state,
     update[reaction] = reaction;
   }
 
+  /* print_array(rates, reactions_count); */
+
   // Calculate steps until we reach the provided duration
   while (now < duration) {
+
+    /* printf("updates: "); */
+    /* print_long_array(update, update_length); */
 
     // First update all propensities that were affected by the previous event
     for (up = 0; up < update_length; up++) {
@@ -168,10 +173,20 @@ evolve(MTState *random_state,
       // by the reaction's original rate and the contributions from other reactants
       for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
         index = reactants_indexes[reaction] + reactant;
+
         count = outcome[reactants[index]];
         propensities[reaction] *= choose(count, reactions[index]);
       }
     }
+
+    /* int nonzero = 0; */
+    /* for (reaction = 0; reaction < reactions_count; reaction++) { */
+    /*   if (propensities[reaction] > 0.0) { */
+    /*     nonzero += 1; */
+    /*     printf("p[%d] = %.10f, ", reaction, propensities[reaction]); */
+    /*   } */
+    /* } */
+    /* printf("\n"); */
 
     // Find the total for all propensities
     total = 0.0;
@@ -179,9 +194,11 @@ evolve(MTState *random_state,
       total += propensities[reaction];
     }
 
+    /* printf("total: %f\n", total); */
+
     // If the total is zero, then we have no more reactions to perform and can exit
     // early
-    if (total == 0.0) {
+    if (!(total > 0.0)) {
       interval = 0.0;
       choice = -1;
       break;
@@ -191,9 +208,8 @@ evolve(MTState *random_state,
 
       // First, sample two random values, `point` from a linear distribution and
       // `interval` from an exponential distribution.
-
       interval = sample_exponential(random_state, total);
-      point = sample_uniform(random_state);
+      point = sample_uniform(random_state) * total;
 
       // Based on the random sample, find the event that it corresponds to by
       // iterating through the propensities until we surpass our sampled value
@@ -203,6 +219,8 @@ evolve(MTState *random_state,
         progress += propensities[choice];
         choice += 1;
       }
+
+      /* printf("choice of %d: %d\n", nonzero, choice); */
 
       // If we have surpassed the provided duration we can exit now
       if (choice == -1 || (now + interval) > duration) {

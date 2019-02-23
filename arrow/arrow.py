@@ -114,6 +114,12 @@ class StochasticSystem(object):
             dependencies)
         self.substrates_flat, self.substrates_lengths, self.substrates_indexes = flat_indexes(substrates)
 
+        # print("reactants: {}".format(reactants))
+        # print("reactants lengths: {}".format(self.reactants_lengths))
+        # print("reactants indexes: {}".format(self.reactants_indexes))
+        # print("reactions: {}".format(reactions))
+        # print("substrates: {}".format(substrates))
+
         self.obsidian = obsidian.obsidian(
             self.random_seed,
             self.stoichiometry,
