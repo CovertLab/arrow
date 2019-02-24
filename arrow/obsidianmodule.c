@@ -213,33 +213,13 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   long substrates[1];
   substrates[0] = self->substrates_count;
 
-  /* // Create new python numpy arrays from the raw C results */
-  /* PyObject *time_obj = PyArray_SimpleNewFromData(1, steps, NPY_DOUBLE, result.time); */
-  /* PyObject *events_obj = PyArray_SimpleNewFromData(1, steps, NPY_INT64, result.events); */
-  /* PyObject *outcome_obj = PyArray_SimpleNewFromData(1, substrates, NPY_INT64, result.outcome); */
-
-  /* // Create new python numpy arrays from the raw C results */
-  /* PyObject *time_obj = PyArray_ZEROS(1, steps, NPY_DOUBLE, 0); */
-  /* memcpy(PyArray_GETPTR1(time_obj, 0), result.time, (sizeof (double)) * result.steps); */
-  /* PyObject *events_obj = PyArray_ZEROS(1, steps, NPY_INT64, 0); */
-  /* memcpy(PyArray_GETPTR1(events_obj, 0), result.events, (sizeof (long)) * result.steps); */
-  /* PyObject *outcome_obj = PyArray_ZEROS(1, substrates, NPY_INT64, 0); */
-  /* memcpy(PyArray_GETPTR1(outcome_obj, 0), result.outcome, (sizeof (long)) * self->substrates_count); */
-
   // Create new python numpy arrays from the raw C results
   PyArrayObject *time_obj = (PyArrayObject *) PyArray_SimpleNew(1, steps, NPY_DOUBLE);
   memcpy(PyArray_DATA(time_obj), result.time, (sizeof (double)) * result.steps);
-  /* memcpy(time_obj->data, result.time, (sizeof (double)) * result.steps); */
   PyArrayObject *events_obj = (PyArrayObject *) PyArray_SimpleNew(1, steps, NPY_INT64);
   memcpy(PyArray_DATA(events_obj), result.events, (sizeof (long)) * result.steps);
-  /* memcpy(events_obj->data, result.events, (sizeof (long)) * result.steps); */
   PyArrayObject *outcome_obj = (PyArrayObject *) PyArray_SimpleNew(1, substrates, NPY_INT64);
   memcpy(PyArray_DATA(outcome_obj), result.outcome, (sizeof (long)) * self->substrates_count);
-  /* memcpy(outcome_obj->data, result.outcome, (sizeof (long)) * self->substrates_count); */
-
-  /* PyArray_ENABLEFLAGS(time_obj, NPY_ARRAY_OWNDATA); */
-  /* PyArray_ENABLEFLAGS(events_obj, NPY_ARRAY_OWNDATA); */
-  /* PyArray_ENABLEFLAGS(outcome_obj, NPY_ARRAY_OWNDATA); */
 
   free(result.time);
   free(result.events);
