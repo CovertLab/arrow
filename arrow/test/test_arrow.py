@@ -69,7 +69,7 @@ def test_dimerization():
     return (time, counts, events)
 
 
-def load_complexation():
+def load_complexation(prefix='simple'):
     fixtures_root = os.path.join('data', 'complexation')
 
     def load_state(filename):
@@ -78,8 +78,8 @@ def load_complexation():
 
         return state
 
-    initial_state = load_state('initial_state.json')
-    final_state = load_state('final_state.json')
+    initial_state = load_state(prefix + '-initial.json')
+    final_state = load_state(prefix + '-final.json')
 
     assert initial_state.size == final_state.size
 
@@ -106,7 +106,7 @@ def load_complexation():
     return (stoichiometric_matrix, rates, initial_state, final_state)
 
 def complexation_test(make_system):
-    stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation(prefix='beginning')
     duration = 1
 
     system = make_system(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
@@ -117,12 +117,17 @@ def complexation_test(make_system):
     occurrences = result['occurrences']
     outcome = result['outcome']
 
+    print(outcome)
+    print(np.where(outcome < 0))
+
     history = reenact_events(stoichiometric_matrix, events, initial_state)
 
     difference = (final_state - outcome)
 
     total = np.abs(difference).sum()
 
+    print('counts before: {}'.format(initial_state.sum()))
+    print('counts after: {}'.format(outcome.sum()))
     print('differences: {}'.format(total))
     print('total steps: {}'.format(len(time)))
     print('number of events: {}'.format(len(events)))
