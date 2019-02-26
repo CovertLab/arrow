@@ -106,19 +106,16 @@ def load_complexation(prefix='simple'):
     return (stoichiometric_matrix, rates, initial_state, final_state)
 
 def complexation_test(make_system):
-    stoichiometric_matrix, rates, initial_state, final_state = load_complexation(prefix='beginning')
+    stoichiometric_matrix, rates, initial_state, final_state = load_complexation(prefix='simple')
     duration = 1
 
-    system = make_system(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
+    system = make_system(stoichiometric_matrix, rates)
     result = system.evolve(duration, initial_state)
 
     time = np.concatenate([[0.0], result['time']])
     events = result['events']
     occurrences = result['occurrences']
     outcome = result['outcome']
-
-    print(outcome)
-    print(np.where(outcome < 0))
 
     history = reenact_events(stoichiometric_matrix, events, initial_state)
 
@@ -147,7 +144,7 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    arrow = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
+    arrow = StochasticSystem(stoichiometric_matrix, rates)
     result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
 
     print('steps: {}'.format(result['steps']))

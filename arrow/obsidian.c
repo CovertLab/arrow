@@ -15,9 +15,9 @@ static const evolve_result failure = {-1, NULL, NULL, NULL};
 
 // Find the number of combinations of choosing k selections from n items
 double
-choose(long n, long k) {
+choose(int64_t n, int64_t k) {
   double combinations = 1.0;
-  long i;
+  int64_t i;
   for (i = 0; i < k; i++) {
     combinations *= ((double) (n - i)) / (i + 1);
   }
@@ -53,9 +53,9 @@ choose(long n, long k) {
 
 // So to iterate through a subarray of array `array` at index `sub`:
 
-//   for (long i = 0; i < lengths[sub]; i++) {
-//     long index = indexes[sub];
-//     long value = array[index + i];
+//   for (int64_t i = 0; i < lengths[sub]; i++) {
+//     int64_t index = indexes[sub];
+//     int64_t value = array[index + i];
 //     ..... (do something with value)
 //   }
 
@@ -82,40 +82,40 @@ evolve(MTState *random_state,
 
        int reactions_count,
        int substrates_count,
-       long *stoichiometry,
+       int64_t *stoichiometry,
        double *rates,
 
-       long *reactants_lengths,
-       long *reactants_indexes,
-       long *reactants,
-       long *reactions,
+       int64_t *reactants_lengths,
+       int64_t *reactants_indexes,
+       int64_t *reactants,
+       int64_t *reactions,
        
-       long *dependencies_lengths,
-       long *dependencies_indexes,
-       long *dependencies,
+       int64_t *dependencies_lengths,
+       int64_t *dependencies_indexes,
+       int64_t *dependencies,
 
-       long *substrates_lengths,
-       long *substrates_indexes,
-       long *substrates,
+       int64_t *substrates_lengths,
+       int64_t *substrates_indexes,
+       int64_t *substrates,
 
        double duration,
-       long *state) {
+       int64_t *state) {
 
   // The `event_bounds` will be used to determine how much space to allocate for
   // tracking the evolution of the system's state. If a step is reached that exceeds
   // `event_bounds` then these arrays will be reallocated after doubling `event_bounds`.
-  long event_bounds = INITIAL_LENGTH;
+  int64_t event_bounds = INITIAL_LENGTH;
 
   // Allocate the dynamic arrays that will be used to track the progress of the system
   double *time = malloc((sizeof (double)) * event_bounds);
-  long *events = malloc((sizeof (long)) * event_bounds);
-  long *outcome = malloc((sizeof (long)) * substrates_count);
+  int64_t *events = malloc((sizeof (int64_t)) * event_bounds);
+  int64_t *outcome = malloc((sizeof (int64_t)) * substrates_count);
 
   // Allocate space for the temporary values that will be used entirely within this
   // function
   double *propensities = malloc((sizeof (double)) * reactions_count);
-  long *update = malloc((sizeof (long)) * reactions_count);
-  long update_length = reactions_count;
+  int64_t *update = malloc((sizeof (int64_t)) * reactions_count);
+  int64_t update_length = reactions_count;
 
   if (time == NULL ||
       events == NULL ||
@@ -134,8 +134,8 @@ evolve(MTState *random_state,
   }
 
   // Declare the working variables we will use throughout this function
-  long substrates_length;
-  long reaction, reactant, index, involve, count, adjustment;
+  int64_t substrates_length;
+  int64_t reaction, reactant, index, involve, count, adjustment;
   double total, interval, point, progress;
   int choice, step = 0, up = 0;
   double now = 0.0;
@@ -143,7 +143,7 @@ evolve(MTState *random_state,
   // Copy the initial state that was supplied from outside to the working `outcome`
   // array we will use to actually apply the reactions and determine the next step's
   // state.
-  memcpy(outcome, state, (sizeof (long)) * substrates_count);
+  memcpy(outcome, state, (sizeof (int64_t)) * substrates_count);
 
   // The `update` array will hold for each step which propensities need to be updated
   // for the next time step, based on the dependencies between reactions (sharing
@@ -181,7 +181,7 @@ evolve(MTState *random_state,
 
     // If the total is zero, then we have no more reactions to perform and can exit
     // early
-    if (!(total > 0.0)) {
+    if (total <= 0.0) {
       interval = 0.0;
       choice = -1;
       break;
@@ -256,7 +256,7 @@ evolve(MTState *random_state,
         free(time);
         time = new_time;
 
-        long *new_events = malloc((sizeof (long)) * event_bounds * 2);
+        int64_t *new_events = malloc((sizeof (int64_t)) * event_bounds * 2);
         if (new_events == NULL) {
           printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
@@ -269,7 +269,7 @@ evolve(MTState *random_state,
           return failure;
         }
 
-        memcpy(new_events, events, (sizeof (long)) * event_bounds);
+        memcpy(new_events, events, (sizeof (int64_t)) * event_bounds);
         free(events);
         events = new_events;
 
@@ -311,9 +311,9 @@ print_array(double *array, int length) {
   return 0;
 }
 
-// Print an array of longs
+// Print an array of int64_ts
 int
-print_long_array(long *array, int length) {
+print_int64_t_array(int64_t *array, int length) {
   int index;
   for (index = 0; index < length; index++) {
     printf("a[%d] = %ld", index, array[index]);
