@@ -100,7 +100,7 @@ class StochasticSystem(object):
         chosen, even if it is more verbose.
         '''
 
-        self.stoichiometry = stoichiometry
+        self.stoichiometry = stoichiometry.copy()
         self.rates = rates
 
         self.random_seed = random_seed
