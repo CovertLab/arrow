@@ -184,6 +184,7 @@ def test_memory():
     this = psutil.Process(os.getpid())
     memory = 0
     memory_previous = 0
+    memory_increases = 0
 
     system = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
     obsidian_start = time.time()
@@ -192,6 +193,7 @@ def test_memory():
         if (memory != memory_previous):
             print('memory increase iteration {}: {}'.format(i, memory))
             memory_previous = memory
+            memory_increases += 1
 
         result = system.evolve(duration, initial_state)
         difference = np.abs(final_state - result['outcome']).sum()
@@ -199,6 +201,7 @@ def test_memory():
         print('difference is {}'.format(difference))
     obsidian_end = time.time()
 
+    assert(memory_increases <= 1)
     print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
 if __name__ == '__main__':

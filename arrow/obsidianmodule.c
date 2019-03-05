@@ -229,11 +229,17 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   Py_XDECREF(state_array);
 
   // Construct the return value that will be ultimately visible to python
-  return Py_BuildValue("iOOO",
-                       result.steps,
-                       time_obj,
-                       events_obj,
-                       outcome_obj);
+  PyObject *ret = Py_BuildValue("iOOO",
+                                result.steps,
+                                time_obj,
+                                events_obj,
+                                outcome_obj);
+
+  Py_XDECREF(time_obj);
+  Py_XDECREF(events_obj);
+  Py_XDECREF(outcome_obj);
+
+  return ret;
 }
 
 // Declare the various methods that an Obsidian object will have and align them with
