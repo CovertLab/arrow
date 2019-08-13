@@ -1,6 +1,7 @@
 import json
 
 from arrow import StochasticSystem
+from arrow.reference import GillespieReference
 import numpy as np
 
 
@@ -13,7 +14,10 @@ stoich = np.array(data['stoich'])
 rates = np.array(data['rates'])
 counts = np.array(data['counts'])
 
-system = StochasticSystem(stoich.T, rates, random_seed=0)
+rates = np.full(rates.shape, 1.0)
+
+system = GillespieReference(stoich.T, rates)
+# system = StochasticSystem(stoich.T, rates, random_seed=0)
 
 while True:
     result = system.evolve(duration, counts)
@@ -24,7 +28,12 @@ while True:
         break
 
     if np.any(updated_counts < 0):
+        negative = np.where(updated_counts < 0)[0]
+        print('negative indexes: {}'.format(negative))
+        print('negative counts: {}'.format(updated_counts[negative]))
+
         raise Exception('Negative counts')
     
     counts = updated_counts
     print(counts)
+ 
