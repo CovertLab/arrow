@@ -16,8 +16,8 @@ counts = np.array(data['counts'])
 
 rates = np.full(rates.shape, 1.0)
 
-system = GillespieReference(stoich.T, rates)
-# system = StochasticSystem(stoich.T, rates, random_seed=0)
+# system = GillespieReference(stoich.T, rates)
+system = StochasticSystem(stoich.T, rates, random_seed=0)
 
 while True:
     result = system.evolve(duration, counts)

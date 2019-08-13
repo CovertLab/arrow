@@ -186,6 +186,11 @@ evolve(MTState *random_state,
       choice = -1;
       break;
 
+    // break on nan
+    } else if (isnan(total)) {
+      printf("total is nan");
+      break;
+
     // Otherwise we need to find the next reaction to perform. 
     } else {
 
