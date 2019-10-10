@@ -316,7 +316,7 @@ int
 print_int64_t_array(int64_t *array, int length) {
   int index;
   for (index = 0; index < length; index++) {
-    printf("a[%d] = %ld", index, array[index]);
+    printf("a[%d] = %lld", index, array[index]);
     if (index == length - 1) {
       printf("\n");
     } else {

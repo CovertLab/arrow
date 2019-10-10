@@ -207,10 +207,10 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   }
 
   // Declare containers for the results
-  int64_t steps[1];
+  npy_intp steps[1];
   steps[0] = result.steps;
 
-  int64_t substrates[1];
+  npy_intp substrates[1];
   substrates[0] = self->substrates_count;
 
   // Create new python numpy arrays from the raw C results
