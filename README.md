@@ -19,7 +19,7 @@ the state vector over the course of the simulation.
 Add the following to your `requirements.txt`, or
 `pip install stochastic-arrow`:
 
-    stochastic-arrow==0.1.4
+    stochastic-arrow==0.1.9
 
 ## Usage
 
@@ -75,7 +75,7 @@ result = system.evolve(state, duration)
 
 If you are interested in the history of states for plotting or otherwise, these can be
 derived from the list of events and the stoichiometric matrix, along with the inital
-state. A function `` is provided to do this for you:
+state. `reenact_events` will do this for you:
 
 ```python
 from arrow import reenact_events
@@ -85,7 +85,7 @@ history = reenact_events(stoichiometry, result['events'], state)
 
 ## Testing
 
-`arrow` uses pytest: https://docs.pytest.org/en/latest/ so you can test simply
+`arrow` uses [pytest](https://docs.pytest.org/en/latest/) so you can test simply
 by invoking:
 
     > pytest
