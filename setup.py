@@ -1,6 +1,5 @@
 import os
 import glob
-import setuptools
 from distutils.core import setup, Extension
 import numpy.distutils.misc_util
 
@@ -27,7 +26,7 @@ setup(
 	ext_modules=[obsidian],
 	long_description=long_description,
 	long_description_content_type='text/markdown',
-	classifiers = [
+	classifiers=[
 		'Development Status :: 3 - Alpha',
 		'License :: OSI Approved :: MIT License',
 		'Programming Language :: Python',

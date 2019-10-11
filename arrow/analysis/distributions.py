@@ -124,3 +124,4 @@ if __name__ == '__main__':
     axes.legend(loc = 'best')
 
     fig.savefig('moving_average.png')
+    print('Wrote moving_average.png')

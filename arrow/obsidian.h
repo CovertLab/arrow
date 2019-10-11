@@ -39,6 +39,5 @@ evolve(MTState *random_state,
 
 // Supporting print utilities
 int print_array(double *array, int length);
-int print_int64_t_array(int64_t *array, int length);
 
 #endif

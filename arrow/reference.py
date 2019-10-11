@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from arrow.math import multichoose
-import obsidian
+
 
 def derive_reactants(stoichiometric_matrix):
     '''
@@ -184,7 +184,7 @@ class GillespieReference(object):
         self.rates = rates
 
         reactants, reactant_stoichiometries, substrates = derive_reactants(
-			stoichiometric_matrix)
+            stoichiometric_matrix)
 
         self.reactants = reactants
         self.reactant_stoichiometries = reactant_stoichiometries

@@ -10,6 +10,7 @@ return  pattern is used.
 
 from __future__ import absolute_import, division, print_function
 
+from itertools import izip
 import os
 import time
 import json
@@ -18,9 +19,8 @@ import psutil
 import argparse
 
 from arrow import reenact_events, StochasticSystem
-from arrow import derive_reactants, calculate_dependencies, evolve, GillespieReference
+from arrow import GillespieReference
 
-import obsidian
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
@@ -198,23 +198,15 @@ def test_memory():
         result = system.evolve(duration, initial_state)
         difference = np.abs(final_state - result['outcome']).sum()
 
-        print('difference is {}'.format(difference))
+        if difference:
+            print('difference is {}'.format(difference))
     obsidian_end = time.time()
 
+    print('obsidian elapsed time: {}'.format(obsidian_end - obsidian_start))
     assert(memory_increases <= 1)
-    print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--plot', action='store_true')
-    parser.add_argument('--obsidian', action='store_true')
-    parser.add_argument('--complexation', action='store_true')
-    parser.add_argument('--runs', type=int, default=1)
-    parser.add_argument('--memory', action='store_true')
-    args = parser.parse_args()
 
-    from itertools import izip
-
+def main(args):
     systems = (
         test_equilibration,
         test_dimerization,
@@ -223,12 +215,14 @@ if __name__ == '__main__':
 
     if not args.plot:
         if args.complexation:
-            for run in xrange(args.runs):
+            for run in range(args.runs):
                 complexation_test(StochasticSystem)
-        elif args.obsidian:
+        if args.obsidian:
             test_obsidian()
         elif args.memory:
             test_memory()
+        elif args.time:
+            test_compare_runtime()
         else:
             for system in systems:
                 system()
@@ -245,13 +239,13 @@ if __name__ == '__main__':
         axes_size = 3
 
         figsize = (
-            margins + axes_size*ncols,
-            margins + axes_size*nrows)
+            margins + axes_size * ncols,
+            margins + axes_size * nrows)
 
         (fig, all_axes) = plt.subplots(
-            figsize = figsize,
-            nrows = nrows, ncols = ncols,
-            constrained_layout = True)
+            figsize=figsize,
+            nrows=nrows, ncols=ncols,
+            constrained_layout=True)
 
         all_axes = np.asarray(all_axes)
 
@@ -262,3 +256,17 @@ if __name__ == '__main__':
             plot_full_history(axes, time, counts)
 
         fig.savefig('test_systems.png')
+        print('Wrote test_systems.png')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Run one of these tests')
+    parser.add_argument('--complexation', action='store_true')
+    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--plot', action='store_true')
+    parser.add_argument('--obsidian', action='store_true')
+    parser.add_argument('--memory', action='store_true')
+    parser.add_argument('--time', action='store_true')
+
+    main(parser.parse_args())
