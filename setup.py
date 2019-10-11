@@ -26,4 +26,11 @@ setup(
 	include_dirs=include,
 	ext_modules=[obsidian],
 	long_description=long_description,
-	long_description_content_type='text/markdown')
+	long_description_content_type='text/markdown',
+	classifiers = [
+		'Development Status :: 3 - Alpha',
+		'License :: OSI Approved :: MIT License',
+		'Programming Language :: Python',
+		# 'Programming Language :: Python :: 3',
+		'Topic :: Scientific/Engineering',
+	])

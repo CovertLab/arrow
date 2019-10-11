@@ -85,9 +85,10 @@ history = reenact_events(stoichiometry, result['events'], state)
 
 ## Testing
 
-`arrow` uses [pytest](https://docs.pytest.org/en/latest/) so you can test simply
+`arrow` uses [pytest](https://docs.pytest.org/en/latest/). You can test it
 by invoking:
 
+    > python setup.py build_ext --inplace
     > pytest
 
 Also, we have a test that generates plots of various systems which can be run
