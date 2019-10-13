@@ -19,7 +19,7 @@ the state vector over the course of the simulation.
 Add the following to your `requirements.txt`, or
 `pip install stochastic-arrow`:
 
-    stochastic-arrow==0.1.9
+    stochastic-arrow
 
 ## Usage
 

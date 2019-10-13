@@ -25,7 +25,7 @@ evolve(MTState *random_state,
        int64_t *reactants_indexes,
        int64_t *reactants,
        int64_t *reactions,
-       
+
        int64_t *dependencies_lengths,
        int64_t *dependencies_indexes,
        int64_t *dependencies,
