@@ -34,25 +34,7 @@ typedef struct {
   PyObject *x_attr;
 
   int random_seed;
-  MTState *random_state;
-
-  int reactions_count;
-  int substrates_count;
-  int64_t *stoichiometry;
-  double *rates;
-
-  int64_t *reactants_lengths;
-  int64_t *reactants_indexes;
-  int64_t *reactants;
-  int64_t *reactions;
-
-  int64_t *dependencies_lengths;
-  int64_t *dependencies_indexes;
-  int64_t *dependencies;
-
-  int64_t *substrates_lengths;
-  int64_t *substrates_indexes;
-  int64_t *substrates;
+  Info info;
 } ObsidianObject;
 
 // Declaring a new python type for Obsidian
@@ -98,25 +80,25 @@ newObsidianObject(int random_seed,
   }
 
   seed(random_state, random_seed);
-  self->random_state = random_state;
+  self->info.random_state = random_state;
 
-  self->reactions_count = reactions_count;
-  self->substrates_count = substrates_count;
-  self->stoichiometry = stoichiometry;
-  self->rates = rates;
+  self->info.reactions_count = reactions_count;
+  self->info.substrates_count = substrates_count;
+  self->info.stoichiometry = stoichiometry;
+  self->info.rates = rates;
 
-  self->reactants_lengths = reactants_lengths;
-  self->reactants_indexes = reactants_indexes;
-  self->reactants = reactants;
-  self->reactions = reactions;
+  self->info.reactants_lengths = reactants_lengths;
+  self->info.reactants_indexes = reactants_indexes;
+  self->info.reactants = reactants;
+  self->info.reactions = reactions;
 
-  self->dependencies_lengths = dependencies_lengths;
-  self->dependencies_indexes = dependencies_indexes;
-  self->dependencies = dependencies;
+  self->info.dependencies_lengths = dependencies_lengths;
+  self->info.dependencies_indexes = dependencies_indexes;
+  self->info.dependencies = dependencies;
 
-  self->substrates_lengths = substrates_lengths;
-  self->substrates_indexes = substrates_indexes;
-  self->substrates = substrates;
+  self->info.substrates_lengths = substrates_lengths;
+  self->info.substrates_indexes = substrates_indexes;
+  self->info.substrates = substrates;
 
   return self;
 }
@@ -125,7 +107,7 @@ newObsidianObject(int random_seed,
 static void
 Obsidian_dealloc(ObsidianObject *self)
 {
-  free(self->random_state);
+  free(self->info.random_state);
 
   Py_XDECREF(self->x_attr);
   PyObject_Del(self);
@@ -138,7 +120,7 @@ Obsidian_demo(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":demo"))
     return NULL;
 
-  print_array(self->rates, self->reactions_count);
+  print_array(self->info.rates, self->info.reactions_count);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -151,7 +133,7 @@ Obsidian_reactions_count(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":reactions_count"))
     return NULL;
 
-  return Py_BuildValue("i", self->reactions_count);
+  return Py_BuildValue("i", self->info.reactions_count);
 }
 
 // Find the number of substrates this system operates upon
@@ -161,7 +143,7 @@ Obsidian_substrates_count(ObsidianObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, ":substrates_count"))
     return NULL;
 
-  return Py_BuildValue("i", self->substrates_count);
+  return Py_BuildValue("i", self->info.substrates_count);
 }
 
 // The main entry point into the system, this function accepts all of the arguments
@@ -183,23 +165,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   int64_t *state = (int64_t *) PyArray_DATA(state_array);
 
   // Invoke the actual algorithm with all of the required information
-  evolve_result result = evolve(self->random_state,
-                                self->reactions_count,
-                                self->substrates_count,
-                                self->stoichiometry,
-                                self->rates,
-                                self->reactants_lengths,
-                                self->reactants_indexes,
-                                self->reactants,
-                                self->reactions,
-                                self->dependencies_lengths,
-                                self->dependencies_indexes,
-                                self->dependencies,
-                                self->substrates_lengths,
-                                self->substrates_indexes,
-                                self->substrates,
-                                duration,
-                                state);
+  evolve_result result = evolve(&self->info, duration, state);
   
   if (result.steps == -1) {
     Py_XDECREF(state_array);
@@ -211,7 +177,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   steps[0] = result.steps;
 
   npy_intp substrates[1];
-  substrates[0] = self->substrates_count;
+  substrates[0] = self->info.substrates_count;
 
   // Create new python numpy arrays from the raw C results
   PyArrayObject *time_obj = (PyArrayObject *) PyArray_SimpleNew(1, steps, NPY_DOUBLE);
@@ -219,7 +185,7 @@ Obsidian_evolve(ObsidianObject *self, PyObject *args)
   PyArrayObject *events_obj = (PyArrayObject *) PyArray_SimpleNew(1, steps, NPY_INT64);
   memcpy(PyArray_DATA(events_obj), result.events, (sizeof (result.events[0])) * result.steps);
   PyArrayObject *outcome_obj = (PyArrayObject *) PyArray_SimpleNew(1, substrates, NPY_INT64);
-  memcpy(PyArray_DATA(outcome_obj), result.outcome, (sizeof (result.outcome[0])) * self->substrates_count);
+  memcpy(PyArray_DATA(outcome_obj), result.outcome, (sizeof (result.outcome[0])) * self->info.substrates_count);
 
   free(result.time);
   free(result.events);

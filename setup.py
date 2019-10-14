@@ -21,6 +21,7 @@ arrowhead = cythonize([
 			  sources=['arrow/arrowhead.pyx'],
 			  include_dirs=['arrow'],
 			  )],
+	include_path=['arrow'],
 	# annotate=True,  # to get an HTML code listing
 	)
 

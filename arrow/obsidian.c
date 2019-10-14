@@ -77,29 +77,26 @@ choose(int64_t n, int64_t k) {
 //   * events: An array of length `steps` signifying which reaction took place at
 //       each time point
 //   * outcome: The final state after all of the reactions have been performed.
-evolve_result
-evolve(MTState *random_state,
+evolve_result evolve(Info *info, double duration, int64_t *state) {
+  MTState *random_state = info->random_state;
 
-       int reactions_count,
-       int substrates_count,
-       int64_t *stoichiometry,
-       double *rates,
+  int reactions_count = info->reactions_count;
+  int substrates_count = info->substrates_count;
+  int64_t *stoichiometry = info->stoichiometry;
+  double *rates = info->rates;
 
-       int64_t *reactants_lengths,
-       int64_t *reactants_indexes,
-       int64_t *reactants,
-       int64_t *reactions,
-       
-       int64_t *dependencies_lengths,
-       int64_t *dependencies_indexes,
-       int64_t *dependencies,
+  int64_t *reactants_lengths = info->reactants_lengths;
+  int64_t *reactants_indexes = info->reactants_indexes;
+  int64_t *reactants = info->reactants;
+  int64_t *reactions = info->reactions;
 
-       int64_t *substrates_lengths,
-       int64_t *substrates_indexes,
-       int64_t *substrates,
+  int64_t *dependencies_lengths = info->dependencies_lengths;
+  int64_t *dependencies_indexes = info->dependencies_indexes;
+  int64_t *dependencies = info->dependencies;
 
-       double duration,
-       int64_t *state) {
+  int64_t *substrates_lengths = info->substrates_lengths;
+  int64_t *substrates_indexes = info->substrates_indexes;
+  int64_t *substrates = info->substrates;
 
   // The `event_bounds` will be used to determine how much space to allocate for
   // tracking the evolution of the system's state. If a step is reached that exceeds
