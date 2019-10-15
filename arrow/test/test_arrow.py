@@ -10,7 +10,7 @@ return  pattern is used.
 
 from __future__ import absolute_import, division, print_function
 
-from itertools import izip
+from six import moves
 import os
 from time import time as seconds_since_epoch
 import json
@@ -93,7 +93,7 @@ def load_complexation(prefix='simple'):
     stoichiometric_matrix = np.zeros((n_reactions, n_metabolites), np.int64)
 
     for (reaction_index, reaction_stoich) in enumerate(stoichiometry_sparse):
-        for (str_metabolite_index, stoich) in reaction_stoich.viewitems():
+        for (str_metabolite_index, stoich) in reaction_stoich.items():
             # JSON doesn't allow for integer keys...
             metabolite_index = int(str_metabolite_index)
             stoichiometric_matrix[reaction_index, metabolite_index] = stoich
@@ -251,7 +251,7 @@ def main(args):
 
         all_axes = np.asarray(all_axes)
 
-        for (axes, system) in izip(all_axes.flatten(), systems):
+        for (axes, system) in moves.zip(all_axes.flatten(), systems):
             axes.set_title(system.func_name)
 
             time, counts, events = system()
