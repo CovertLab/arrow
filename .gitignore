@@ -8,6 +8,7 @@ build/
 dist/
 profile
 /.idea/
+/tmp/
 
 arrow/arrowhead.c
 arrow/*.html

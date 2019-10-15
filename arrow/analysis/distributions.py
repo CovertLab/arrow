@@ -7,6 +7,8 @@ This submodule is for statistical reductions on stochastic simulation output.
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from six import moves
+
 
 def moving_average(time, counts, sampling_time, scale):
     '''
@@ -66,7 +68,7 @@ def moving_average(time, counts, sampling_time, scale):
 
     averaged = np.empty(shape, np.float64)
 
-    for i in xrange(n_sampling):
+    for i in moves.range(n_sampling):
         j = _last_where(sampling_time[i] >= time)
 
         if i == 0:
@@ -110,9 +112,9 @@ if __name__ == '__main__':
     # roughly half order-of-magnitude steps
     scales = (3.0, 10.0, 30.0, 100.0)
 
-    for scale in scales:
-        cp = moving_average(t, c, tp, scale)
-        axes.plot(tp, cp, lw = 2.0, label = 'scale = {:0.2f}'.format(scale))
+    for scale1 in scales:
+        cp = moving_average(t, c, tp, scale1)
+        axes.plot(tp, cp, lw = 2.0, label = 'scale = {:0.2f}'.format(scale1))
 
     plot_full_history(
         axes,

@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 
 from itertools import izip
 import os
-import time
+from time import time as seconds_since_epoch
 import json
 import numpy as np
 import psutil
@@ -85,8 +85,8 @@ def load_complexation(prefix='simple'):
 
     n_metabolites = initial_state.size
 
-    with open(os.path.join(fixtures_root, 'stoichiometry.json')) as f:
-        stoichiometry_sparse = json.load(f)
+    with open(os.path.join(fixtures_root, 'stoichiometry.json')) as f2:
+        stoichiometry_sparse = json.load(f2)
 
     n_reactions = len(stoichiometry_sparse)
 
@@ -97,8 +97,6 @@ def load_complexation(prefix='simple'):
             # JSON doesn't allow for integer keys...
             metabolite_index = int(str_metabolite_index)
             stoichiometric_matrix[reaction_index, metabolite_index] = stoich
-
-    duration = 1
 
     # semi-quantitative rate constants
     rates = np.full(n_reactions, 1000.0)
@@ -162,19 +160,21 @@ def test_compare_runtime():
     amplify = 100
 
     reference = GillespieReference(stoichiometric_matrix, rates)
-    reference_start = time.time()
+    reference_start = seconds_since_epoch()
     for i in range(amplify):
         result = reference.evolve(duration, initial_state)
-    reference_end = time.time()
+    reference_end = seconds_since_epoch()
 
     system = StochasticSystem(stoichiometric_matrix, rates)
-    obsidian_start = time.time()
+    obsidian_start = seconds_since_epoch()
     for i in range(amplify):
         result = system.evolve(duration, initial_state)
-    obsidian_end = time.time()
+    obsidian_end = seconds_since_epoch()
 
-    print('reference time elapsed: {}'.format(reference_end - reference_start))
-    print('obsidian time elapsed: {}'.format(obsidian_end - obsidian_start))
+    print('reference Python implementation elapsed seconds: {}'.format(
+        reference_end - reference_start))
+    print('obsidian C implementation elapsed seconds: {}'.format(
+        obsidian_end - obsidian_start))
 
 def test_memory():
     stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
@@ -187,11 +187,12 @@ def test_memory():
     print('initial memory use: {}'.format(memory))
 
     system = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
-    obsidian_start = time.time()
-    for i in range(amplify):
+
+    obsidian_start = seconds_since_epoch()
+    for i in range(1, amplify + 1):
         memory = this.memory_info().rss
         if memory > memory_previous:
-            print('memory use now up to {}: {}'.format(i, memory))
+            print('memory use before iteration {:2d}: {}'.format(i, memory))
             memory_previous = memory
             memory_increases += 1
 
@@ -200,9 +201,10 @@ def test_memory():
 
         if difference:
             print('difference is {}'.format(difference))
-    obsidian_end = time.time()
+    obsidian_end = seconds_since_epoch()
 
-    print('obsidian elapsed time: {}'.format(obsidian_end - obsidian_start))
+    print('obsidian C implementation elapsed seconds for {} runs: {}'.format(
+        amplify, obsidian_end - obsidian_start))
     assert memory_increases <= 1
 
 

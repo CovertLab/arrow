@@ -88,10 +88,18 @@ history = reenact_events(stoichiometry, result['events'], state)
 `arrow` uses [pytest](https://docs.pytest.org/en/latest/). You can test it
 by invoking:
 
+    > rm -rf arrow/arrowhead.so arrow/arrowhead.c build/
     > python setup.py build_ext --inplace
     > pytest
 
-Also, we have a test that generates plots of various systems which can be run
-like so:
+There are more command line features in test_arrow:
 
-    > python arrow/test/test_arrow.py --plot
+    > python -m arrow.test.test_arrow --complexation
+
+    > python -m arrow.test.test_arrow --plot
+
+    > python -m arrow.test.test_arrow --obsidian
+
+    > python -m arrow.test.test_arrow --memory
+
+    > python -m arrow.test.test_arrow --time
