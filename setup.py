@@ -5,10 +5,6 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 import numpy.distutils.misc_util
 
-obsidian = [Extension(
-	'obsidian',
-	sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/obsidianmodule.c'])]
-
 with open("README.md", 'r') as readme:
 	long_description = readme.read()
 
@@ -38,7 +34,7 @@ setup(
 	url='https://github.com/CovertLab/arrow',
 	license='MIT',
 	include_dirs=include,
-	ext_modules=arrow + obsidian,
+	ext_modules=arrow,
 	long_description=long_description,
 	long_description_content_type='text/markdown',
 	cmdclass={'build_ext': build_ext},

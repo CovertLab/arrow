@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 from .reference import derive_reactants, calculate_dependencies
-import obsidian
 from .arrowhead import Arrowhead
 
 
@@ -84,7 +83,7 @@ class StochasticSystem(object):
 
     def __init__(self, stoichiometry, rates, random_seed=0):
         '''
-        This invokes the Obsidian C module (see obsidianmodule.c) with the
+        This invokes the Obsidian C code (via arrowhead.pyx) with the
         stoichiometry, reaction rates and a variety of derived values. Once constructed,
         this can be invoked by calling `evolve` with a duration and initial state, since
         the stoichiometry will be shared among all calls.
