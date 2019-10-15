@@ -29,7 +29,7 @@ setup(
 	name='stochastic-arrow',
 	version='0.2.0',
 	packages=['arrow'],
-	author='Ryan Spangler',
+	author='Ryan Spangler, John Mason, Jerry Morrison',
 	author_email='spanglry@stanford.edu',
 	url='https://github.com/CovertLab/arrow',
 	license='MIT',
