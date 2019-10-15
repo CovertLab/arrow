@@ -182,16 +182,16 @@ def test_memory():
     amplify = 100
 
     this = psutil.Process(os.getpid())
-    memory = 0
-    memory_previous = 0
+    memory = memory_previous = this.memory_info().rss
     memory_increases = 0
+    print('initial memory use: {}'.format(memory))
 
     system = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
     obsidian_start = time.time()
     for i in range(amplify):
         memory = this.memory_info().rss
-        if (memory != memory_previous):
-            print('memory increase iteration {}: {}'.format(i, memory))
+        if memory > memory_previous:
+            print('memory use now up to {}: {}'.format(i, memory))
             memory_previous = memory
             memory_increases += 1
 
@@ -203,7 +203,7 @@ def test_memory():
     obsidian_end = time.time()
 
     print('obsidian elapsed time: {}'.format(obsidian_end - obsidian_start))
-    assert(memory_increases <= 1)
+    assert memory_increases <= 1
 
 
 def main(args):

@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from .reference import derive_reactants, calculate_dependencies
 import obsidian
+from .arrowhead import Arrowhead
+
 
 def flatten(l):
     '''
@@ -24,10 +26,10 @@ def flat_indexes(assorted_lists):
     Args:
         assorted_lists (List[List]): A list of variable length lists. 
 
-    Return:
-        flat: The original list as a flattened array.
-        lengths: A list containing the lengths of all the sublists.
-        indexes: Indexes of where each sublist begins in the flat array.
+    Returns numpy arrays:
+        flat: The flattened data.
+        lengths: The lengths of all the given sublists.
+        indexes: The indexes where the sublists begin in the flat array.
     '''
 
     lengths = np.array([
@@ -114,7 +116,7 @@ class StochasticSystem(object):
             dependencies)
         self.substrates_flat, self.substrates_lengths, self.substrates_indexes = flat_indexes(substrates)
 
-        self.obsidian = obsidian.obsidian(
+        self.obsidian = Arrowhead(
             self.random_seed,
             self.stoichiometry,
             self.rates,

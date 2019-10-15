@@ -5,10 +5,10 @@
 
 // The structure for holding the result of the Gillespie algorithm
 typedef struct evolve_result {
-  int steps;
-  double *time;
-  int64_t *events;
-  int64_t *outcome;
+  int steps;         // -1 => failure
+  double *time;      // double time[steps]
+  int64_t *events;   // int64_t events[steps]
+  int64_t *outcome;  // int64_t outcome[substrates_count]
 } evolve_result;
 
 typedef struct Info {
@@ -33,7 +33,9 @@ typedef struct Info {
     int64_t *substrates;
 } Info;
 
-// Invoke the system with all the required information to run for the given duration
+// Invoke the system with all the required information to run for the given duration.
+// The result is either a failure = {-1, NULL, NULL, NULL} or it points to malloc'd
+// arrays that the caller must free().
 evolve_result evolve(Info *info, double duration, int64_t *state);
 
 // Supporting print utilities

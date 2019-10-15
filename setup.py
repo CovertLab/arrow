@@ -2,7 +2,7 @@ import os
 # from glob import glob
 from distutils.core import setup, Extension
 from Cython.Build import cythonize
-# from Cython.Distutils import build_ext
+from Cython.Distutils import build_ext
 import numpy.distutils.misc_util
 
 obsidian = [Extension(
@@ -41,7 +41,7 @@ setup(
 	ext_modules=arrow + obsidian,
 	long_description=long_description,
 	long_description_content_type='text/markdown',
-	# cmdclass={'build_ext': build_ext},
+	cmdclass={'build_ext': build_ext},
 	classifiers=[
 		'Development Status :: 3 - Alpha',
 		'License :: OSI Approved :: MIT License',
