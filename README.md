@@ -85,12 +85,12 @@ history = reenact_events(stoichiometry, result['events'], state)
 
 ## Testing
 
-`arrow` uses [pytest](https://docs.pytest.org/en/latest/). You can test it
-by invoking:
+`arrow` uses [pytest](https://docs.pytest.org/en/latest/). To test it:
 
-    > rm -rf arrow/arrowhead.so arrow/arrowhead.c build/
-    > python setup.py build_ext --inplace
+    > make clean compile
     > pytest
+
+**NOTE:** `make compile` without an explicit `clean` might not fully build the extension.
 
 There are more command line features in test_arrow:
 

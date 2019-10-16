@@ -14,16 +14,12 @@ include = [arrow_dir] + numpy.distutils.misc_util.get_numpy_include_dirs()
 
 arrowhead = cythonize([
 	Extension('arrow.arrowhead',
-			  sources=['arrow/arrowhead.pyx'],
+			  sources=['arrow/arrowhead.pyx', 'arrow/mersenne.c', 'arrow/obsidian.c',],
 			  include_dirs=['arrow'],
 			  )],
 	include_path=['arrow'],
 	# annotate=True,  # to get an HTML code listing
 	)
-
-arrow = [Extension('arrow.arrowhead',
-		   sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/arrowhead.c'],
-		   include_dirs=['arrow'])]
 
 setup(
 	name='stochastic-arrow',
@@ -34,7 +30,7 @@ setup(
 	url='https://github.com/CovertLab/arrow',
 	license='MIT',
 	include_dirs=include,
-	ext_modules=arrow,
+	ext_modules=arrowhead,
 	long_description=long_description,
 	long_description_content_type='text/markdown',
 	cmdclass={'build_ext': build_ext},
