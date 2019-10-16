@@ -1,5 +1,6 @@
 import os
 # from glob import glob
+import setuptools
 from distutils.core import setup, Extension
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
