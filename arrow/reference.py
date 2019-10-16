@@ -1,9 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from six import moves
 
 from arrow.math import multichoose
-import obsidian
+
 
 def derive_reactants(stoichiometric_matrix):
     '''
@@ -78,7 +79,7 @@ def step(
         n_reactions = stoichiometric_matrix.shape[0]
 
         propensities = np.empty(n_reactions)
-        update_reactions = xrange(n_reactions)
+        update_reactions = moves.range(n_reactions)
 
     for reaction in update_reactions:
         propensities[reaction] = rates[reaction] * multichoose(
@@ -86,11 +87,11 @@ def step(
             reactant_stoichiometries[reaction])
 
     total = propensities.sum()
+    choice = None
 
     if total == 0:
         interval = 0
         outcome = state
-        choice = None
 
     else:
         interval = np.random.exponential(1 / total)
@@ -184,7 +185,7 @@ class GillespieReference(object):
         self.rates = rates
 
         reactants, reactant_stoichiometries, substrates = derive_reactants(
-			stoichiometric_matrix)
+            stoichiometric_matrix)
 
         self.reactants = reactants
         self.reactant_stoichiometries = reactant_stoichiometries

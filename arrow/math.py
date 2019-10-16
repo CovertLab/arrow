@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
+from six import moves
 
 def choose(n, k):
     '''
@@ -11,7 +11,7 @@ def choose(n, k):
 
     combinations = 1.0
 
-    for i in xrange(k):
+    for i in moves.range(k):
         combinations *= (n-i)/(i+1)
 
     return combinations
@@ -27,7 +27,7 @@ def multichoose(n, k):
 
     combinations = 1.0
 
-    for i in xrange(n.size):
+    for i in moves.range(n.size):
         combinations *= choose(n[i], k[i])
 
     return combinations

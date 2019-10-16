@@ -7,6 +7,11 @@ MANIFEST
 build/
 dist/
 profile
+/.idea/
+/tmp/
+
+arrow/arrowhead.c
+arrow/*.html
 
 arrow.egg-info/
 stochastic_arrow.egg-info/
