@@ -1,6 +1,6 @@
 import os
 # from glob import glob
-import setuptools
+import setuptools  # used indirectly for bdist_wheel cmd and long_description_content_type
 from distutils.core import setup, Extension
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
@@ -17,6 +17,7 @@ arrowhead = cythonize([
 	Extension('arrow.arrowhead',
 			  sources=['arrow/arrowhead.pyx', 'arrow/mersenne.c', 'arrow/obsidian.c',],
 			  include_dirs=['arrow'],
+			  define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
 			  )],
 	include_path=['arrow'],
 	# annotate=True,  # to get an HTML code listing
@@ -35,6 +36,7 @@ setup(
 	long_description=long_description,
 	long_description_content_type='text/markdown',
 	cmdclass={'build_ext': build_ext},
+	requires=['numpy (>=1.14)', 'six'],
 	classifiers=[
 		'Development Status :: 3 - Alpha',
 		'License :: OSI Approved :: MIT License',
