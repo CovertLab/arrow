@@ -1,4 +1,4 @@
-.PHONY: clean, compile, builddist
+.PHONY: clean, compile, dist
 
 clean:
 	rm -rf arrow/arrowhead*.so arrow/arrowhead.c arrow/arrowhead.html build/ dist/ MANIFEST .pytest_cache/ stochastic_arrow.egg-info/
@@ -6,7 +6,7 @@ clean:
 	find . -name "__pycache__" -delete
 
 compile:
-	python setup.py build_ext --inplace
+	USE_CYTHON=1 python setup.py build_ext --inplace
 
-builddist:
-	python setup.py sdist bdist_wheel
+dist:
+	USE_CYTHON=1 python setup.py sdist bdist_wheel
