@@ -12,6 +12,12 @@ current_dir = os.getcwd()
 arrow_dir = os.path.join(current_dir, 'arrow')
 include = [arrow_dir] + numpy.distutils.misc_util.get_numpy_include_dirs()
 
+# Compile the Cython code to C for development builds:
+#    USE_CYTHON=1 python setup.py build_ext --inplace
+# and for building source distribution packages:
+#    USE_CYTHON=1 python setup.py sdist
+# and *not* when installing a distribution package.
+# See http://docs.cython.org/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
 USE_CYTHON = 'USE_CYTHON' in os.environ
 
 ext = '.pyx' if USE_CYTHON else '.c'
