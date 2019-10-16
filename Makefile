@@ -10,7 +10,6 @@ compile:
 	USE_CYTHON=1 python setup.py build_ext --inplace
 
 dist:
-	### bdist_wheel is disabled on linux since the distribution process doesn't
+	### bdist_wheel is disabled on linux since the distribution machinery doesn't
 	### yet have a way to specify compatible linux distros.
-	# USE_CYTHON=1 python setup.py sdist bdist_wheel
-	USE_CYTHON=1 python setup.py sdist
+	USE_CYTHON=1 python setup.py sdist # bdist_wheel
