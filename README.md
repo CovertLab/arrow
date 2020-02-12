@@ -39,16 +39,13 @@ stoichiometric_matrix = np.array([
     [-2, 0, 0, 1],
     [-1, -1, 1, 0]], np.int64)
 
-# Each reaction has an associated rate for how probable that reaction is.
-rates = np.array([3.0, 1.0, 1.0])
-
-# Once we have a matrix of reactions and their associated rates, we can
+# Once we have a matrix of reactions, we can
 # construct the system.
-system = StochasticSystem(stoichiometric_matrix, rates)
+system = StochasticSystem(stoichiometric_matrix)
 ```
 
 Now that the system has been instantiated, we can invoke it with any initial
-state vector and then run it for a given time interval:
+state vector and set of reaction rates and then run it for a given time interval:
 
 ```python
 # This gives the initial state of the system (counts of each molecular species,
@@ -58,9 +55,12 @@ state = np.array([1000, 1000, 0, 0])
 # We also specify how long we want the simulation to run. Here we set it to one
 # second.
 duration = 1
+
+# Each reaction has an associated rate for how probable that reaction is.
+rates = np.array([3.0, 1.0, 1.0])
 ```
 
-Once we have an initial state and duration, we can run the simulation for the
+Once we have an initial state and rates, we can run the simulation for the
 given duration. `evolve` returns a dictionary with five keys:
 
 * steps - the number of steps the simulation took
@@ -70,7 +70,7 @@ given duration. `evolve` returns a dictionary with five keys:
 * outcome - the final state of the system
 
 ```python
-result = system.evolve(state, duration)
+result = system.evolve(state, duration, rates)
 ```
 
 If you are interested in the history of states for plotting or otherwise, these can be
