@@ -180,9 +180,8 @@ class GillespieReference(object):
     useful here as reference to the algorithm.
     '''
 
-    def __init__(self, stoichiometric_matrix, rates):
+    def __init__(self, stoichiometric_matrix):
         self.stoichiometric_matrix = stoichiometric_matrix
-        self.rates = rates
 
         reactants, reactant_stoichiometries, substrates = derive_reactants(
             stoichiometric_matrix)
@@ -191,13 +190,13 @@ class GillespieReference(object):
         self.reactant_stoichiometries = reactant_stoichiometries
         self.dependencies = calculate_dependencies(stoichiometric_matrix)
 
-    def step(self, state):
-        return step(self.stoichiometric_matrix, self.rates, state)
+    def step(self, state, rates):
+        return step(self.stoichiometric_matrix, rates, state)
 
-    def evolve(self, duration, state):
+    def evolve(self, duration, state, rates):
         return evolve(
             self.stoichiometric_matrix,
-            self.rates,
+            rates,
             state,
             duration,
             reactants=self.reactants,

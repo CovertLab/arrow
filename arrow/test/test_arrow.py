@@ -29,12 +29,12 @@ def test_equilibration():
         [-1, +1]])
 
     rates = np.array([10, 10, 0.1])
-    system = GillespieReference(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix)
 
     state = np.array([1000, 0])
     duration = 10
 
-    result = system.evolve(duration, state)
+    result = system.evolve(duration, state, rates)
 
     time = result['time']
     counts = reenact_events(stoichiometric_matrix, result['events'], state)
@@ -53,12 +53,12 @@ def test_dimerization():
         [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = GillespieReference(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    result = system.evolve(duration, state)
+    result = system.evolve(duration, state, rates)
 
     time = result['time']
     counts = reenact_events(stoichiometric_matrix, result['events'], state)
@@ -159,10 +159,10 @@ def test_compare_runtime():
     duration = 1
     amplify = 100
 
-    reference = GillespieReference(stoichiometric_matrix, rates)
+    reference = GillespieReference(stoichiometric_matrix)
     reference_start = seconds_since_epoch()
     for i in range(amplify):
-        result = reference.evolve(duration, initial_state)
+        result = reference.evolve(duration, initial_state, rates)
     reference_end = seconds_since_epoch()
 
     system = StochasticSystem(stoichiometric_matrix)
