@@ -84,7 +84,7 @@ class StochasticSystem(object):
     def __init__(self, stoichiometry, random_seed=0):
         '''
         This invokes the Obsidian C code (via arrowhead.pyx) with the
-        stoichiometry, reaction rates and a variety of derived values. Once constructed,
+        stoichiometry and a variety of derived values. Once constructed,
         this can be invoked by calling `evolve` with a duration and initial state, since
         the stoichiometry will be shared among all calls.
 
