@@ -103,3 +103,9 @@ There are more command line features in test_arrow:
     > python -m arrow.test.test_arrow --memory
 
     > python -m arrow.test.test_arrow --time
+
+## Changelog
+
+### Version 0.3.0
+
+* Introduced backwards-incompatible API change for supplying rates at `evolve()` time rather than `__init__()` for `StochasticSystem`.
