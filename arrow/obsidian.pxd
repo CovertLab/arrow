@@ -19,7 +19,7 @@ cdef extern from "obsidian.h":
         int reactions_count
         int substrates_count
         int64_t *stoichiometry
-        double *rates
+        # double *rates
 
         int64_t *reactants_lengths
         int64_t *reactants_indexes
@@ -34,6 +34,6 @@ cdef extern from "obsidian.h":
         int64_t *substrates_indexes
         int64_t *substrates
 
-    evolve_result evolve(Info *info, double duration, int64_t *state)
+    evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
     int print_array(double *array, int length)

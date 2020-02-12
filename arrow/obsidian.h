@@ -17,7 +17,6 @@ typedef struct Info {
     int reactions_count;
     int substrates_count;
     int64_t *stoichiometry;
-    double *rates;
 
     int64_t *reactants_lengths;
     int64_t *reactants_indexes;
@@ -36,7 +35,7 @@ typedef struct Info {
 // Invoke the system with all the required information to run for the given duration.
 // The result is either a failure = {-1, NULL, NULL, NULL} or it points to malloc'd
 // arrays that the caller must free().
-evolve_result evolve(Info *info, double duration, int64_t *state);
+evolve_result evolve(Info *info, double duration, int64_t *state, double *rates);
 
 // Supporting print utilities
 int print_array(double *array, int length);

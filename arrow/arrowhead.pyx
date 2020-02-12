@@ -48,7 +48,6 @@ cdef class Arrowhead:
             self,
             int random_seed,
             int64_t[:, ::1] stoichiometry not None,
-            double[::1] rates not None,
 
             int64_t[::1] reactants_lengths not None,
             int64_t[::1] reactants_indexes not None,
@@ -69,7 +68,6 @@ cdef class Arrowhead:
         self.info.reactions_count = stoichiometry.shape[0]
         self.info.substrates_count = stoichiometry.shape[1]
         self.info.stoichiometry = &stoichiometry[0, 0]
-        self.info.rates = &rates[0]
 
         self.info.reactants_lengths = &reactants_lengths[0]
         self.info.reactants_indexes = &reactants_indexes[0]
@@ -87,7 +85,7 @@ cdef class Arrowhead:
         # TODO(jerry): Check array sizes? E.g. rates.shape[0] >= reactions_count
 
         self.refs = (  # hold refs to these memoryviews while we hold their data ptrs
-            stoichiometry, rates,
+            stoichiometry,
             reactants_lengths, reactants_indexes, reactants, reactions,
             dependencies_lengths, dependencies_indexes, dependencies,
             substrates_lengths, substrates_indexes, substrates)
@@ -99,14 +97,14 @@ cdef class Arrowhead:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def evolve(self, double duration, int64_t[::1] state):
+    def evolve(self, double duration, int64_t[::1] state, double[::1] rates):
         """Run the Gillespie algorithm with the initialized stoichiometry and
         rates over the given duration and state.
         Return None or a tuple (steps, time, events, outcome).
         """
         # TODO(jerry): Check the state[] array size?
 
-        evolved = obsidian.evolve(&self.info, duration, &state[0])
+        evolved = obsidian.evolve(&self.info, duration, &state[0], &rates[0])
         cdef int steps = evolved.steps
         cdef int count = self.info.substrates_count
 
@@ -133,11 +131,6 @@ cdef class Arrowhead:
         """Returns the number of substrates this system operates on."""
         return self.info.substrates_count
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def demo(self):
-        """A demo that prints the reaction rates to C stdout."""
-        obsidian.print_array(self.info.rates, self.info.reactions_count)
 
 cdef np.ndarray copy_c_array(
         void *source, np.npy_intp element_count, size_t element_size, int np_typenum):

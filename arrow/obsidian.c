@@ -77,13 +77,12 @@ choose(int64_t n, int64_t k) {
 //   * events: An array of length `steps` signifying which reaction took place at
 //       each time point
 //   * outcome: The final state after all of the reactions have been performed.
-evolve_result evolve(Info *info, double duration, int64_t *state) {
+evolve_result evolve(Info *info, double duration, int64_t *state, double *rates) {
   MTState *random_state = info->random_state;
 
   int reactions_count = info->reactions_count;
   int substrates_count = info->substrates_count;
   int64_t *stoichiometry = info->stoichiometry;
-  double *rates = info->rates;
 
   int64_t *reactants_lengths = info->reactants_lengths;
   int64_t *reactants_indexes = info->reactants_indexes;

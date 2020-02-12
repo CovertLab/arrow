@@ -24,7 +24,7 @@ ext = '.pyx' if USE_CYTHON else '.c'
 
 cython_extensions = [
 	Extension('arrow.arrowhead',
-			  sources=['arrow/arrowhead'+ext, 'arrow/mersenne.c', 'arrow/obsidian.c',],
+			  sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/arrowhead'+ext,],
 			  include_dirs=['arrow'],
 			  define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
 			  )]
@@ -39,7 +39,7 @@ if USE_CYTHON:
 
 setup(
 	name='stochastic-arrow',
-	version='0.2.0',
+	version='0.2.1',
 	packages=['arrow'],
 	author='Ryan Spangler, John Mason, Jerry Morrison',
 	author_email='spanglry@stanford.edu',
