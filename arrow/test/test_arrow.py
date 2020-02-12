@@ -29,12 +29,12 @@ def test_equilibration():
         [-1, +1]])
 
     rates = np.array([10, 10, 0.1])
-    system = GillespieReference(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix)
 
     state = np.array([1000, 0])
     duration = 10
 
-    result = system.evolve(duration, state)
+    result = system.evolve(duration, state, rates)
 
     time = result['time']
     counts = reenact_events(stoichiometric_matrix, result['events'], state)
@@ -53,12 +53,12 @@ def test_dimerization():
         [-1, -1, 1, 0]], np.int64)
 
     rates = np.array([3, 1, 1]) * 0.01
-    system = GillespieReference(stoichiometric_matrix, rates)
+    system = GillespieReference(stoichiometric_matrix)
 
     state = np.array([1000, 1000, 0, 0])
     duration = 1
 
-    result = system.evolve(duration, state)
+    result = system.evolve(duration, state, rates)
 
     time = result['time']
     counts = reenact_events(stoichiometric_matrix, result['events'], state)
@@ -107,8 +107,8 @@ def complexation_test(make_system):
     stoichiometric_matrix, rates, initial_state, final_state = load_complexation(prefix='simple')
     duration = 1
 
-    system = make_system(stoichiometric_matrix, rates)
-    result = system.evolve(duration, initial_state)
+    system = make_system(stoichiometric_matrix)
+    result = system.evolve(duration, initial_state, rates)
 
     time = np.concatenate([[0.0], result['time']])
     events = result['events']
@@ -142,8 +142,8 @@ def test_obsidian():
 
     rates = np.array([3, 1, 1]) * 0.01
 
-    arrow = StochasticSystem(stoichiometric_matrix, rates)
-    result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64))
+    arrow = StochasticSystem(stoichiometric_matrix)
+    result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64), rates)
 
     print('steps: {}'.format(result['steps']))
     print('time: {}'.format(result['time']))
@@ -159,16 +159,16 @@ def test_compare_runtime():
     duration = 1
     amplify = 100
 
-    reference = GillespieReference(stoichiometric_matrix, rates)
+    reference = GillespieReference(stoichiometric_matrix)
     reference_start = seconds_since_epoch()
     for i in range(amplify):
-        result = reference.evolve(duration, initial_state)
+        result = reference.evolve(duration, initial_state, rates)
     reference_end = seconds_since_epoch()
 
-    system = StochasticSystem(stoichiometric_matrix, rates)
+    system = StochasticSystem(stoichiometric_matrix)
     obsidian_start = seconds_since_epoch()
     for i in range(amplify):
-        result = system.evolve(duration, initial_state)
+        result = system.evolve(duration, initial_state, rates)
     obsidian_end = seconds_since_epoch()
 
     print('reference Python implementation elapsed seconds: {}'.format(
@@ -186,7 +186,7 @@ def test_memory():
     memory_increases = 0
     print('initial memory use: {}'.format(memory))
 
-    system = StochasticSystem(stoichiometric_matrix, rates, random_seed=np.random.randint(2**31))
+    system = StochasticSystem(stoichiometric_matrix, random_seed=np.random.randint(2**31))
 
     obsidian_start = seconds_since_epoch()
     for i in range(1, amplify + 1):
@@ -196,7 +196,7 @@ def test_memory():
             memory_previous = memory
             memory_increases += 1
 
-        result = system.evolve(duration, initial_state)
+        result = system.evolve(duration, initial_state, rates)
         difference = np.abs(final_state - result['outcome']).sum()
 
         if difference:

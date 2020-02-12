@@ -81,10 +81,10 @@ class StochasticSystem(object):
     (and zero everywhere else). 
     '''
 
-    def __init__(self, stoichiometry, rates, random_seed=0):
+    def __init__(self, stoichiometry, random_seed=0):
         '''
         This invokes the Obsidian C code (via arrowhead.pyx) with the
-        stoichiometry, reaction rates and a variety of derived values. Once constructed,
+        stoichiometry and a variety of derived values. Once constructed,
         this can be invoked by calling `evolve` with a duration and initial state, since
         the stoichiometry will be shared among all calls.
 
@@ -102,8 +102,6 @@ class StochasticSystem(object):
         '''
 
         self.stoichiometry = stoichiometry.copy()
-        self.rates = rates
-
         self.random_seed = random_seed
 
         reactants, reactions, substrates = derive_reactants(stoichiometry)
@@ -118,7 +116,6 @@ class StochasticSystem(object):
         self.obsidian = Arrowhead(
             self.random_seed,
             self.stoichiometry,
-            self.rates,
             self.reactants_lengths,
             self.reactants_indexes,
             self.reactants_flat,
@@ -130,9 +127,9 @@ class StochasticSystem(object):
             self.substrates_indexes,
             self.substrates_flat)
 
-    def evolve(self, duration, state):
-        steps, time, events, outcome = self.obsidian.evolve(duration, state)
-        occurrences = np.zeros(len(self.rates))
+    def evolve(self, duration, state, rates):
+        steps, time, events, outcome = self.obsidian.evolve(duration, state, rates)
+        occurrences = np.zeros(len(rates))
         for event in events:
             occurrences[event] += 1
 
