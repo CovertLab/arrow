@@ -175,6 +175,18 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       total += propensities[reaction];
     }
 
+    if (isnan(total)) {
+      printf("failed simulation: total propensity is NAN\n");
+      int max_reaction = 0;
+      for (reaction = 0; reaction < reactions_count; reaction++) {
+        if (propensities[reaction] > propensities[max_reaction]) {
+          max_reaction = reaction;
+        }
+      }
+      printf("largest reaction is %d at %f\n", max_reaction, propensities[max_reaction]);
+      total = 0.0;
+    }
+
     // If the total is zero, then we have no more reactions to perform and can exit
     // early
     if (total <= 0.0) {
