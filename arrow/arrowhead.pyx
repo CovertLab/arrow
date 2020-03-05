@@ -100,11 +100,12 @@ cdef class Arrowhead:
     def evolve(self, double duration, int64_t[::1] state, double[::1] rates):
         """Run the Gillespie algorithm with the initialized stoichiometry and
         rates over the given duration and state.
-        Return None or a tuple (steps, time, events, outcome).
+        Return None or a tuple (status, steps, time, events, outcome).
         """
         # TODO(jerry): Check the state[] array size?
 
         evolved = obsidian.evolve(&self.info, duration, &state[0], &rates[0])
+        cdef int status = evolved.status
         cdef int steps = evolved.steps
         cdef int count = self.info.substrates_count
 
@@ -115,7 +116,7 @@ cdef class Arrowhead:
         events = copy_c_array(evolved.events, steps, sizeof(int64_t), np.NPY_INT64)
         outcome = copy_c_array(evolved.outcome, count, sizeof(int64_t), np.NPY_INT64)
 
-        result = steps, time, events, outcome
+        result = status, steps, time, events, outcome
 
         free(evolved.time)
         free(evolved.events)

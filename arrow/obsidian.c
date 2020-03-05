@@ -11,7 +11,7 @@
 static const int INITIAL_LENGTH = 4000;
 
 // Create a value to represent failures
-static const evolve_result failure = {-1, NULL, NULL, NULL};
+static const evolve_result failure = {2, -1, NULL, NULL, NULL};
 
 // Find the number of combinations of choosing k selections from n items
 double
@@ -113,6 +113,10 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
   int64_t *update = malloc((sizeof (int64_t)) * reactions_count);
   int64_t update_length = reactions_count;
 
+  // if something goes wrong (like an overflow in propensities), the status will be
+  // set to some meaningful number
+  int64_t status = 0;
+
   if (time == NULL ||
       events == NULL ||
       outcome == NULL ||
@@ -184,7 +188,9 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
         }
       }
       printf("largest reaction is %d at %f\n", max_reaction, propensities[max_reaction]);
-      total = 0.0;
+      interval = 0.0;
+      choice = -1;
+      status = 1; // overflow
     }
 
     // If the total is zero, then we have no more reactions to perform and can exit
@@ -289,11 +295,12 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
   // Construct the `evolve_result` from the results of performing steps until either
   // the desired duration was achieved or there are no more reactions to perform.
   // We return:
+  //   * The status of the simulation (0 == success)
   //   * How many steps were performed
   //   * An array of the time of each event
   //   * An array of each event that occurred each time step
   //   * The resulting state of the system after the chosen reactions were applied
-  evolve_result result = {step, time, events, outcome};
+  evolve_result result = {status, step, time, events, outcome};
 
   // Clean up the transient allocations
   free(propensities);

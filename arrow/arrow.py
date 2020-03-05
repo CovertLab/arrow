@@ -128,7 +128,11 @@ class StochasticSystem(object):
             self.substrates_flat)
 
     def evolve(self, duration, state, rates):
-        steps, time, events, outcome = self.obsidian.evolve(duration, state, rates)
+        status, steps, time, events, outcome = self.obsidian.evolve(duration, state, rates)
+
+        if status > 0:
+            raise SimulationFailure(status)
+
         occurrences = np.zeros(len(rates))
         for event in events:
             occurrences[event] += 1
@@ -139,3 +143,9 @@ class StochasticSystem(object):
             'events': events,
             'occurrences': occurrences,
             'outcome': outcome}
+
+
+class SimulationFailure(Exception):
+    def __init__(self, status):
+        self.status = status
+        super(SimulationFailure, self).__init__()

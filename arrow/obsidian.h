@@ -5,6 +5,7 @@
 
 // The structure for holding the result of the Gillespie algorithm
 typedef struct evolve_result {
+  int status;        // 0 --> success otherwise failure
   int steps;         // -1 => failure
   double *time;      // double time[steps]
   int64_t *events;   // int64_t events[steps]
