@@ -167,7 +167,6 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       // by the reaction's original rate and the contributions from other reactants
       for (reactant = 0; reactant < reactants_lengths[reaction]; reactant++) {
         index = reactants_indexes[reaction] + reactant;
-
         count = outcome[reactants[index]];
         propensities[reaction] *= choose(count, reactions[index]);
       }
@@ -180,7 +179,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
     }
 
     if (isnan(total)) {
-      printf("failed simulation: total propensity is NAN\n");
+      printf("failed simulation: total propensity is NaN\n");
       int max_reaction = 0;
       for (reaction = 0; reaction < reactions_count; reaction++) {
         if (propensities[reaction] > propensities[max_reaction]) {
