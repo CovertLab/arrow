@@ -8,6 +8,7 @@ from mersenne cimport MTState
 cdef extern from "obsidian.h":
 
     ctypedef struct evolve_result:
+        int status        # 0 => success
         int steps         # -1 => failure
         double *time      # double time[steps]
         int64_t *events   # int64_t events[steps]
