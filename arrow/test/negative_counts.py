@@ -10,7 +10,7 @@ with open('data/complexation/large-initial.json') as f:
     data = json.load(f)
 
 stoich = np.array(data['stoich'])
-rates = np.array(data['rates'])
+rates = np.array(data['rates']) * 1e-30
 counts = np.array(data['counts'])
 
 system = StochasticSystem(stoich.T, random_seed=0)
