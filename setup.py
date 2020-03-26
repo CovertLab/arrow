@@ -25,7 +25,7 @@ ext = '.pyx' if USE_CYTHON else '.c'
 cython_extensions = [
 	Extension('arrow.arrowhead',
 			  sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/arrowhead'+ext,],
-			  include_dirs=['arrow'],
+			  include_dirs=['arrow'] + numpy.distutils.misc_util.get_numpy_include_dirs(),
 			  define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
 			  )]
 
