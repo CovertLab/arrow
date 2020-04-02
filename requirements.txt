@@ -1,5 +1,5 @@
 Cython==0.29.13
 numpy==1.14.6
 pytest==4.6.5
-psutil==5.6.3
+psutil==5.6.6
 six
