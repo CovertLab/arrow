@@ -17,10 +17,10 @@ import json
 import numpy as np
 import psutil
 import argparse
+import pickle
 
 from arrow import reenact_events, StochasticSystem
 from arrow import GillespieReference
-
 
 def test_equilibration():
     stoichiometric_matrix = np.array([
@@ -207,6 +207,20 @@ def test_memory():
         amplify, obsidian_end - obsidian_start))
     assert memory_increases <= 1
 
+def test_pickle():
+    stoichiometric_matrix = np.array([
+        [1, 1, -1, 0],
+        [-2, 0, 0, 1],
+        [-1, -1, 1, 0]], np.int64)
+
+    rates = np.array([3, 1, 1]) * 0.01
+
+    arrow = StochasticSystem(stoichiometric_matrix)
+
+    pickled_arrow = pickle.dumps(arrow)
+
+    print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
+
 
 def main(args):
     systems = (
@@ -225,6 +239,8 @@ def main(args):
             test_memory()
         elif args.time:
             test_compare_runtime()
+        elif args.pickle:
+            test_pickle()
         else:
             for system in systems:
                 system()
@@ -270,5 +286,6 @@ if __name__ == '__main__':
     parser.add_argument('--obsidian', action='store_true')
     parser.add_argument('--memory', action='store_true')
     parser.add_argument('--time', action='store_true')
+    parser.add_argument('--pickle', action='store_true')
 
     main(parser.parse_args())
