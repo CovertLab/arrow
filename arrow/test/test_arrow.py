@@ -154,6 +154,8 @@ def test_obsidian():
     assert(arrow.obsidian.reactions_count() == stoichiometric_matrix.shape[0])
     assert(arrow.obsidian.substrates_count() == stoichiometric_matrix.shape[1])
 
+    return result
+
 def test_compare_runtime():
     stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
     duration = 1
@@ -218,6 +220,17 @@ def test_pickle():
     arrow = StochasticSystem(stoichiometric_matrix)
 
     pickled_arrow = pickle.dumps(arrow)
+    unpickled_arrow = pickle.loads(pickled_arrow)
+
+    result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64), rates)
+
+    straight = test_obsidian()
+
+    assert(result['steps'] == straight['steps'])
+    assert((result['time'] == straight['time']).all())
+    assert((result['events'] == straight['events']).all())
+    assert((result['occurrences'] == straight['occurrences']).all())
+    assert((result['outcome'] == straight['outcome']).all())
 
     print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
 

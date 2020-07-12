@@ -127,6 +127,46 @@ class StochasticSystem(object):
             self.substrates_indexes,
             self.substrates_flat)
 
+    def __getstate__(self):
+        '''
+        Export to picklable state.
+        '''
+
+        return (
+            self.random_seed,
+            self.stoichiometry,
+            self.reactants_lengths,
+            self.reactants_indexes,
+            self.reactants_flat,
+            self.reactions_flat,
+            self.dependencies_lengths,
+            self.dependencies_indexes,
+            self.dependencies_flat,
+            self.substrates_lengths,
+            self.substrates_indexes,
+            self.substrates_flat)
+
+    def __setstate__(self, state):
+        '''
+        Import from pickled state.
+        '''
+
+        self.random_seed, self.stoichiometry, self.reactants_lengths, self.reactants_indexes, self.reactants_flat, self.reactions_flat, self.dependencies_lengths, self.dependencies_indexes, self.dependencies_flat, self.substrates_lengths, self.substrates_indexes, self.substrates_flat = state
+
+        self.obsidian = Arrowhead(
+            self.random_seed,
+            self.stoichiometry,
+            self.reactants_lengths,
+            self.reactants_indexes,
+            self.reactants_flat,
+            self.reactions_flat,
+            self.dependencies_lengths,
+            self.dependencies_indexes,
+            self.dependencies_flat,
+            self.substrates_lengths,
+            self.substrates_indexes,
+            self.substrates_flat)
+
     def evolve(self, duration, state, rates):
         status, steps, time, events, outcome = self.obsidian.evolve(duration, state, rates)
 

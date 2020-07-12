@@ -39,7 +39,7 @@ if USE_CYTHON:
 
 setup(
 	name='stochastic-arrow',
-	version='0.4.1',
+	version='0.4.2',
 	packages=['arrow'],
 	author='Ryan Spangler, John Mason, Jerry Morrison',
 	author_email='spanglry@stanford.edu',
