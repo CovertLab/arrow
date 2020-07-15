@@ -234,6 +234,45 @@ def test_pickle():
 
     print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
 
+def test_flagella():
+    stoichiometry = np.array(
+        [[   0,    0,    0,    0,    0,   -4,   -2,    0,    0,    0,    0,
+             0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,    0,    0,    0,    0,    0,    1,    0,    0,
+             0,    0,    0],
+         [ -26,  -34,   -1,    0,    0,    0,    0,    0,    0,    0,    0,
+           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+           0,    0,    0,    0,    0,    0,    0,    0,    0,    1,    0,
+           0,    0,    0],
+         [   0,    0,    0,   -1,   -1,    0,    0,   -1,   -1,   -1,   -1,
+             -1,   -6,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             1,    0,    0],
+         [   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,  -12,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             -1,    1,    0],
+         [   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,   -2,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+             -1,   -1,   -1,    0,    0,    0,    0,    0,    0,   -1,    0,
+             0,    0,    1],
+         [   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+             0,    0,    0,   -1,   -1,   -1,   -5, -120,    0,    0,    1,
+             0,   -1,   -1]])
+
+    substrate = np.array([
+        21, 1369, 69, 4, 1, 1674, 0, 48, 53, 49, 61, 7,
+        3, 28, 151, 0, 26, 20, 3, 3, 9, 16, 7, 26,
+        280, 26, 64, 67, 310, 13559, 208, 16, 22, 0, 17, 0], np.int64)
+
+    rates = np.array([1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05])
+
+    arrow = StochasticSystem(stoichiometry)
+    result = arrow.evolve(1.0, substrate, rates)
+
+    print('flagella result: {}'.format(result))
+
 
 def main(args):
     systems = (
@@ -254,6 +293,8 @@ def main(args):
             test_compare_runtime()
         elif args.pickle:
             test_pickle()
+        elif args.flagella:
+            test_flagella()
         else:
             for system in systems:
                 system()
@@ -300,5 +341,6 @@ if __name__ == '__main__':
     parser.add_argument('--memory', action='store_true')
     parser.add_argument('--time', action='store_true')
     parser.add_argument('--pickle', action='store_true')
+    parser.add_argument('--flagella', action='store_true')
 
     main(parser.parse_args())
