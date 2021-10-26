@@ -8,6 +8,8 @@ cdef extern from "mersenne.h":
     ctypedef struct MTState:
         pass
 
+    size_t TWISTER_SIZE
+
     void seed(MTState *state, uint32_t seed_value)
 
     uint32_t rand_u32(MTState *state)

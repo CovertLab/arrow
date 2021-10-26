@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 cimport cython
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
-from libc.stdint cimport int64_t
+from libc.stdint cimport int64_t, uint32_t
 from libc.string cimport memset, memcpy
 from libc.stdlib cimport free
 
@@ -131,6 +131,28 @@ cdef class Arrowhead:
     def substrates_count(self):
         """Returns the number of substrates this system operates on."""
         return self.info.substrates_count
+
+    def get_random_state(self):
+        """Returns the state of the pseudorandom number generator."""
+        state = obsidian.get_random_state(&self.info)
+        mt = copy_c_array(
+            state.MT, mersenne.TWISTER_SIZE, sizeof(uint32_t),
+            np.NPY_UINT32)
+        mt_tempered = copy_c_array(
+            state.MT_TEMPERED, mersenne.TWISTER_SIZE, sizeof(uint32_t),
+            np.NPY_UINT32)
+        index = state.index
+
+        return mt, mt_tempered, index
+
+    def set_random_state(
+            self, uint32_t[::1] mt, uint32_t[::1] mt_tempered,
+            size_t index):
+        cdef obsidian.exported_random_state state
+        state.MT = &mt[0]
+        state.MT_TEMPERED = &mt_tempered[0]
+        state.index = index
+        obsidian.set_random_state(&self.info, &state)
 
 
 cdef np.ndarray copy_c_array(
