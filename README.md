@@ -70,7 +70,7 @@ given duration. `evolve` returns a dictionary with five keys:
 * outcome - the final state of the system
 
 ```python
-result = system.evolve(state, duration, rates)
+result = system.evolve(duration, state, rates)
 ```
 
 If you are interested in the history of states for plotting or otherwise, these can be
