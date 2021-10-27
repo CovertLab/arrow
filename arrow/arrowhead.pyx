@@ -151,8 +151,10 @@ cdef class Arrowhead:
             self, uint32_t[::1] mt, uint32_t[::1] mt_tempered,
             size_t index):
         cdef mersenne.MTState state
-        state.MT = &mt[0]
-        state.MT_TEMPERED = &mt_tempered[0]
+        memcpy(&state.MT[0], &mt[0], sizeof(state.MT))
+        memcpy(
+            &state.MT_TEMPERED[0], &mt_tempered[0],
+            sizeof(state.MT_TEMPERED))
         state.index = index
         obsidian.set_random_state(&self.info, &state)
 
