@@ -23,7 +23,7 @@ def flat_indexes(assorted_lists):
     conjunction with the flat array to recover the original list of lists.
 
     Args:
-        assorted_lists (List[List]): A list of variable length lists. 
+        assorted_lists (List[List]): A list of variable length lists.
 
     Returns numpy arrays:
         flat: The flattened data.
@@ -78,7 +78,7 @@ class StochasticSystem(object):
 
     The stoichiometric matrix has a reaction for each row, with the values in that row
     encoding how many of each substrate are either consumed or produced by the reaction
-    (and zero everywhere else). 
+    (and zero everywhere else).
     '''
 
     def __init__(self, stoichiometry, random_seed=0):
@@ -134,6 +134,7 @@ class StochasticSystem(object):
 
         return (
             self.random_seed,
+            self.obsidian.get_random_state(),
             self.stoichiometry,
             self.reactants_lengths,
             self.reactants_indexes,
@@ -151,7 +152,7 @@ class StochasticSystem(object):
         Import from pickled state.
         '''
 
-        self.random_seed, self.stoichiometry, self.reactants_lengths, self.reactants_indexes, self.reactants_flat, self.reactions_flat, self.dependencies_lengths, self.dependencies_indexes, self.dependencies_flat, self.substrates_lengths, self.substrates_indexes, self.substrates_flat = state
+        self.random_seed, random_state, self.stoichiometry, self.reactants_lengths, self.reactants_indexes, self.reactants_flat, self.reactions_flat, self.dependencies_lengths, self.dependencies_indexes, self.dependencies_flat, self.substrates_lengths, self.substrates_indexes, self.substrates_flat = state
 
         self.obsidian = Arrowhead(
             self.random_seed,
@@ -166,6 +167,7 @@ class StochasticSystem(object):
             self.substrates_lengths,
             self.substrates_indexes,
             self.substrates_flat)
+        self.obsidian.set_random_state(*random_state)
 
     def evolve(self, duration, state, rates):
         status, steps, time, events, outcome = self.obsidian.evolve(duration, state, rates)

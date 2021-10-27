@@ -5,8 +5,14 @@ from libc.stdint cimport uint32_t
 
 cdef extern from "mersenne.h":
 
+    size_t TWISTER_SIZE
+
     ctypedef struct MTState:
-        pass
+        # mersenne.h defines TWISTER_SIZE to be 624.
+        uint32_t MT[624]
+        uint32_t MT_TEMPERED[624]
+        size_t index
+
 
     void seed(MTState *state, uint32_t seed_value)
 

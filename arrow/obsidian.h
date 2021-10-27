@@ -38,6 +38,10 @@ typedef struct Info {
 // arrays that the caller must free().
 evolve_result evolve(Info *info, double duration, int64_t *state, double *rates);
 
+void get_random_state(const Info *info, MTState *exported_random_state);
+
+void set_random_state(Info *info, const MTState *state);
+
 // Supporting print utilities
 int print_array(double *array, int length);
 

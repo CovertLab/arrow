@@ -200,7 +200,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       choice = -1;
       break;
 
-    // Otherwise we need to find the next reaction to perform. 
+    // Otherwise we need to find the next reaction to perform.
     } else {
 
       // First, sample two random values, `point` from a linear distribution and
@@ -308,6 +308,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
   // Return the result constructed above
   return result;
+}
+
+void get_random_state(const Info *info, MTState *exported_random_state) {
+  memcpy(exported_random_state, info->random_state, sizeof(MTState));
+}
+
+void set_random_state(Info *info, const MTState *state) {
+  memcpy(info->random_state, state, sizeof(MTState));
 }
 
 // Print an array of doubles

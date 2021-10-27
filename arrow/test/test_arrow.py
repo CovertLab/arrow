@@ -273,6 +273,32 @@ def test_flagella():
 
     print('flagella result: {}'.format(result))
 
+def test_get_set_random_state():
+    stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]])
+    system = StochasticSystem(stoich)
+
+    state = np.array([1000, 1000, 0, 0])
+    rates = np.array([3.0, 1.0, 1.0])
+
+    system.evolve(1, state, rates)
+
+    rand_state = system.obsidian.get_random_state()
+
+    result_1 = system.evolve(1, state, rates)
+    result_2 = system.evolve(1, state, rates)
+
+    with np.testing.assert_raises(AssertionError):
+        for key in ('time', 'events', 'occurrences', 'outcome'):
+            np.testing.assert_array_equal(
+                result_1[key], result_2[key])
+
+    system.obsidian.set_random_state(*rand_state)
+    result_1_again = system.evolve(1, state, rates)
+
+    for key in ('time', 'events', 'occurrences', 'outcome'):
+        np.testing.assert_array_equal(
+            result_1[key], result_1_again[key])
+
 
 def main(args):
     systems = (

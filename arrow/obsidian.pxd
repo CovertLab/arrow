@@ -1,6 +1,6 @@
 # cython: language_level=3str
 
-from libc.stdint cimport int64_t
+from libc.stdint cimport int64_t, uint32_t
 
 from mersenne cimport MTState
 
@@ -36,5 +36,9 @@ cdef extern from "obsidian.h":
         int64_t *substrates
 
     evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
+
+    void get_random_state(Info *info, MTState *exported_random_state)
+
+    void set_random_state(Info *info, MTState *state)
 
     int print_array(double *array, int length)
