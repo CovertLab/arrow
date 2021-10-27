@@ -134,12 +134,14 @@ cdef class Arrowhead:
 
     def get_random_state(self):
         """Returns the state of the pseudorandom number generator."""
-        state = obsidian.get_random_state(&self.info)
+        cdef mersenne.MTState state
+        obsidian.get_random_state(&self.info, &state)
+
         mt = copy_c_array(
-            state.MT, mersenne.TWISTER_SIZE, sizeof(uint32_t),
+            &state.MT[0], mersenne.TWISTER_SIZE, sizeof(uint32_t),
             np.NPY_UINT32)
         mt_tempered = copy_c_array(
-            state.MT_TEMPERED, mersenne.TWISTER_SIZE, sizeof(uint32_t),
+            &state.MT_TEMPERED[0], mersenne.TWISTER_SIZE, sizeof(uint32_t),
             np.NPY_UINT32)
         index = state.index
 
@@ -148,7 +150,7 @@ cdef class Arrowhead:
     def set_random_state(
             self, uint32_t[::1] mt, uint32_t[::1] mt_tempered,
             size_t index):
-        cdef obsidian.exported_random_state state
+        cdef mersenne.MTState state
         state.MT = &mt[0]
         state.MT_TEMPERED = &mt_tempered[0]
         state.index = index

@@ -310,22 +310,12 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
   return result;
 }
 
-exported_random_state get_random_state(Info *info) {
-  MTState *random_state = info->random_state;
-  uint32_t *mt = random_state->MT;
-  uint32_t *mt_tempered = random_state->MT_TEMPERED;
-  size_t index = random_state->index;
-  exported_random_state state = {mt, mt_tempered, index};
-  return state;
+void get_random_state(Info *info, MTState *exported_random_state) {
+  memcpy(exported_random_state, info->random_state, sizeof(MTState));
 }
 
-void set_random_state(Info *info, exported_random_state *state) {
-  MTState *random_state = info->random_state;
-  memcpy(random_state->MT, state->MT, sizeof(random_state->MT));
-  memcpy(random_state->MT_TEMPERED,
-         state->MT_TEMPERED,
-         sizeof(random_state->MT_TEMPERED));
-  random_state->index = state->index;
+void set_random_state(Info *info, MTState *state) {
+  memcpy(info->random_state, state, sizeof(MTState));
 }
 
 // Print an array of doubles

@@ -35,15 +35,10 @@ cdef extern from "obsidian.h":
         int64_t *substrates_indexes
         int64_t *substrates
 
-    ctypedef struct exported_random_state:
-        uint32_t *MT
-        uint32_t *MT_TEMPERED
-        size_t index
-
     evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
-    exported_random_state get_random_state(Info *info)
+    void get_random_state(Info *info, MTState *exported_random_state)
 
-    void set_random_state(Info *info, exported_random_state *state)
+    void set_random_state(Info *info, MTState *state)
 
     int print_array(double *array, int length)

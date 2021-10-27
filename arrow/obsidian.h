@@ -34,20 +34,14 @@ typedef struct Info {
     int64_t *substrates;
 } Info;
 
-typedef struct exported_random_state {
-    uint32_t *MT;
-    uint32_t *MT_TEMPERED;
-    size_t index;
-} exported_random_state;
-
 // Invoke the system with all the required information to run for the given duration.
 // The result is either a failure = {-1, NULL, NULL, NULL} or it points to malloc'd
 // arrays that the caller must free().
 evolve_result evolve(Info *info, double duration, int64_t *state, double *rates);
 
-exported_random_state get_random_state(Info *info);
+void get_random_state(Info *info, MTState *exported_state);
 
-void set_random_state(Info *info, exported_random_state *state);
+void set_random_state(Info *info, MTState *state);
 
 // Supporting print utilities
 int print_array(double *array, int length);
