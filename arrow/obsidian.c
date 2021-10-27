@@ -310,11 +310,11 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
   return result;
 }
 
-void get_random_state(Info *info, MTState *exported_random_state) {
+void get_random_state(const Info *info, MTState *exported_random_state) {
   memcpy(exported_random_state, info->random_state, sizeof(MTState));
 }
 
-void set_random_state(Info *info, MTState *state) {
+void set_random_state(Info *info, const MTState *state) {
   memcpy(info->random_state, state, sizeof(MTState));
 }
 
