@@ -16,8 +16,8 @@ the state vector over the course of the simulation.
 
 ## Installation
 
-Add the following to your `requirements.txt`, or
-`pip install stochastic-arrow`:
+Add the following to your `requirements.txt`, or run
+`pip install stochastic-arrow` to install it [from PyPI](https://pypi.org/project/stochastic-arrow/):
 
     stochastic-arrow
 
