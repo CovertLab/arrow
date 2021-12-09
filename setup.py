@@ -1,5 +1,4 @@
 import os
-# from glob import glob
 import setuptools  # used indirectly for bdist_wheel cmd and long_description_content_type
 from distutils.core import setup
 from distutils.extension import Extension
@@ -41,8 +40,8 @@ setup(
 	name='stochastic-arrow',
 	version='0.4.4',
 	packages=['arrow'],
-	author='Ryan Spangler, John Mason, Jerry Morrison',
-	author_email='spanglry@stanford.edu',
+	author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik',
+	author_email='ryan.spangler@gmail.com',
 	url='https://github.com/CovertLab/arrow',
 	license='MIT',
 	include_dirs=include,
