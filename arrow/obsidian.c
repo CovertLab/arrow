@@ -191,6 +191,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       interval = 0.0;
       choice = -1;
       status = 1; // overflow
+      break;
     }
 
     // If the total is zero, then we have no more reactions to perform and can exit
@@ -208,6 +209,11 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       interval = sample_exponential(random_state, total);
       point = sample_uniform(random_state) * total;
 
+      // If we have surpassed the provided duration we can exit now
+      if (now + interval > duration) {
+        break;
+      }
+
       // Based on the random sample, find the event that it corresponds to by
       // iterating through the propensities until we surpass our sampled value
       choice = 0;
@@ -216,11 +222,6 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       while (progress + propensities[choice] < point || propensities[choice] == 0) {
         progress += propensities[choice];
         choice += 1;
-      }
-
-      // If we have surpassed the provided duration we can exit now
-      if (choice == -1 || (now + interval) > duration) {
-        break;
       }
 
       // Increase time by the interval sampled above
