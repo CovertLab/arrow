@@ -238,6 +238,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
         index = substrates_indexes[choice] + involve;
         adjustment = stoichiometry[choice * substrates_count + substrates[index]];
         outcome[substrates[index]] += adjustment;
+
+        if (outcome[substrates[index]] < 0) {
+          status = 2; // negative counts
+        }
+      }
+
+      if (status > 0) {
+        break;
       }
 
       // Find which propensities depend on this reaction and therefore need to be
