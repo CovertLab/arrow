@@ -213,7 +213,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       choice = 0;
       progress = 0.0;
 
-      while (progress + propensities[choice] < point) {
+      while (progress + propensities[choice] < point || propensities[choice] == 0) {
         progress += propensities[choice];
         choice += 1;
       }
