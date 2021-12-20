@@ -45,7 +45,7 @@ def test_hang():
     rates = np_load('rates.npy')
 
     system = StochasticSystem(stoich, random_seed=seed)
-    for i in range(10000):
+    for i in range(7300):
         if i % 100 == 0:
             print(i)
 
