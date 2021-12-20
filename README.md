@@ -104,7 +104,19 @@ There are more command line features in test_arrow:
 
     > python -m arrow.test.test_arrow --time
 
+More examples:
+
+    > python -m arrow.test.test_hang
+
+    > pytest -m arrow/test/test_arrow.py
+
+    > pytest -k flagella
+
 ## Changelog
+
+### Version 0.4.4
+
+* Can pickle StochasticSystem instances.
 
 ### Version 0.3.0
 
