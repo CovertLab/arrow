@@ -175,7 +175,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
     // Find the total for all propensities
     total = 0.0;
     for (reaction = 0; reaction < reactions_count; reaction++) {
+      if (propensities[reaction] < 0) {
+        status = 3; // a negative propensity
+      }
       total += propensities[reaction];
+    }
+
+    if (status > 0) {
+      break;
     }
 
     if (isnan(total)) {
@@ -208,6 +215,11 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       // `interval` from an exponential distribution.
       interval = sample_exponential(random_state, total);
       point = sample_uniform(random_state) * total;
+      if (point > total) {
+        // If roundoff made point > total, the `progress` loop would go past the
+        // end of the array.
+        point = total;
+      }
 
       // If we have surpassed the provided duration we can exit now
       if (now + interval > duration) {
@@ -219,6 +231,8 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       choice = 0;
       progress = 0.0;
 
+      // Note: Even if `point` happens to be 0, this needs to skip 0 propensity
+      // choices to avoid computing negative counts.
       while (progress + propensities[choice] < point || propensities[choice] == 0) {
         progress += propensities[choice];
         choice += 1;
