@@ -175,7 +175,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
     // Find the total for all propensities
     total = 0.0;
     for (reaction = 0; reaction < reactions_count; reaction++) {
+      if (propensities[reaction] < 0) {
+        status = 3; // a negative propensity
+      }
       total += propensities[reaction];
+    }
+
+    if (status > 0) {
+      break;
     }
 
     if (isnan(total)) {
@@ -191,6 +198,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       interval = 0.0;
       choice = -1;
       status = 1; // overflow
+      break;
     }
 
     // If the total is zero, then we have no more reactions to perform and can exit
@@ -207,20 +215,27 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       // `interval` from an exponential distribution.
       interval = sample_exponential(random_state, total);
       point = sample_uniform(random_state) * total;
+      if (point > total) {
+        // If roundoff made point > total, the `progress` loop would go past the
+        // end of the array.
+        point = total;
+      }
+
+      // If we have surpassed the provided duration we can exit now
+      if (now + interval > duration) {
+        break;
+      }
 
       // Based on the random sample, find the event that it corresponds to by
       // iterating through the propensities until we surpass our sampled value
       choice = 0;
       progress = 0.0;
 
-      while (progress + propensities[choice] < point) {
+      // Note: Even if `point` happens to be 0, this needs to skip 0 propensity
+      // choices to avoid computing negative counts.
+      while (progress + propensities[choice] < point || propensities[choice] == 0) {
         progress += propensities[choice];
         choice += 1;
-      }
-
-      // If we have surpassed the provided duration we can exit now
-      if (choice == -1 || (now + interval) > duration) {
-        break;
       }
 
       // Increase time by the interval sampled above
@@ -237,6 +252,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
         index = substrates_indexes[choice] + involve;
         adjustment = stoichiometry[choice * substrates_count + substrates[index]];
         outcome[substrates[index]] += adjustment;
+
+        if (outcome[substrates[index]] < 0) {
+          status = 2; // negative counts
+        }
+      }
+
+      if (status > 0) {
+        break;
       }
 
       // Find which propensities depend on this reaction and therefore need to be
