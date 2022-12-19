@@ -142,7 +142,7 @@ def complexation_test(make_system):
 def test_complexation():
     complexation_test(StochasticSystem)
 
-def test_obsidian():
+def check_obsidian():
     stoichiometric_matrix = np.array([
         [1, 1, -1, 0],
         [-2, 0, 0, 1],
@@ -163,6 +163,9 @@ def test_obsidian():
     assert(arrow.obsidian.substrates_count() == stoichiometric_matrix.shape[1])
 
     return result
+
+def test_obsidian():
+    check_obsidian()
 
 def test_compare_runtime():
     stoichiometric_matrix, rates, initial_state, final_state = load_complexation()
@@ -232,7 +235,7 @@ def test_pickle():
 
     result = arrow.evolve(1.0, np.array([50, 20, 30, 40], np.int64), rates)
 
-    straight = test_obsidian()
+    straight = check_obsidian()
 
     assert(result['steps'] == straight['steps'])
     assert((result['time'] == straight['time']).all())
@@ -320,7 +323,7 @@ def main(args):
             for run in range(args.runs):
                 complexation_test(StochasticSystem)
         if args.obsidian:
-            test_obsidian()
+            check_obsidian()
         elif args.memory:
             test_memory()
         elif args.time:

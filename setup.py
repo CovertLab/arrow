@@ -1,15 +1,20 @@
+# distutils is deprecated; to be removed for Python 3.12.
+# See https://numpy.org/devdocs/reference/distutils_status_migration.html for
+# migration advice.
+# This setup.py file no longer uses numpy.distutils so it might be easy to
+# fully move to setuptools.
+
 import os
 import setuptools  # used indirectly for bdist_wheel cmd and long_description_content_type
 from distutils.core import setup
 from distutils.extension import Extension
-import numpy.distutils.misc_util
+import numpy as np
 
 with open("README.md", 'r') as readme:
     long_description = readme.read()
 
 current_dir = os.getcwd()
 arrow_dir = os.path.join(current_dir, 'arrow')
-include = [arrow_dir] + numpy.distutils.misc_util.get_numpy_include_dirs()
 
 # Compile the Cython code to C for development builds:
 #    USE_CYTHON=1 python setup.py build_ext --inplace
@@ -24,7 +29,7 @@ ext = '.pyx' if USE_CYTHON else '.c'
 cython_extensions = [
     Extension('arrow.arrowhead',
               sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/arrowhead'+ext,],
-              include_dirs=['arrow'] + numpy.distutils.misc_util.get_numpy_include_dirs(),
+              include_dirs=['arrow', np.get_include()],
               define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
               )]
 
@@ -38,13 +43,13 @@ if USE_CYTHON:
 
 setup(
     name='stochastic-arrow',
-    version='0.5.0',
+    version='0.5.1',
     packages=['arrow'],
     author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst',
     author_email='ryan.spangler@gmail.com',
     url='https://github.com/CovertLab/arrow',
     license='MIT',
-    include_dirs=include,
+    include_dirs=[arrow_dir, np.get_include()],
     ext_modules=cython_extensions,
     long_description=long_description,
     long_description_content_type='text/markdown',
