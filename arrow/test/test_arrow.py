@@ -22,7 +22,7 @@ import pickle
 from arrow import reenact_events, StochasticSystem
 from arrow import GillespieReference
 
-def test_equilibration():
+def check_equilibration():
     stoichiometric_matrix = np.array([
         [0, -1],
         [+1, -1],
@@ -46,7 +46,11 @@ def test_equilibration():
     return (time, counts, events)
 
 
-def test_dimerization():
+def test_equilibration():
+    check_equilibration()
+
+
+def check_dimerization():
     stoichiometric_matrix = np.array([
         [1, 1, -1, 0],
         [-2, 0, 0, 1],
@@ -67,6 +71,10 @@ def test_dimerization():
     assert time[-1] <= duration
 
     return (time, counts, events)
+
+
+def test_dimerization():
+    check_dimerization()
 
 
 def load_complexation(prefix='simple'):
@@ -302,8 +310,8 @@ def test_get_set_random_state():
 
 def main(args):
     systems = (
-        test_equilibration,
-        test_dimerization,
+        check_equilibration,
+        check_dimerization,
         lambda: complexation_test(StochasticSystem),
         lambda: complexation_test(GillespieReference))
 
