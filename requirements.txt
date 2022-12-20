@@ -1,7 +1,9 @@
+# pip install -U -r requirements.txt
+
 pip
 setuptools
 
-Cython
+Cython>=3.0.0a11
 numpy
 pytest
 psutil
