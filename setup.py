@@ -2,13 +2,16 @@
 # See https://numpy.org/devdocs/reference/distutils_status_migration.html for
 # migration advice.
 # This setup.py file no longer uses numpy.distutils so it might be easy to
-# fully move to setuptools.
+# move fully to setuptools.
 
 import os
 import setuptools  # used indirectly for bdist_wheel cmd and long_description_content_type
 from distutils.core import setup
 from distutils.extension import Extension
 import numpy as np
+
+_ = setuptools
+
 
 with open("README.md", 'r') as readme:
     long_description = readme.read()

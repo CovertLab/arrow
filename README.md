@@ -114,6 +114,15 @@ More examples:
 
 ## Changelog
 
+### Version 0.5.1
+
+* Update to Cython 3.0.0a11 for compatibility with Python 3.11.
+  Add `arrow.pxd` to work around a Cython 3.0.0 bug.
+* Stop using deprecated `numpy.distutils` to avoid warnings and prepare for its
+  removal in Python 3.12.
+* Make `test_arrow.py --plot` compatible with Python 3.
+* Fix `PytestReturnNotNoneWarning` warnings from pytest 7.2.0.
+
 ### Version 0.5.0
 
 * Add the arrow_hang unit test which catches a nasty edge-case (Issue #48),

@@ -312,11 +312,17 @@ def test_get_set_random_state():
 
 
 def main(args):
+    def check_stochastic_system():
+        return complexation_test(StochasticSystem)
+
+    def check_gillespie_reference():
+        return complexation_test(GillespieReference)
+
     systems = (
         check_equilibration,
         check_dimerization,
-        lambda: complexation_test(StochasticSystem),
-        lambda: complexation_test(GillespieReference))
+        check_stochastic_system,
+        check_gillespie_reference,)
 
     if not args.plot:
         if args.complexation:
@@ -359,7 +365,8 @@ def main(args):
         all_axes = np.asarray(all_axes)
 
         for (axes, system) in moves.zip(all_axes.flatten(), systems):
-            axes.set_title(system.func_name)
+            print(f'Running {system.__name__}')
+            axes.set_title(system.__name__)
 
             time, counts, events = system()
             plot_full_history(axes, time, counts)
