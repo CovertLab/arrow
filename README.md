@@ -50,6 +50,7 @@ state vector and set of reaction rates and then run it for a given time interval
 ```python
 # This gives the initial state of the system (counts of each molecular species,
 # for instance).
+import numpy as np
 state = np.array([1000, 1000, 0, 0])
 
 # We also specify how long we want the simulation to run. Here we set it to one
@@ -113,6 +114,10 @@ More examples:
     > pytest -k flagella
 
 ## Changelog
+
+### Version 0.5.2
+
+* Update to Cython 0.29.34. (Cython 3.0.0 is now in beta.)
 
 ### Version 0.5.1
 
