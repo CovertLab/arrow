@@ -245,7 +245,8 @@ def test_pickle():
 
     print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
 
-def test_flagella():
+# Test that all reaction propensities are printed if simulation fails
+def fail_test_flagella():
     stoichiometry = np.array(
         [[   0,    0,    0,    0,    0,   -4,   -2,    0,    0,    0,    0,
              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -337,7 +338,7 @@ def main(args):
         elif args.pickle:
             test_pickle()
         elif args.flagella:
-            test_flagella()
+            fail_test_flagella()
         else:
             for system in systems:
                 system()
