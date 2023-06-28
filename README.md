@@ -21,6 +21,13 @@ Add the following to your `requirements.txt`, or run
 
     stochastic-arrow
 
+**NOTE:** If upgrading from a version older than 1.0.0, check if the [`arrow`](https://github.com/arrow-py/arrow) datetime package is installed. If so, uninstall `arrow` before upgrading `stochastic-arrow`, then reinstall `arrow`.
+
+    > pip show arrow
+    > pip uninstall arrow
+    > pip install stochastic-arrow
+    > pip install arrow
+
 ## Usage
 
 The `stochastic_arrow` library presents a single class as an interface,
@@ -50,6 +57,7 @@ state vector and set of reaction rates and then run it for a given time interval
 ```python
 # This gives the initial state of the system (counts of each molecular species,
 # for instance).
+import numpy as np
 state = np.array([1000, 1000, 0, 0])
 
 # We also specify how long we want the simulation to run. Here we set it to one
@@ -114,9 +122,9 @@ More examples:
 
 ## Changelog
 
-### Version 0.5.3
+### Version 1.0.0
 
-* Rename module to `stochastic_arrow` to avoid name conflict (Issue #51).
+* Rename module to `stochastic_arrow` to avoid name conflict (Issue #51). **All users must update their import statements to use `stochastic_arrow` instead of `arrow`.**
 
 ### Version 0.5.2
 

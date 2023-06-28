@@ -122,7 +122,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       outcome == NULL ||
       propensities == NULL ||
       update == NULL) {
-    printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+    printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
     free(time);
     free(events);
@@ -278,7 +278,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       if (step >= event_bounds) {
         double *new_time = malloc((sizeof (double)) * event_bounds * 2);
         if (new_time == NULL) {
-          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+          printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);
@@ -295,7 +295,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
         int64_t *new_events = malloc((sizeof (int64_t)) * event_bounds * 2);
         if (new_events == NULL) {
-          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+          printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);

@@ -49,9 +49,9 @@ if USE_CYTHON:
 
 setup(
     name='stochastic-arrow',
-    version='0.5.3',
+    version='1.0.0',
     packages=['stochastic_arrow'],
-    author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst',
+    author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst, Sean Cheah',
     author_email='ryan.spangler@gmail.com',
     url='https://github.com/CovertLab/arrow',
     license='MIT',
