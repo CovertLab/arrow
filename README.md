@@ -23,12 +23,12 @@ Add the following to your `requirements.txt`, or run
 
 ## Usage
 
-The `arrow` library presents a single class as an interface,
+The `stochastic_arrow` library presents a single class as an interface,
 `StochasticSystem`, which operates on a set of reactions (encoded as a `numpy`
 matrix of stoichiometrix coefficients) and associated reaction rates:
 
 ```python
-from arrow import StochasticSystem
+from stochastic_arrow import StochasticSystem
 import numpy as np
 
 # Each row is a reaction and each column is a molecular species (or other
@@ -50,7 +50,6 @@ state vector and set of reaction rates and then run it for a given time interval
 ```python
 # This gives the initial state of the system (counts of each molecular species,
 # for instance).
-import numpy as np
 state = np.array([1000, 1000, 0, 0])
 
 # We also specify how long we want the simulation to run. Here we set it to one
@@ -79,14 +78,14 @@ derived from the list of events and the stoichiometric matrix, along with the in
 state. `reenact_events` will do this for you:
 
 ```python
-from arrow import reenact_events
+from stochastic_arrow import reenact_events
 
-history = reenact_events(stoichiometry, result['events'], state)
+history = reenact_events(stoichiometric_matrix, result['events'], state)
 ```
 
 ## Testing
 
-`arrow` uses [pytest](https://docs.pytest.org/en/latest/). To test it:
+`stochastic_arrow` uses [pytest](https://docs.pytest.org/en/latest/). To test it:
 
     > make clean compile
     > pytest
@@ -95,25 +94,29 @@ history = reenact_events(stoichiometry, result['events'], state)
 
 There are more command line features in test_arrow:
 
-    > python -m arrow.test.test_arrow --complexation
+    > python -m stochastic_arrow.test.test_arrow --complexation
 
-    > python -m arrow.test.test_arrow --plot
+    > python -m stochastic_arrow.test.test_arrow --plot
 
-    > python -m arrow.test.test_arrow --obsidian
+    > python -m stochastic_arrow.test.test_arrow --obsidian
 
-    > python -m arrow.test.test_arrow --memory
+    > python -m stochastic_arrow.test.test_arrow --memory
 
-    > python -m arrow.test.test_arrow --time
+    > python -m stochastic_arrow.test.test_arrow --time
 
 More examples:
 
-    > python -m arrow.test.test_hang
+    > python -m stochastic_arrow.test.test_hang
 
-    > pytest -m arrow/test/test_arrow.py
+    > pytest -m stochastic_arrow/test/test_arrow.py
 
     > pytest -k flagella
 
 ## Changelog
+
+### Version 0.5.3
+
+* Rename module to `stochastic_arrow` to avoid name conflict (Issue #51).
 
 ### Version 0.5.2
 

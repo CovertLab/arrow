@@ -96,7 +96,7 @@ def _last_where(bool_array):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    from arrow.analysis.plotting import plot_full_history
+    from stochastic_arrow.analysis.plotting import plot_full_history
 
     (fig, axes) = plt.subplots(constrained_layout = True)
 

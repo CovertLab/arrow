@@ -1,6 +1,6 @@
 import json
 
-from arrow import StochasticSystem
+from stochastic_arrow import StochasticSystem
 import numpy as np
 
 

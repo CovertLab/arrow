@@ -19,8 +19,8 @@ import psutil
 import argparse
 import pickle
 
-from arrow import reenact_events, StochasticSystem
-from arrow import GillespieReference
+from stochastic_arrow import reenact_events, StochasticSystem
+from stochastic_arrow import GillespieReference
 
 def check_equilibration():
     stoichiometric_matrix = np.array([
@@ -343,7 +343,7 @@ def main(args):
                 system()
     else:
         import matplotlib.pyplot as plt
-        from arrow.analysis.plotting import plot_full_history
+        from stochastic_arrow.analysis.plotting import plot_full_history
 
         n_systems = len(systems)
 
