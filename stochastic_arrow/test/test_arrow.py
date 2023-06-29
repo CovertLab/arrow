@@ -16,11 +16,14 @@ from time import time as seconds_since_epoch
 import json
 import numpy as np
 import psutil
+import pytest
 import argparse
 import pickle
+import subprocess
 
 from stochastic_arrow import reenact_events, StochasticSystem
 from stochastic_arrow import GillespieReference
+from stochastic_arrow.arrow import SimulationFailure
 
 def check_equilibration():
     stoichiometric_matrix = np.array([
@@ -245,8 +248,7 @@ def test_pickle():
 
     print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
 
-# Test that all reaction propensities are printed if simulation fails
-def fail_test_flagella():
+def test_fail_flagella():
     stoichiometry = np.array(
         [[   0,    0,    0,    0,    0,   -4,   -2,    0,    0,    0,    0,
              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -281,9 +283,25 @@ def fail_test_flagella():
     rates = np.array([1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05])
 
     arrow = StochasticSystem(stoichiometry)
-    result = arrow.evolve(1.0, substrate, rates)
+    # This should raise SimulationFailure
+    with pytest.raises(SimulationFailure):
+        result = arrow.evolve(1.0, substrate, rates)
 
-    print('flagella result: {}'.format(result))
+# All reaction propensities should be printed if simulation fails
+def test_fail_stdout():
+    curr_file = os.path.realpath(__file__)
+    result = subprocess.run(['python', curr_file, '--test-fail-flagella'],
+                            capture_output=True)
+    assert result.stdout == (
+        b'failed simulation: total propensity is NaN\n'
+        b'reaction 0 is -0.000000\n'
+        b'reaction 1 is 0.000000\n'
+        b'reaction 2 is 0.000000\n'
+        b'reaction 3 is 0.000000\n'
+        b'reaction 4 is 0.000000\n'
+        b'reaction 5 is -nan\n'
+        b'largest reaction is 5 at -nan\n')
+    assert result.stderr == b''
 
 def test_get_set_random_state():
     stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]])
@@ -337,8 +355,10 @@ def main(args):
             test_compare_runtime()
         elif args.pickle:
             test_pickle()
-        elif args.flagella:
-            fail_test_flagella()
+        elif args.test_fail_flagella:
+            test_fail_flagella()
+        elif args.test_fail_stdout:
+            test_fail_stdout()
         else:
             for system in systems:
                 system()
@@ -386,6 +406,7 @@ if __name__ == '__main__':
     parser.add_argument('--memory', action='store_true')
     parser.add_argument('--time', action='store_true')
     parser.add_argument('--pickle', action='store_true')
-    parser.add_argument('--flagella', action='store_true')
+    parser.add_argument('--test-fail-flagella', action='store_true')
+    parser.add_argument('--test-fail-stdout', action='store_true')
 
     main(parser.parse_args())
