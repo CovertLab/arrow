@@ -15,6 +15,7 @@ import os
 from time import time as seconds_since_epoch
 import json
 import numpy as np
+from pathlib import Path
 import psutil
 import pytest
 import argparse
@@ -289,9 +290,11 @@ def test_fail_flagella():
 
 # All reaction propensities should be printed if simulation fails
 def test_fail_stdout():
-    curr_file = os.path.realpath(__file__)
+    curr_file = Path(os.path.realpath(__file__))
+    main_dir = curr_file.parents[2]
     result = subprocess.run(['python', curr_file, '--test-fail-flagella'],
-                            capture_output=True)
+                            capture_output=True,
+                            env={**os.environ, 'PYTHONPATH': main_dir})
     assert result.stdout == (
         b'failed simulation: total propensity is NaN\n'
         b'reaction 0 is -0.000000\n'
