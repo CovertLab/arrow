@@ -23,6 +23,7 @@ import argparse
 import pickle
 import re
 import subprocess
+import sys
 
 from stochastic_arrow import reenact_events, StochasticSystem
 from stochastic_arrow import GillespieReference
@@ -297,9 +298,10 @@ def test_fail_flagella():
 def test_fail_stdout():
     curr_file = Path(os.path.realpath(__file__))
     main_dir = curr_file.parents[2]
-    result = subprocess.run(['python', curr_file, '--test-fail-flagella'],
-                            capture_output=True,
-                            env={**os.environ, 'PYTHONPATH': str(main_dir)})
+    # sys.executable more reliable than 'python' in Windows virtualenv
+    result = subprocess.run(
+        [sys.executable, curr_file, '--test-fail-flagella'],
+        capture_output=True, env={**os.environ, 'PYTHONPATH': str(main_dir)})
     assert re.search((
         'failed simulation: total propensity is NaN.*'
         'reaction 0 is -?0.000000.*'

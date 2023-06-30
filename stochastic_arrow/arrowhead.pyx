@@ -65,8 +65,8 @@ cdef class Arrowhead:
         self.random_seed = random_seed
         mersenne.seed(self.info.random_state, random_seed)
 
-        self.info.reactions_count = stoichiometry.shape[0]
-        self.info.substrates_count = stoichiometry.shape[1]
+        self.info.reactions_count = <int>stoichiometry.shape[0]
+        self.info.substrates_count = <int>stoichiometry.shape[1]
         self.info.stoichiometry = &stoichiometry[0, 0]
 
         self.info.reactants_lengths = &reactants_lengths[0]
