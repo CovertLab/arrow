@@ -13,7 +13,7 @@ import numpy as np
 _ = setuptools
 
 
-with open("README.md", 'r') as readme:
+with open("README.md", 'r', encoding="utf-8") as readme:
     long_description = readme.read()
 
 current_dir = os.getcwd()
