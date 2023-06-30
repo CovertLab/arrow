@@ -1,6 +1,6 @@
 # cython: language_level=3str
 
-from libc.stdint cimport int64_t, uint32_t
+from numpy cimport int64_t, uint32_t
 
 from mersenne cimport MTState
 

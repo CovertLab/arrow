@@ -33,9 +33,9 @@ def flat_indexes(assorted_lists):
 
     lengths = np.array([
         len(l)
-        for l in assorted_lists])
-    indexes = np.insert(lengths, 0, 0).cumsum()[:-1]
-    flat = np.array(flatten(assorted_lists))
+        for l in assorted_lists], dtype=np.int64)
+    indexes = np.insert(lengths, 0, 0).cumsum()[:-1].astype(np.int64)
+    flat = np.array(flatten(assorted_lists), dtype=np.int64)
     return flat, lengths, indexes
 
 def reenact_events(stoichiometry, events, state):

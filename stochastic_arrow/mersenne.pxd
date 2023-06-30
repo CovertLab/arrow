@@ -1,6 +1,6 @@
 # cython: language_level=3str
 
-from libc.stdint cimport uint32_t
+from numpy cimport uint32_t
 
 
 cdef extern from "mersenne.h":

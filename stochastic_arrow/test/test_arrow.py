@@ -87,7 +87,7 @@ def load_complexation(prefix='simple'):
 
     def load_state(filename):
         with open(os.path.join(fixtures_root, filename)) as f:
-            state = np.array(json.load(f))
+            state = np.array(json.load(f), dtype=np.int64)
 
         return state
 
@@ -275,7 +275,7 @@ def test_fail_flagella():
          [   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
              0,    0,    0,   -1,   -1,   -1,   -5, -120,    0,    0,    1,
-             0,   -1,   -1]])
+             0,   -1,   -1]], dtype=np.int64)
 
     substrate = np.array([
         21, 1369, 69, 4, 1, 1674, 0, 48, 53, 49, 61, 7,
@@ -295,7 +295,7 @@ def test_fail_stdout():
     main_dir = curr_file.parents[2]
     result = subprocess.run(['python', curr_file, '--test-fail-flagella'],
                             capture_output=True,
-                            env={**os.environ, 'PYTHONPATH': main_dir})
+                            env={**os.environ, 'PYTHONPATH': str(main_dir)})
     assert re.search((
         'failed simulation: total propensity is NaN.*'
         'reaction 0 is -?0.000000.*'
@@ -309,7 +309,8 @@ def test_fail_stdout():
     assert result.stderr == b''
 
 def test_get_set_random_state():
-    stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]])
+    stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]],
+                      dtype=np.int64)
     system = StochasticSystem(stoich)
 
     state = np.array([1000, 1000, 0, 0])
