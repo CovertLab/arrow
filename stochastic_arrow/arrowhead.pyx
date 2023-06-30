@@ -4,12 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 cimport cython
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
+from libc.stdint cimport int64_t, uint32_t
 from libc.string cimport memset, memcpy
 from libc.stdlib cimport free
 
 import numpy as np
 cimport numpy as np
-from numpy cimport int64_t, uint32_t
 
 from . cimport mersenne
 from . cimport obsidian
