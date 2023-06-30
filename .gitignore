@@ -10,8 +10,9 @@ profile
 /.idea/
 /tmp/
 
-arrow/arrowhead.c
-arrow/*.html
+stochastic_arrow/arrowhead.c
+stochastic_arrow/arrowhead.*.pyd
+stochastic_arrow/*.html
 
 arrow.egg-info/
 stochastic_arrow.egg-info/

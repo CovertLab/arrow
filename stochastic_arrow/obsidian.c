@@ -115,14 +115,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
   // if something goes wrong (like an overflow in propensities), the status will be
   // set to some meaningful number
-  int64_t status = 0;
+  int status = 0;
 
   if (time == NULL ||
       events == NULL ||
       outcome == NULL ||
       propensities == NULL ||
       update == NULL) {
-    printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+    printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
     free(time);
     free(events);
@@ -187,14 +187,14 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
     if (isnan(total)) {
       printf("failed simulation: total propensity is NaN\n");
-      int max_reaction = 0;
+      int64_t max_reaction = 0;
       for (reaction = 0; reaction < reactions_count; reaction++) {
-        printf("reaction %lld is %f\n", reaction, propensities[reaction]);
+        printf("reaction %lld is %f\n", (long long)reaction, propensities[reaction]);
         if (isnan(propensities[reaction]) || propensities[reaction] > propensities[max_reaction]) {
           max_reaction = reaction;
         }
       }
-      printf("largest reaction is %d at %f\n", max_reaction, propensities[max_reaction]);
+      printf("largest reaction is %lld at %f\n", (long long)max_reaction, propensities[max_reaction]);
       interval = 0.0;
       choice = -1;
       status = 1; // overflow
@@ -278,7 +278,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       if (step >= event_bounds) {
         double *new_time = malloc((sizeof (double)) * event_bounds * 2);
         if (new_time == NULL) {
-          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+          printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);
@@ -295,7 +295,7 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
 
         int64_t *new_events = malloc((sizeof (int64_t)) * event_bounds * 2);
         if (new_events == NULL) {
-          printf("arrow.obsidian.evolve - failed to allocate memory: %d", errno);
+          printf("stochastic_arrow.obsidian.evolve - failed to allocate memory: %d", errno);
 
           free(time);
           free(events);

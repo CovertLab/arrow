@@ -13,11 +13,11 @@ import numpy as np
 _ = setuptools
 
 
-with open("README.md", 'r') as readme:
+with open("README.md", 'r', encoding="utf-8") as readme:
     long_description = readme.read()
 
 current_dir = os.getcwd()
-arrow_dir = os.path.join(current_dir, 'arrow')
+arrow_dir = os.path.join(current_dir, 'stochastic_arrow')
 
 # Compile the Cython code to C for development builds:
 #    USE_CYTHON=1 python setup.py build_ext --inplace
@@ -30,9 +30,12 @@ USE_CYTHON = 'USE_CYTHON' in os.environ
 ext = '.pyx' if USE_CYTHON else '.c'
 
 cython_extensions = [
-    Extension('arrow.arrowhead',
-              sources=['arrow/mersenne.c', 'arrow/obsidian.c', 'arrow/arrowhead'+ext,],
-              include_dirs=['arrow', np.get_include()],
+    Extension('stochastic_arrow.arrowhead',
+              sources=[
+                  'stochastic_arrow/mersenne.c',
+                  'stochastic_arrow/obsidian.c',
+                  'stochastic_arrow/arrowhead'+ext,],
+              include_dirs=['stochastic_arrow', np.get_include()],
               define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
               )]
 
@@ -40,15 +43,15 @@ if USE_CYTHON:
     from Cython.Build import cythonize
     cython_extensions = cythonize(
         cython_extensions,
-        include_path=['arrow'],
+        include_path=['stochastic_arrow'],
         annotate=True,  # to get an HTML code listing
     )
 
 setup(
     name='stochastic-arrow',
-    version='0.5.2',
-    packages=['arrow'],
-    author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst',
+    version='1.0.0',
+    packages=['stochastic_arrow'],
+    author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst, Sean Cheah',
     author_email='ryan.spangler@gmail.com',
     url='https://github.com/CovertLab/arrow',
     license='MIT',

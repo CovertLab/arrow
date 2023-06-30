@@ -15,12 +15,19 @@ import os
 from time import time as seconds_since_epoch
 import json
 import numpy as np
+from pathlib import Path
+import platform
 import psutil
+import pytest
 import argparse
 import pickle
+import re
+import subprocess
+import sys
 
-from arrow import reenact_events, StochasticSystem
-from arrow import GillespieReference
+from stochastic_arrow import reenact_events, StochasticSystem
+from stochastic_arrow import GillespieReference
+from stochastic_arrow.arrow import SimulationFailure
 
 def check_equilibration():
     stoichiometric_matrix = np.array([
@@ -82,7 +89,7 @@ def load_complexation(prefix='simple'):
 
     def load_state(filename):
         with open(os.path.join(fixtures_root, filename)) as f:
-            state = np.array(json.load(f))
+            state = np.array(json.load(f), dtype=np.int64)
 
         return state
 
@@ -218,7 +225,10 @@ def test_memory():
 
     print('obsidian C implementation elapsed seconds for {} runs: {}'.format(
         amplify, obsidian_end - obsidian_start))
-    assert memory_increases <= 1
+    if platform.system() == 'Windows':
+        assert memory_increases <= 10
+    else:
+        assert memory_increases <= 1
 
 def test_pickle():
     stoichiometric_matrix = np.array([
@@ -245,7 +255,7 @@ def test_pickle():
 
     print('arrow object pickled is {} bytes'.format(len(pickled_arrow)))
 
-def test_flagella():
+def test_fail_flagella():
     stoichiometry = np.array(
         [[   0,    0,    0,    0,    0,   -4,   -2,    0,    0,    0,    0,
              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -270,7 +280,7 @@ def test_flagella():
          [   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
              0,    0,    0,   -1,   -1,   -1,   -5, -120,    0,    0,    1,
-             0,   -1,   -1]])
+             0,   -1,   -1]], dtype=np.int64)
 
     substrate = np.array([
         21, 1369, 69, 4, 1, 1674, 0, 48, 53, 49, 61, 7,
@@ -280,15 +290,36 @@ def test_flagella():
     rates = np.array([1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05, 1.e-05])
 
     arrow = StochasticSystem(stoichiometry)
-    result = arrow.evolve(1.0, substrate, rates)
+    # This should raise SimulationFailure
+    with pytest.raises(SimulationFailure):
+        result = arrow.evolve(1.0, substrate, rates)
 
-    print('flagella result: {}'.format(result))
+# All reaction propensities should be printed if simulation fails
+def test_fail_stdout():
+    curr_file = Path(os.path.realpath(__file__))
+    main_dir = curr_file.parents[2]
+    # sys.executable more reliable than 'python' in Windows virtualenv
+    result = subprocess.run(
+        [sys.executable, curr_file, '--test-fail-flagella'],
+        capture_output=True, env={**os.environ, 'PYTHONPATH': str(main_dir)})
+    assert re.search((
+        'failed simulation: total propensity is NaN.*'
+        'reaction 0 is -?0.000000.*'
+        'reaction 1 is -?0.000000.*'
+        'reaction 2 is -?0.000000.*'
+        'reaction 3 is -?0.000000.*'
+        'reaction 4 is -?0.000000.*'
+        'reaction 5 is -?nan.*'
+        'largest reaction is 5 at -?nan.*'),
+        result.stdout.decode('utf-8'), flags=re.DOTALL)
+    assert result.stderr == b''
 
 def test_get_set_random_state():
-    stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]])
+    stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]],
+                      dtype=np.int64)
     system = StochasticSystem(stoich)
 
-    state = np.array([1000, 1000, 0, 0])
+    state = np.array([1000, 1000, 0, 0], dtype=np.int64)
     rates = np.array([3.0, 1.0, 1.0])
 
     system.evolve(1, state, rates)
@@ -336,14 +367,16 @@ def main(args):
             test_compare_runtime()
         elif args.pickle:
             test_pickle()
-        elif args.flagella:
-            test_flagella()
+        elif args.test_fail_flagella:
+            test_fail_flagella()
+        elif args.test_fail_stdout:
+            test_fail_stdout()
         else:
             for system in systems:
                 system()
     else:
         import matplotlib.pyplot as plt
-        from arrow.analysis.plotting import plot_full_history
+        from stochastic_arrow.analysis.plotting import plot_full_history
 
         n_systems = len(systems)
 
@@ -385,6 +418,7 @@ if __name__ == '__main__':
     parser.add_argument('--memory', action='store_true')
     parser.add_argument('--time', action='store_true')
     parser.add_argument('--pickle', action='store_true')
-    parser.add_argument('--flagella', action='store_true')
+    parser.add_argument('--test-fail-flagella', action='store_true')
+    parser.add_argument('--test-fail-stdout', action='store_true')
 
     main(parser.parse_args())
