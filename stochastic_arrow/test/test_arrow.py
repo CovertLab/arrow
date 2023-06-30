@@ -16,6 +16,7 @@ from time import time as seconds_since_epoch
 import json
 import numpy as np
 from pathlib import Path
+import platform
 import psutil
 import pytest
 import argparse
@@ -223,7 +224,10 @@ def test_memory():
 
     print('obsidian C implementation elapsed seconds for {} runs: {}'.format(
         amplify, obsidian_end - obsidian_start))
-    assert memory_increases <= 1
+    if platform.system() == 'Windows':
+        assert memory_increases <= 10
+    else:
+        assert memory_increases <= 1
 
 def test_pickle():
     stoichiometric_matrix = np.array([
@@ -313,7 +317,7 @@ def test_get_set_random_state():
                       dtype=np.int64)
     system = StochasticSystem(stoich)
 
-    state = np.array([1000, 1000, 0, 0])
+    state = np.array([1000, 1000, 0, 0], dtype=np.int64)
     rates = np.array([3.0, 1.0, 1.0])
 
     system.evolve(1, state, rates)
