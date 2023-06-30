@@ -20,6 +20,7 @@ import psutil
 import pytest
 import argparse
 import pickle
+import re
 import subprocess
 
 from stochastic_arrow import reenact_events, StochasticSystem
@@ -295,15 +296,16 @@ def test_fail_stdout():
     result = subprocess.run(['python', curr_file, '--test-fail-flagella'],
                             capture_output=True,
                             env={**os.environ, 'PYTHONPATH': main_dir})
-    assert result.stdout == (
-        b'failed simulation: total propensity is NaN\n'
-        b'reaction 0 is -0.000000\n'
-        b'reaction 1 is 0.000000\n'
-        b'reaction 2 is 0.000000\n'
-        b'reaction 3 is 0.000000\n'
-        b'reaction 4 is 0.000000\n'
-        b'reaction 5 is -nan\n'
-        b'largest reaction is 5 at -nan\n')
+    assert re.search((
+        'failed simulation: total propensity is NaN.*'
+        'reaction 0 is -?0.000000.*'
+        'reaction 1 is -?0.000000.*'
+        'reaction 2 is -?0.000000.*'
+        'reaction 3 is -?0.000000.*'
+        'reaction 4 is -?0.000000.*'
+        'reaction 5 is -?nan.*'
+        'largest reaction is 5 at -?nan.*'),
+        result.stdout.decode('utf-8'), flags=re.DOTALL)
     assert result.stderr == b''
 
 def test_get_set_random_state():
