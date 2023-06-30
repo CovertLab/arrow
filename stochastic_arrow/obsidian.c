@@ -189,12 +189,12 @@ evolve_result evolve(Info *info, double duration, int64_t *state, double *rates)
       printf("failed simulation: total propensity is NaN\n");
       int64_t max_reaction = 0;
       for (reaction = 0; reaction < reactions_count; reaction++) {
-        printf("reaction %lld is %f\n", reaction, propensities[reaction]);
+        printf("reaction %lld is %f\n", (long long)reaction, propensities[reaction]);
         if (isnan(propensities[reaction]) || propensities[reaction] > propensities[max_reaction]) {
           max_reaction = reaction;
         }
       }
-      printf("largest reaction is %lld at %f\n", max_reaction, propensities[max_reaction]);
+      printf("largest reaction is %lld at %f\n", (long long)max_reaction, propensities[max_reaction]);
       interval = 0.0;
       choice = -1;
       status = 1; // overflow
