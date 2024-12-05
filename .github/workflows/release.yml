@@ -112,8 +112,11 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest psutil
           CIBW_TEST_COMMAND: |
-            cp -r {project}/stochastic_arrow/test tmp_test_dir/
-            pytest tmp_test_dir
+            mkdir tmp_test_dir
+            cp -r {project}/stochastic_arrow/test tmp_test_dir/test
+            cp -r {project}/data tmp_test_dir/data
+            cd tmp_test_dir
+            pytest
           CIBW_ENVIRONMENT: USE_CYTHON=1
         uses: pypa/cibuildwheel@v2.22.0
 
