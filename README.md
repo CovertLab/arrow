@@ -122,6 +122,11 @@ More examples:
 
 ## Changelog
 
+### Version 1.1.0
+
+* Remove Python 2.7 from package setup target classifiers.
+* Wheel built with numpy 2.1.3 and Cython 3.0.11.
+
 ### Version 1.0.0
 
 * Rename module to `stochastic_arrow` to avoid name conflict (Issue #51). **All users must update their import statements to use `stochastic_arrow` instead of `arrow`.**

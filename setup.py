@@ -49,7 +49,7 @@ if USE_CYTHON:
 
 setup(
     name='stochastic-arrow',
-    version='1.0.0',
+    version='1.1.0',
     packages=['stochastic_arrow'],
     author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst, Sean Cheah',
     author_email='ryan.spangler@gmail.com',
@@ -59,12 +59,11 @@ setup(
     ext_modules=cython_extensions,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    requires=['numpy (>=1.14)', 'six'],
+    requires=['numpy (>=1.26.3)', 'six'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering',
     ])

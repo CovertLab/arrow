@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build a new release including a git tag and and publish it to PyPI.
+# Build a new release.
 # Do some basic checks to avoid mistakes.
 #
 # Usage: ./release.sh 0.1.0
@@ -8,7 +8,19 @@ set -eu
 
 version=$1
 
-# Check the version number.
+# Compile and test, allowing test failures.
+make clean compile
+set +e
+pytest
+set -e
+
+# Create the package.
+# TODO: Why can't it find numpy without `--no-isolation`?
+rm -rf dist build *.egg-info
+python -m build --no-isolation
+
+
+# Cross-check the version number.
 setup_py_version="$(python setup.py --version)"
 if [ "$setup_py_version" != "$version" ]; then
     echo "setup.py has version `$setup_py_version`, not `$version`."
@@ -31,20 +43,5 @@ if [ "$branch" != "master" ]; then
     exit 1
 fi
 
-# Create and push a git tag.
-git tag -m "Version v$version" "v$version"
-git push --tags
 
-# Compile and test, allowing test failures.
-make clean compile
-set +e
-pytest
-set -e
-
-# Create and publish the package.
-rm -rf dist build *.egg-info
-python setup.py sdist
-twine upload dist/*
-
-echo "Version v$version has been published on PyPI and has a git tag."
-echo "Please make a GitHub Release from that tag."
+echo "Do additional testing, then run push.sh"

@@ -3,7 +3,8 @@
 pip
 setuptools
 
-Cython>=0.29.34
+build
+Cython>=3.0.0
 numpy
 pytest
 psutil
