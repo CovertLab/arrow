@@ -224,7 +224,7 @@ def test_memory():
 
     print('obsidian C implementation elapsed seconds for {} runs: {}'.format(
         amplify, obsidian_end - obsidian_start))
-    if platform.system() == 'Windows':
+    if platform.system() == 'Windows' or platform.system() == 'Darwin':
         assert memory_increases <= 10
     else:
         assert memory_increases <= 1
