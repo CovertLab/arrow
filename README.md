@@ -122,6 +122,11 @@ More examples:
 
 ## Changelog
 
+### Version 1.1.0
+* Update build toolchain and automatically build/publish wheels for all
+major platforms and recent Python versions.
+* Build wheels with Numpy 2+ support
+
 ### Version 1.0.0
 
 * Rename module to `stochastic_arrow` to avoid name conflict (Issue #51). **All users must update their import statements to use `stochastic_arrow` instead of `arrow`.**
