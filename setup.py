@@ -10,9 +10,6 @@ else:
     with open("README.md", 'r', encoding="utf-8") as readme:
         long_description = readme.read()
 
-current_dir = os.getcwd()
-arrow_dir = os.path.join(current_dir, 'stochastic_arrow')
-
 # Compile the Cython code to C for development builds:
 #    USE_CYTHON=1 python -m pip install -e .
 # and for building source distribution packages:
@@ -29,7 +26,7 @@ cython_extensions = [
                   'stochastic_arrow/mersenne.c',
                   'stochastic_arrow/obsidian.c',
                   'stochastic_arrow/arrowhead'+ext,],
-              include_dirs=[arrow_dir, np.get_include()],
+              include_dirs=['stochastic_arrow', np.get_include()],
               define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
               )]
 
@@ -37,7 +34,7 @@ if USE_CYTHON:
     from Cython.Build import cythonize
     cython_extensions = cythonize(
         cython_extensions,
-        include_path=[arrow_dir],
+        include_path=['stochastic_arrow'],
         annotate=True,  # to get an HTML code listing
     )
 
