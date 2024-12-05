@@ -112,7 +112,7 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest psutil
           CIBW_TEST_COMMAND: pytest {package}/test
-          USE_CYTHON: 1
+          CIBW_ENVIRONMENT: USE_CYTHON=1
         uses: pypa/cibuildwheel@v2.22.0
 
       - uses: actions/upload-artifact@v4
