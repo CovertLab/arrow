@@ -15,7 +15,6 @@ import os
 from time import time as seconds_since_epoch
 import json
 import numpy as np
-from pathlib import Path
 import platform
 import psutil
 import pytest
@@ -296,12 +295,15 @@ def test_fail_flagella():
 
 # All reaction propensities should be printed if simulation fails
 def test_fail_stdout():
-    curr_file = Path(os.path.realpath(__file__))
-    main_dir = curr_file.parents[2]
+    curr_file = os.path.realpath(__file__)
+    main_dir = os.path.dirname(os.path.dirname(os.path.dirname(curr_file)))
     # sys.executable more reliable than 'python' in Windows virtualenv
-    result = subprocess.run(
+    env = os.environ.copy()
+    env.update({'PYTHONPATH': str(main_dir)})
+    result = subprocess.Popen(
         [sys.executable, curr_file, '--test-fail-flagella'],
-        capture_output=True, env={**os.environ, 'PYTHONPATH': str(main_dir)})
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    stdout, stderr = result.communicate()
     assert re.search((
         'failed simulation: total propensity is NaN.*'
         'reaction 0 is -?0.000000.*'
@@ -311,8 +313,8 @@ def test_fail_stdout():
         'reaction 4 is -?0.000000.*'
         'reaction 5 is -?nan.*'
         'largest reaction is 5 at -?nan.*'),
-        result.stdout.decode('utf-8'), flags=re.DOTALL)
-    assert result.stderr == b''
+        stdout.decode('utf-8'), flags=re.DOTALL)
+    assert stderr == b''
 
 def test_get_set_random_state():
     stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]],
@@ -398,7 +400,7 @@ def main(args):
         all_axes = np.asarray(all_axes)
 
         for (axes, system) in moves.zip(all_axes.flatten(), systems):
-            print(f'Running {system.__name__}')
+            print('Running {}'.format(system.__name__))
             axes.set_title(system.__name__)
 
             time, counts, events = system()

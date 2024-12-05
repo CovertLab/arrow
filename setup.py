@@ -8,13 +8,17 @@ import os
 import setuptools  # used indirectly for bdist_wheel cmd and long_description_content_type
 from distutils.core import setup
 from distutils.extension import Extension
+import sys
 import numpy as np
 
 _ = setuptools
 
 
-with open("README.md", 'r', encoding="utf-8") as readme:
-    long_description = readme.read()
+with open("README.md", 'r') as readme:
+    if sys.version_info[0] < 3:
+        long_description = readme.read().decode('utf-8')
+    else:
+        long_description = readme.read()
 
 current_dir = os.getcwd()
 arrow_dir = os.path.join(current_dir, 'stochastic_arrow')
