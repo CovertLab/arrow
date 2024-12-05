@@ -2,9 +2,6 @@ name: Build and upload to PyPI
 
 on:
   push:
-    branches:
-      - master
-      - numpy2
   release:
     types:
       - published
@@ -117,6 +114,16 @@ jobs:
             cp -r {project}/data tmp_test_dir/data
             cd tmp_test_dir
             pytest
+          CIBW_TEST_COMMAND_WINDOWS: |
+            echo "Starting tests on Windows";
+            mkdir tmp_test_dir;
+            echo "Copying test directory";
+            xcopy /E /I /Y stochastic_arrow\test tmp_test_dir\test;
+            echo "Copying data directory";
+            xcopy /E /I /Y stochastic_arrow\data tmp_test_dir\data;
+            cd tmp_test_dir;
+            echo "Running pytest on Windows";
+            pytest -v
           CIBW_ENVIRONMENT: USE_CYTHON=1
         uses: pypa/cibuildwheel@v2.22.0
 
