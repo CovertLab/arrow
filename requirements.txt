@@ -2,6 +2,7 @@
 
 pip
 setuptools
+build
 
 Cython>=0.29.34
 numpy
