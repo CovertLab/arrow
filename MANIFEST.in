@@ -1,2 +1,2 @@
-include stochastic_arrow/obsidian.h
-include stochastic_arrow/mersenne.h
+include src/stochastic_arrow/obsidian.h
+include src/stochastic_arrow/mersenne.h

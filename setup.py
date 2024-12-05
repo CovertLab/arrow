@@ -1,5 +1,5 @@
 import os
-from setuptools import Extension, setup
+from setuptools import Extension, find_packages, setup
 import sys
 import numpy as np
 
@@ -20,13 +20,15 @@ USE_CYTHON = 'USE_CYTHON' in os.environ
 
 ext = '.pyx' if USE_CYTHON else '.c'
 
+arrow_dir = os.path.join('src', 'stochastic_arrow')
+
 cython_extensions = [
     Extension('stochastic_arrow.arrowhead',
               sources=[
-                  'stochastic_arrow/mersenne.c',
-                  'stochastic_arrow/obsidian.c',
-                  'stochastic_arrow/arrowhead'+ext,],
-              include_dirs=['stochastic_arrow', np.get_include()],
+                  os.path.join(arrow_dir, 'mersenne.c'),
+                  os.path.join(arrow_dir, 'obsidian.c'),
+                  os.path.join(arrow_dir, 'arrowhead'+ext),],
+              include_dirs=[arrow_dir, np.get_include()],
               define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
               )]
 
@@ -34,14 +36,15 @@ if USE_CYTHON:
     from Cython.Build import cythonize
     cython_extensions = cythonize(
         cython_extensions,
-        include_path=['stochastic_arrow'],
+        include_path=[arrow_dir],
         annotate=True,  # to get an HTML code listing
     )
 
 setup(
     name='stochastic-arrow',
     version='1.0.0',
-    packages=['stochastic_arrow'],
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst, Sean Cheah',
     author_email='ryan.spangler@gmail.com',
     url='https://github.com/CovertLab/arrow',

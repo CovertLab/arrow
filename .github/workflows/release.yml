@@ -108,22 +108,7 @@ jobs:
           CIBW_FREE_THREADED_SUPPORT: ${{ matrix.free_threaded_support }}
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest psutil
-          CIBW_TEST_COMMAND: |
-            mkdir tmp_test_dir
-            cp -r {project}/stochastic_arrow/test tmp_test_dir/test
-            cp -r {project}/data tmp_test_dir/data
-            cd tmp_test_dir
-            pytest
-          CIBW_TEST_COMMAND_WINDOWS: |
-            echo "Starting tests on Windows";
-            mkdir tmp_test_dir;
-            echo "Copying test directory";
-            xcopy /E /I /Y stochastic_arrow\test tmp_test_dir\test;
-            echo "Copying data directory";
-            xcopy /E /I /Y stochastic_arrow\data tmp_test_dir\data;
-            cd tmp_test_dir;
-            echo "Running pytest on Windows";
-            pytest -v
+          CIBW_TEST_COMMAND: pytest -v {project}/test
           CIBW_ENVIRONMENT: USE_CYTHON=1
         uses: pypa/cibuildwheel@v2.22.0
 
