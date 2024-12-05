@@ -84,7 +84,7 @@ def test_dimerization():
 
 
 def load_complexation(prefix='simple'):
-    fixtures_root = os.path.join('data', 'complexation')
+    fixtures_root = os.path.join(os.path.dirname(__file__), 'data', 'complexation')
 
     def load_state(filename):
         with open(os.path.join(fixtures_root, filename)) as f:
