@@ -3,12 +3,11 @@ from setuptools import Extension, setup
 import sys
 import numpy as np
 
-
-
-with open("README.md", 'r') as readme:
-    if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:
+    with open("README.md", 'r') as readme:
         long_description = readme.read().decode('utf-8')
-    else:
+else:
+    with open("README.md", 'r', encoding="utf-8") as readme:
         long_description = readme.read()
 
 current_dir = os.getcwd()
