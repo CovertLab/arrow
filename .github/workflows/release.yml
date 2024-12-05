@@ -111,7 +111,9 @@ jobs:
           CIBW_FREE_THREADED_SUPPORT: ${{ matrix.free_threaded_support }}
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest psutil
-          CIBW_TEST_COMMAND: pytest {package}/test
+          CIBW_TEST_COMMAND: |
+            cp -r {project}/stochastic_arrow/test tmp_test_dir/
+            pytest tmp_test_dir
           CIBW_ENVIRONMENT: USE_CYTHON=1
         uses: pypa/cibuildwheel@v2.22.0
 
