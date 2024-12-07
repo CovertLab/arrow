@@ -13,5 +13,8 @@ clean:
 compile:
 	USE_CYTHON=1 python -m pip install -e .
 
+test: clean compile
+	pytest test
+
 dist:
 	USE_CYTHON=1 python -m build --sdist

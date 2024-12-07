@@ -378,7 +378,7 @@ def main(args):
                 system()
     else:
         import matplotlib.pyplot as plt
-        from stochastic_arrow.analysis.plotting import plot_full_history
+        from .analysis.plotting import plot_full_history
 
         n_systems = len(systems)
 
@@ -412,9 +412,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Run one of these tests')
+        description='Run the specified test or some default tests')
     parser.add_argument('--complexation', action='store_true')
-    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--runs', type=int, default=1,
+        help='an option for complexation')
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--obsidian', action='store_true')
     parser.add_argument('--memory', action='store_true')
