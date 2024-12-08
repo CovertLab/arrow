@@ -1,6 +1,3 @@
-# cython: language_level=3str
-# cython: freethreading_compatible = True
-
 from libc.stdint cimport int64_t, uint32_t
 
 from mersenne cimport MTState

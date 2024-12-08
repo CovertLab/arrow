@@ -1,6 +1,3 @@
-# cython: language_level=3str
-# cython: freethreading_compatible = True
-
 from libc.stdint cimport uint32_t
 
 
