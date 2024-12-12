@@ -1,4 +1,5 @@
 import json
+import os
 
 from stochastic_arrow import StochasticSystem
 import numpy as np
@@ -6,7 +7,10 @@ import numpy as np
 
 duration = 2**31
 
-with open('data/complexation/large-initial.json') as f:
+# Build the path to the data file relative to the script's directory
+data_path = os.path.join(os.path.dirname(__file__), 'data', 'complexation', 'large-initial.json')
+
+with open(data_path) as f:
     data = json.load(f)
 
 stoich = np.array(data['stoich'])

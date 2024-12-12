@@ -15,7 +15,6 @@ import os
 from time import time as seconds_since_epoch
 import json
 import numpy as np
-from pathlib import Path
 import platform
 import psutil
 import pytest
@@ -85,7 +84,7 @@ def test_dimerization():
 
 
 def load_complexation(prefix='simple'):
-    fixtures_root = os.path.join('data', 'complexation')
+    fixtures_root = os.path.join(os.path.dirname(__file__), 'data', 'complexation')
 
     def load_state(filename):
         with open(os.path.join(fixtures_root, filename)) as f:
@@ -225,7 +224,7 @@ def test_memory():
 
     print('obsidian C implementation elapsed seconds for {} runs: {}'.format(
         amplify, obsidian_end - obsidian_start))
-    if platform.system() == 'Windows':
+    if platform.system() == 'Windows' or platform.system() == 'Darwin':
         assert memory_increases <= 10
     else:
         assert memory_increases <= 1
@@ -296,12 +295,15 @@ def test_fail_flagella():
 
 # All reaction propensities should be printed if simulation fails
 def test_fail_stdout():
-    curr_file = Path(os.path.realpath(__file__))
-    main_dir = curr_file.parents[2]
+    curr_file = os.path.realpath(__file__)
+    main_dir = os.path.dirname(os.path.dirname(os.path.dirname(curr_file)))
     # sys.executable more reliable than 'python' in Windows virtualenv
-    result = subprocess.run(
+    env = os.environ.copy()
+    env.update({'PYTHONPATH': str(main_dir)})
+    result = subprocess.Popen(
         [sys.executable, curr_file, '--test-fail-flagella'],
-        capture_output=True, env={**os.environ, 'PYTHONPATH': str(main_dir)})
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    stdout, stderr = result.communicate()
     assert re.search((
         'failed simulation: total propensity is NaN.*'
         'reaction 0 is -?0.000000.*'
@@ -311,8 +313,8 @@ def test_fail_stdout():
         'reaction 4 is -?0.000000.*'
         'reaction 5 is -?nan.*'
         'largest reaction is 5 at -?nan.*'),
-        result.stdout.decode('utf-8'), flags=re.DOTALL)
-    assert result.stderr == b''
+        stdout.decode('utf-8'), flags=re.DOTALL)
+    assert stderr == b''
 
 def test_get_set_random_state():
     stoich = np.array([[1, 1, -1, 0], [-2, 0, 0, 1], [-1, -1, 1, 0]],
@@ -376,7 +378,7 @@ def main(args):
                 system()
     else:
         import matplotlib.pyplot as plt
-        from stochastic_arrow.analysis.plotting import plot_full_history
+        from .analysis.plotting import plot_full_history
 
         n_systems = len(systems)
 
@@ -398,7 +400,7 @@ def main(args):
         all_axes = np.asarray(all_axes)
 
         for (axes, system) in moves.zip(all_axes.flatten(), systems):
-            print(f'Running {system.__name__}')
+            print('Running {}'.format(system.__name__))
             axes.set_title(system.__name__)
 
             time, counts, events = system()
@@ -410,9 +412,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Run one of these tests')
+        description='Run the specified test or some default tests')
     parser.add_argument('--complexation', action='store_true')
-    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--runs', type=int, default=1,
+        help='an option for complexation')
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--obsidian', action='store_true')
     parser.add_argument('--memory', action='store_true')

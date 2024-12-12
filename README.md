@@ -91,36 +91,52 @@ from stochastic_arrow import reenact_events
 history = reenact_events(stoichiometric_matrix, result['events'], state)
 ```
 
-## Testing
-
-`stochastic_arrow` uses [pytest](https://docs.pytest.org/en/latest/). To test it:
+## Building
 
     > make clean compile
-    > pytest
+
+This builds the extension package and installs it in editable mode.
 
 **NOTE:** `make compile` without an explicit `clean` might not fully build the extension.
 
-There are more command line features in test_arrow:
+## Testing
 
-    > python -m stochastic_arrow.test.test_arrow --complexation
+`stochastic_arrow` uses [pytest](https://docs.pytest.org/en/latest/).
+To run the main tests, in the source tree:
 
-    > python -m stochastic_arrow.test.test_arrow --plot
+    > make test
 
-    > python -m stochastic_arrow.test.test_arrow --obsidian
+or
 
-    > python -m stochastic_arrow.test.test_arrow --memory
+    > pytest
 
-    > python -m stochastic_arrow.test.test_arrow --time
+There are additional command line features in test_arrow:
+
+    > python -m test.test_arrow --help
+    > python -m test.test_arrow --complexation
+    > python -m test.test_arrow --complexation --runs 3
+    > python -m test.test_arrow --obsidian
+    > python -m test.test_arrow --memory
+    > python -m test.test_arrow --time
+    > python -m test.test_arrow --pickle
+    > python -m test.test_arrow --test-fail-flagella
+    > python -m test.test_arrow --test-fail-stdout
+    > python -m test.test_hang
+
+This test requires installing a version of matplotlib that's compatible with the installed numpy:
+
+    > python -m test.test_arrow --plot
 
 More examples:
-
-    > python -m stochastic_arrow.test.test_hang
-
-    > pytest -m stochastic_arrow/test/test_arrow.py
 
     > pytest -k flagella
 
 ## Changelog
+
+### Version 1.1.0
+* Update build toolchain and automatically build/publish wheels for all
+major platforms and recent Python versions.
+* Build wheels with Numpy 2+ support
 
 ### Version 1.0.0
 
