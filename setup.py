@@ -42,7 +42,7 @@ if USE_CYTHON:
 
 setup(
     name='stochastic-arrow',
-    version='1.1.0',
+    version='1.1.1',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     author='Ryan Spangler, John Mason, Jerry Morrison, Chris Skalnik, Travis Ahn-Horst, Sean Cheah',
