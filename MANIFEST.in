@@ -1,2 +1,5 @@
 include src/stochastic_arrow/obsidian.h
 include src/stochastic_arrow/mersenne.h
+include src/stochastic_arrow/arrow.pxd
+include src/stochastic_arrow/arrowhead.pyx
+include src/stochastic_arrow/obsidian.pxd

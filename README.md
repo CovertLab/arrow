@@ -133,6 +133,9 @@ More examples:
 
 ## Changelog
 
+### Version 1.1.1
+* Include files to install source dist without `USE_CYTHON=1`.
+
 ### Version 1.1.0
 * Update build toolchain and automatically build/publish wheels for all
 major platforms and recent Python versions.
