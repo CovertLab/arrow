@@ -18,3 +18,5 @@ arrow.egg-info/
 stochastic_arrow.egg-info/
 
 *.png
+
+.DS_Store

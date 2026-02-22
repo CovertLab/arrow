@@ -32,10 +32,6 @@ jobs:
           - os: windows-latest
             python: 313
             platform_id: win_amd64
-          - os: windows-latest
-            python: 313t
-            platform_id: win_amd64
-            free_threaded_support: True
 
           # Linux 64 bit manylinux2014
           - os: ubuntu-latest
@@ -53,10 +49,6 @@ jobs:
           - os: ubuntu-latest
             python: 313
             platform_id: manylinux_x86_64
-          - os: ubuntu-latest
-            python: 313t
-            platform_id: manylinux_x86_64
-            free_threaded_support: True
 
           # MacOS x86_64
           - os: macos-15-intel
@@ -74,10 +66,6 @@ jobs:
           - os: macos-15-intel
             python: 313
             platform_id: macosx_x86_64
-          - os: macos-15-intel
-            python: 313t
-            platform_id: macosx_x86_64
-            free_threaded_support: True
 
           # MacOS arm64
           - os: macos-latest
@@ -95,17 +83,12 @@ jobs:
           - os: macos-latest
             python: 313
             platform_id: macosx_arm64
-          - os: macos-latest
-            python: 313t
-            platform_id: macosx_arm64
-            free_threaded_support: True
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Build wheels
         env:
-          CIBW_FREE_THREADED_SUPPORT: ${{ matrix.free_threaded_support }}
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest psutil
           CIBW_TEST_COMMAND: pytest -v {project}/test
