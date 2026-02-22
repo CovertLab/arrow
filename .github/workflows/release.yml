@@ -50,6 +50,23 @@ jobs:
             python: 313
             platform_id: manylinux_x86_64
 
+          # Linux ARM64
+          - os: ubuntu-24.04-arm
+            python: 39
+            platform_id: manylinux_aarch64
+          - os: ubuntu-24.04-arm
+            python: 310
+            platform_id: manylinux_aarch64
+          - os: ubuntu-24.04-arm
+            python: 311
+            platform_id: manylinux_aarch64
+          - os: ubuntu-24.04-arm
+            python: 312
+            platform_id: manylinux_aarch64
+          - os: ubuntu-24.04-arm
+            python: 313
+            platform_id: manylinux_aarch64
+
           # MacOS x86_64
           - os: macos-15-intel
             python: 39
