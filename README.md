@@ -133,8 +133,12 @@ More examples:
 
 ## Changelog
 
+### Version 1.1.2
+* Include mersenne.pxd in source dist.
+
 ### Version 1.1.1
-* Include files to install source dist without `USE_CYTHON=1`.
+* Include files to install source dist with or without `USE_CYTHON=1`.
+* Build ARM Linux wheels.
 
 ### Version 1.1.0
 * Update build toolchain and automatically build/publish wheels for all
